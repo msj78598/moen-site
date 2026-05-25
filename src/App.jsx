@@ -1715,69 +1715,6 @@ ${siteUrl}`;
         </section>
       )}
 
-      <section id="external-offers" style={viewStyles.externalSection}>
-        <div style={viewStyles.sectionHead}>
-          <span style={viewStyles.sectionLabel}>وساطة تسويقية</span>
-          <h2 style={viewStyles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
-          <p style={viewStyles.sectionText}>
-            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
-          </p>
-        </div>
-
-        <div style={viewStyles.externalGrid}>
-          {externalMarketingOffers.map((offer) => (
-            <article style={viewStyles.externalCard} key={offer.id}>
-              <div style={viewStyles.externalCardHead}>
-                <span style={viewStyles.externalTag}>وساطة تسويقية</span>
-                <span style={viewStyles.externalDate}>
-                  تحقق: {offer.checkedAt}
-                </span>
-              </div>
-
-              <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>📍</span>
-                <span>{offer.location}</span>
-              </p>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>📐</span>
-                <span>{offer.size}</span>
-              </p>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>💰</span>
-                <span>{offer.price}</span>
-              </p>
-              <p style={viewStyles.propertyNote}>{offer.note}</p>
-
-              <div style={viewStyles.sourceNotice}>
-                <strong>{offer.sourceName}</strong>
-                <span>
-                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
-                </span>
-              </div>
-
-              <div style={viewStyles.propertyButtons}>
-                <a
-                  style={{ ...viewStyles.map, ...viewStyles.cardActionButton }}
-                  href={offer.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  فتح المصدر
-                </a>
-                <a
-                  style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
-                  href={contactData.whatsapp}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  استفسار عبر المكتب
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
       <section id="properties" style={viewStyles.section}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>العروض العقارية</span>
@@ -1882,7 +1819,70 @@ ${siteUrl}`;
         </div>
       </section>
 
+      <section id="external-offers" style={viewStyles.externalSection}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>وساطة تسويقية</span>
+          <h2 style={viewStyles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
+          <p style={viewStyles.sectionText}>
+            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
+          </p>
+        </div>
 
+        <div style={viewStyles.externalGrid}>
+          {externalMarketingOffers.map((offer) => (
+            <article style={viewStyles.externalCard} key={offer.id}>
+              <div style={viewStyles.externalCardHead}>
+                <span style={viewStyles.externalTag}>وساطة تسويقية</span>
+                <span style={viewStyles.externalDate}>
+                  تحقق: {offer.checkedAt}
+                </span>
+              </div>
+
+              <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📍</span>
+                <span>{offer.location}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📐</span>
+                <span>{offer.size}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>💰</span>
+                <span>{offer.price}</span>
+              </p>
+              <p style={viewStyles.propertyNote}>{offer.note}</p>
+
+              <div style={viewStyles.sourceNotice}>
+                <strong>{offer.sourceName}</strong>
+                <span>
+                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
+                </span>
+              </div>
+
+              <div style={viewStyles.propertyButtons}>
+                <a
+                  style={{ ...viewStyles.map, ...viewStyles.cardActionButton }}
+                  href={offer.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  فتح المصدر
+                </a>
+                <a
+                  style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
+                  href={contactData.whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  استفسار عبر المكتب
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+      </section>
       <section id="team" style={viewStyles.darkSection}>
         <div style={viewStyles.inner}>
           <div style={viewStyles.sectionHeadLight}>
