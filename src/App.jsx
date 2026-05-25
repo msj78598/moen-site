@@ -120,6 +120,15 @@ export default function App() {
     banner_url: banner,
   };
 
+  const adhkarMessages = [
+    "أستغفر الله العظيم وأتوب إليه",
+    "سبحان الله وبحمده، سبحان الله العظيم",
+    "اللهم صل وسلم على نبينا محمد",
+    "لا حول ولا قوة إلا بالله",
+    "الحمد لله رب العالمين",
+    "سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر",
+  ];
+
   const externalMarketingOffers = [
     {
       id: "eidoun-waqf-854",
@@ -205,6 +214,7 @@ export default function App() {
   const [viewportWidth, setViewportWidth] = useState(
     typeof window === "undefined" ? 1200 : window.innerWidth
   );
+  const [dhikrIndex, setDhikrIndex] = useState(0);
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -286,6 +296,14 @@ export default function App() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setDhikrIndex((current) => (current + 1) % adhkarMessages.length);
+    }, 4500);
+
+    return () => window.clearInterval(intervalId);
+  }, [adhkarMessages.length]);
 
   async function initApp() {
     setLoading(true);
@@ -1075,6 +1093,13 @@ ${siteUrl}`;
     </div>
   </div>
 )}
+
+        <div style={viewStyles.dhikrBar} aria-live="polite">
+          <span style={viewStyles.dhikrLabel}>ذكر</span>
+          <span style={viewStyles.dhikrText}>
+            {adhkarMessages[dhikrIndex]}
+          </span>
+        </div>
 
         <div style={viewStyles.bannerBox}>
           <img src={displayedBanner} alt="مكتب نور الضفتين العقاري" style={viewStyles.banner} />
@@ -2218,6 +2243,41 @@ const styles = {
     cursor: "pointer",
     fontSize: "16px",
     opacity: 0.7,
+  },
+
+  dhikrBar: {
+    maxWidth: "1180px",
+    margin: "0 auto 18px",
+    padding: "10px 16px",
+    borderRadius: "16px",
+    background: "rgba(255,255,255,0.10)",
+    border: "1px solid rgba(250,204,21,.30)",
+    color: "#fef3c7",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "12px",
+    boxShadow: "0 12px 32px rgba(0,0,0,.14)",
+    backdropFilter: "blur(10px)",
+    overflow: "hidden",
+  },
+
+  dhikrLabel: {
+    background: "#facc15",
+    color: "#061a44",
+    padding: "4px 10px",
+    borderRadius: "999px",
+    fontSize: "12px",
+    fontWeight: "900",
+    flex: "0 0 auto",
+  },
+
+  dhikrText: {
+    fontSize: "15px",
+    fontWeight: "900",
+    lineHeight: "1.7",
+    textAlign: "center",
+    transition: "opacity .25s ease",
   },
 
   bannerBox: {
@@ -3482,6 +3542,25 @@ function createResponsiveStyles(base, viewportWidth) {
       height: "34px",
       fontSize: "14px",
       justifySelf: "center",
+    },
+    dhikrBar: {
+      ...base.dhikrBar,
+      margin: "0 auto 12px",
+      padding: "9px 10px",
+      borderRadius: "14px",
+      gap: "8px",
+      flexDirection: "column",
+      maxWidth: "100%",
+    },
+    dhikrLabel: {
+      ...base.dhikrLabel,
+      fontSize: "11px",
+      padding: "3px 9px",
+    },
+    dhikrText: {
+      ...base.dhikrText,
+      fontSize: "13px",
+      lineHeight: "1.8",
     },
     loginPanel: {
       ...base.loginPanel,
