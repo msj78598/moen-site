@@ -122,6 +122,26 @@ export default function App() {
     photoFile: null,
   });
 
+  function errorText(error, fallback) {
+    return error?.message || error?.error_description || fallback;
+  }
+
+  async function withTimeout(label, promise, ms = 12000) {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = window.setTimeout(
+        () => reject(new Error(`انتهت مهلة ${label}. تحقق من اتصال Supabase أو الصلاحيات.`)),
+        ms
+      );
+    });
+
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
   useEffect(() => {
     initApp();
 
@@ -145,15 +165,18 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      await Promise.all([loadContacts(), loadTeam(), loadProperties()]);
+      await withTimeout(
+        "تحميل البيانات",
+        Promise.all([loadContacts(), loadTeam(), loadProperties()])
+      );
 
-      const { data } = await supabase.auth.getSession();
+      const { data } = await withTimeout("فحص جلسة الدخول", supabase.auth.getSession());
       if (data?.session?.user) {
-        await loadUserProfile(data.session.user);
+        await withTimeout("تحميل صلاحيات المستخدم", loadUserProfile(data.session.user));
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر تحميل البيانات من قاعدة البيانات. تأكد من إعدادات Supabase.");
+      setErrorMessage(errorText(error, "تعذر تحميل البيانات من قاعدة البيانات. تأكد من إعدادات Supabase."));
     } finally {
       setLoading(false);
     }
@@ -191,11 +214,10 @@ export default function App() {
   }
 
   async function loadContacts() {
-    const { data, error } = await supabase
-      .from("contacts")
-      .select("*")
-      .eq("id", 1)
-      .maybeSingle();
+    const { data, error } = await withTimeout(
+      "قراءة بيانات التواصل",
+      supabase.from("contacts").select("*").eq("id", 1).maybeSingle()
+    );
 
     if (error) throw error;
 
@@ -211,11 +233,14 @@ export default function App() {
   }
 
   async function loadTeam() {
-    const { data, error } = await supabase
-      .from("team")
-      .select("*")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
+    const { data, error } = await withTimeout(
+      "قراءة فريق العمل",
+      supabase
+        .from("team")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true })
+    );
 
     if (error) throw error;
 
@@ -225,10 +250,10 @@ export default function App() {
   }
 
   async function loadProperties() {
-    const { data, error } = await supabase
-      .from("properties")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data, error } = await withTimeout(
+      "قراءة العروض",
+      supabase.from("properties").select("*").order("created_at", { ascending: false })
+    );
 
     if (error) throw error;
 
@@ -240,11 +265,10 @@ export default function App() {
   }
 
   async function loadUserProfile(authUser) {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authUser.id)
-      .maybeSingle();
+    const { data, error } = await withTimeout(
+      "قراءة صلاحيات المستخدم",
+      supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle()
+    );
 
     if (error) {
       console.error(error);
@@ -284,16 +308,20 @@ export default function App() {
     setLoading(true);
     setErrorMessage("");
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await withTimeout(
+      "تسجيل الدخول",
+      supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+    );
 
     setLoading(false);
 
     if (error) {
       alert("بيانات الدخول غير صحيحة أو الحساب غير موجود");
       console.error(error);
+      setErrorMessage(errorText(error, "تعذر تسجيل الدخول."));
       return;
     }
 
@@ -344,12 +372,13 @@ export default function App() {
     const safeName = file.name.replace(/\s+/g, "-").replace(/[^\w.-]/g, "");
     const filePath = `${Date.now()}-${safeName}`;
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
+    const { error } = await withTimeout(
+      `رفع الملف إلى ${bucket}`,
+      supabase.storage.from(bucket).upload(filePath, file, {
         cacheControl: "3600",
         upsert: false,
-      });
+      })
+    );
 
     if (error) throw error;
 
@@ -402,10 +431,10 @@ export default function App() {
           return;
         }
 
-        const { error } = await supabase
-          .from("properties")
-          .update(payload)
-          .eq("id", editingProperty.id);
+        const { error } = await withTimeout(
+          "تعديل العرض",
+          supabase.from("properties").update(payload).eq("id", editingProperty.id)
+        );
 
         if (error) throw error;
       } else {
@@ -414,10 +443,13 @@ export default function App() {
           return;
         }
 
-        const { error } = await supabase.from("properties").insert({
-          ...payload,
-          created_by: user?.id || null,
-        });
+        const { error } = await withTimeout(
+          "إضافة العرض",
+          supabase.from("properties").insert({
+            ...payload,
+            created_by: user?.id || null,
+          })
+        );
 
         if (error) throw error;
       }
@@ -427,7 +459,7 @@ export default function App() {
       alert(editingProperty ? "تم تعديل العرض" : "تمت إضافة العرض وسيظهر للجميع");
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر حفظ العرض. تحقق من الصلاحيات أو إعدادات Storage.");
+      setErrorMessage(errorText(error, "تعذر حفظ العرض. تحقق من الصلاحيات أو إعدادات Storage."));
     } finally {
       setLoading(false);
     }
@@ -445,14 +477,17 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      const { error } = await supabase.from("properties").delete().eq("id", id);
+      const { error } = await withTimeout(
+        "حذف العرض",
+        supabase.from("properties").delete().eq("id", id)
+      );
       if (error) throw error;
 
       await loadProperties();
       alert("تم حذف العرض");
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر حذف العرض.");
+      setErrorMessage(errorText(error, "تعذر حذف العرض."));
     } finally {
       setLoading(false);
     }
@@ -515,14 +550,17 @@ export default function App() {
       };
 
       if (editingEmployee) {
-        const { error } = await supabase
-          .from("team")
-          .update(payload)
-          .eq("id", editingEmployee.id);
+        const { error } = await withTimeout(
+          "تعديل بيانات الموظف",
+          supabase.from("team").update(payload).eq("id", editingEmployee.id)
+        );
 
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("team").insert(payload);
+        const { error } = await withTimeout(
+          "إضافة الموظف",
+          supabase.from("team").insert(payload)
+        );
         if (error) throw error;
       }
 
@@ -540,7 +578,7 @@ export default function App() {
       alert(editingEmployee ? "تم تعديل بيانات الموظف" : "تمت إضافة الموظف");
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر حفظ بيانات الموظف.");
+      setErrorMessage(errorText(error, "تعذر حفظ بيانات الموظف."));
     } finally {
       setLoading(false);
     }
@@ -558,13 +596,16 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      const { error } = await supabase.from("team").delete().eq("id", id);
+      const { error } = await withTimeout(
+        "حذف الموظف",
+        supabase.from("team").delete().eq("id", id)
+      );
       if (error) throw error;
       await loadTeam();
       alert("تم حذف الموظف");
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر حذف الموظف.");
+      setErrorMessage(errorText(error, "تعذر حذف الموظف."));
     } finally {
       setLoading(false);
     }
@@ -622,9 +663,10 @@ export default function App() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
-        .from("contacts")
-        .upsert(payload, { onConflict: "id" });
+      const { error } = await withTimeout(
+        "حفظ بيانات التواصل",
+        supabase.from("contacts").upsert(payload, { onConflict: "id" })
+      );
 
       if (error) throw error;
 
@@ -632,7 +674,7 @@ export default function App() {
       alert("تم حفظ بيانات التواصل وستظهر للجميع");
     } catch (error) {
       console.error(error);
-      setErrorMessage("تعذر حفظ بيانات التواصل.");
+      setErrorMessage(errorText(error, "تعذر حفظ بيانات التواصل."));
     } finally {
       setLoading(false);
     }
