@@ -837,7 +837,7 @@ export default function App() {
   function shareProperty(property) {
     const phone = normalPhone(property.phone || contactData.phone);
 
-    const text = `🏠 عرض عقاري من مكتب الضفتين العقاري
+    const text = `🏠 عرض عقاري من مكتب نور الضفتين العقاري
 
 نوع العقار: ${property.type}
 📍 الموقع: ${property.location}
@@ -862,7 +862,7 @@ https://wa.me/${phone}`;
   }
 
   function copyPropertyLink(property) {
-    const text = `عرض عقاري من مكتب الضفتين العقاري
+    const text = `عرض عقاري من مكتب نور الضفتين العقاري
 نوع العقار: ${property.type}
 الموقع: ${property.location}
 المساحة: ${property.size}
@@ -883,7 +883,7 @@ ${property.note || ""}`;
     const teamLines = team
       .map((person) => `${person.title} - ${person.name}: ${person.phone}`)
       .join("\n");
-    const text = `بطاقة مكتب الضفتين العقاري الإلكترونية
+    const text = `بطاقة مكتب نور الضفتين العقاري الإلكترونية
 
 بيع وشراء الأراضي والعقارات وتسويق العروض العقارية.
 
@@ -903,7 +903,7 @@ ${siteUrl}`;
         const bannerFile = await getShareableBannerFile(bannerUrl);
         if (bannerFile && navigator.canShare?.({ files: [bannerFile] })) {
           await navigator.share({
-            title: "بطاقة مكتب الضفتين العقاري",
+            title: "بطاقة مكتب نور الضفتين العقاري",
             text,
             url: siteUrl,
             files: [bannerFile],
@@ -912,7 +912,7 @@ ${siteUrl}`;
         }
 
         await navigator.share({
-          title: "بطاقة مكتب الضفتين العقاري",
+          title: "بطاقة مكتب نور الضفتين العقاري",
           text,
           url: siteUrl,
         });
@@ -977,7 +977,7 @@ ${siteUrl}`;
           <a href="#home" style={styles.logoBox}>
             <span style={styles.logoIcon}>🏛️</span>
             <span>
-              <strong style={styles.logo}>مكتب الضفتين العقاري</strong>
+              <strong style={styles.logo}>مكتب نور الضفتين العقاري</strong>
               <small style={styles.subtitle}>بيع وشراء الأراضي والعقارات</small>
             </span>
           </a>
@@ -1051,7 +1051,7 @@ ${siteUrl}`;
 )}
 
         <div style={styles.bannerBox}>
-          <img src={displayedBanner} alt="مكتب الضفتين العقاري" style={styles.banner} />
+          <img src={displayedBanner} alt="مكتب نور الضفتين العقاري" style={styles.banner} />
         </div>
 
         <div style={styles.heroContent}>
@@ -1064,7 +1064,7 @@ ${siteUrl}`;
           </h1>
 
           <p style={styles.description}>
-            مكتب الضفتين العقاري يقدم خدمات البيع والشراء والتسويق العقاري
+            مكتب نور الضفتين العقاري يقدم خدمات البيع والشراء والتسويق العقاري
             للأراضي والعقارات، مع فريق إداري متخصص للتواصل السريع وخدمة العملاء.
           </p>
 
@@ -1145,7 +1145,7 @@ ${siteUrl}`;
         <div>
           <h2 style={styles.facebookTitle}>تابع أحدث العروض العقارية</h2>
           <p style={styles.facebookText}>
-            تابعوا صفحة مكتب الضفتين العقاري على فيسبوك للاطلاع على أحدث
+            تابعوا صفحة مكتب نور الضفتين العقاري على فيسبوك للاطلاع على أحدث
             الأراضي والعقارات المتوفرة أولًا بأول.
           </p>
         </div>
@@ -1700,7 +1700,7 @@ ${siteUrl}`;
               <div style={styles.sourceNotice}>
                 <strong>{offer.sourceName}</strong>
                 <span>
-                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
+                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
                 </span>
               </div>
 
@@ -1773,7 +1773,7 @@ ${siteUrl}`;
                   <div style={styles.sourceNotice}>
                     <strong>{sourceTypeLabel(item.sourceType)}</strong>
                     <span>
-                      عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب الضفتين إلا إذا ذكر ذلك صراحة.
+                      عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب نور الضفتين إلا إذا ذكر ذلك صراحة.
                     </span>
                     {item.sourceUrl && (
                       <a
@@ -1901,7 +1901,7 @@ ${siteUrl}`;
         <div style={styles.promo}>
           <div>
             <span style={styles.badge}>امسح الباركود واحفظ بيانات المكتب</span>
-            <h2 style={styles.promoTitle}>مكتب الضفتين العقاري</h2>
+            <h2 style={styles.promoTitle}>مكتب نور الضفتين العقاري</h2>
             <p style={styles.promoText}>
               بيع وشراء الأراضي والعقارات، وتسويق العروض العقارية باحترافية
               وسرعة في التواصل.
@@ -1960,7 +1960,7 @@ ${siteUrl}`;
       </section>
 
       <footer id="contact" style={styles.footer}>
-        <h2 style={styles.footerTitle}>مكتب الضفتين العقاري</h2>
+        <h2 style={styles.footerTitle}>مكتب  نور الضفتين العقاري</h2>
         <p style={styles.footerText}>
           بيع وشراء الأراضي والعقارات وتسويق العروض العقارية باحترافية.
         </p>
@@ -2011,7 +2011,7 @@ ${siteUrl}`;
           </button>
         </div>
 
-        <p style={styles.copy}>© جميع الحقوق محفوظة لمكتب الضفتين العقاري</p>
+        <p style={styles.copy}>© جميع الحقوق محفوظة لمكتب نور الضفتين العقاري</p>
       </footer>
 
       <div style={styles.floating}>
