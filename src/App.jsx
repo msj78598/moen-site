@@ -1209,7 +1209,6 @@ ${siteUrl}`;
 )}
 
         <div style={viewStyles.dhikrBar} aria-live="polite">
-          <span style={viewStyles.dhikrLabel}>ذكر الله</span>
           <span style={viewStyles.dhikrText}>
             {adhkarMessages[dhikrIndex]}
           </span>
