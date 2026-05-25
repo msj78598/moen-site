@@ -107,6 +107,81 @@ export default function App() {
     banner_url: banner,
   };
 
+  const externalMarketingOffers = [
+    {
+      id: "eidoun-waqf-854",
+      type: "أرض للبيع",
+      location: "إربد - إيدون / حوض الوقف",
+      size: "854 م²",
+      price: "80,000 دينار",
+      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
+      sourceUrl:
+        "https://eurekajo.com/Realestates/Details/c10395e2-d6ab-4ba1-bc61-809cd5eae782",
+      checkedAt: "2026-05-25",
+      note: "أرض مستوية في منطقة فلل، الخدمات واصلة حسب المصدر.",
+    },
+    {
+      id: "eidoun-commercial-1144",
+      type: "أرض تجارية",
+      location: "إربد - طريق إربد الحصن / إيدون",
+      size: "1144 م²",
+      price: "400,000 دينار",
+      sourceName: "يوريكا جو - مجموعة غلوبال العقارية",
+      sourceUrl:
+        "https://eurekajo.com/Realestates/Details/7a78e875-3eaf-4a26-8fa1-30891f4f3b22",
+      checkedAt: "2026-05-25",
+      note: "قطعة تجارية على شارع رئيسي بعرض 40م حسب المصدر.",
+    },
+    {
+      id: "eidoun-masiya-850",
+      type: "أرض للبيع",
+      location: "إربد - إيدون / الماصية الشرقية",
+      size: "850 م²",
+      price: "170,000 دينار",
+      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
+      sourceUrl:
+        "https://eurekajo.com/Realestates/Details/b99de2c8-b659-4414-8f71-112ce2294c0c",
+      checkedAt: "2026-05-25",
+      note: "على شارع المورد الرئيسي وقريبة من دوار السفير حسب المصدر.",
+    },
+    {
+      id: "eidoun-qarn-506",
+      type: "أرض للبيع",
+      location: "إربد - إيدون / قرن الجاموس",
+      size: "506 م²",
+      price: "60,000 دينار",
+      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
+      sourceUrl:
+        "https://eurekajo.com/Realestates/Details/602c0f2b-d09a-4126-bb9d-792e3b7db65c",
+      checkedAt: "2026-05-25",
+      note: "مناسبة لبناء فيلا ضمن منطقة فلل حسب المصدر.",
+    },
+    {
+      id: "sareej-630",
+      type: "أرض سكنية",
+      location: "إربد - السريج",
+      size: "630 م²",
+      price: "75,600 دينار",
+      sourceName: "يوريكا جو - وسيط درويش للعقار",
+      sourceUrl:
+        "https://eurekajo.com/Realestates/Details/5f9b3400-3fe1-450e-aba5-363c7d1c25d8",
+      checkedAt: "2026-05-25",
+      note: "أرض سكنية/صخرية مطلة والخدمات واصلة حسب المصدر.",
+    },
+    {
+      id: "bushra-854",
+      type: "أرض للبيع",
+      location: "إربد - بشرى / قرب دوار الطيارة",
+      size: "854 م²",
+      price: "100,000 دينار",
+      sourceName: "دليل عقار",
+      sourceUrl:
+        "https://daleelaqar.com/search/%D8%B9%D9%82%D8%A7%D8%B1%D8%A7%D8%AA-%D9%84%D9%84%D8%A8%D9%8A%D8%B9/%D8%A7%D8%B1%D8%A8%D8%AF",
+      checkedAt: "2026-05-25",
+      note: "قوشان مستقل في منطقة بشرى حسب قائمة المصدر.",
+    },
+  ];
+
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
   const [team, setTeam] = useState(defaultTeam);
@@ -917,6 +992,9 @@ ${siteUrl}`;
             <a style={styles.navLink} href="#properties">
               العروض
             </a>
+            <a style={styles.navLink} href="#external-offers">
+              عروض خارجية
+            </a>
             <a style={styles.navLink} href="#team">
               فريق العمل
             </a>
@@ -1677,6 +1755,61 @@ ${siteUrl}`;
                     اتصال
                   </a>
                 </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="external-offers" style={styles.externalSection}>
+        <div style={styles.sectionHead}>
+          <span style={styles.sectionLabel}>وساطة تسويقية</span>
+          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد وقراها</h2>
+          <p style={styles.sectionText}>
+            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
+          </p>
+        </div>
+
+        <div style={styles.externalGrid}>
+          {externalMarketingOffers.map((offer) => (
+            <article style={styles.externalCard} key={offer.id}>
+              <div style={styles.externalCardHead}>
+                <span style={styles.externalTag}>وساطة تسويقية</span>
+                <span style={styles.externalDate}>
+                  تحقق: {offer.checkedAt}
+                </span>
+              </div>
+
+              <h3 style={styles.cardTitle}>{offer.type}</h3>
+              <p style={styles.propertyLine}>📍 {offer.location}</p>
+              <p style={styles.propertyLine}>📐 {offer.size}</p>
+              <p style={styles.propertyLine}>💰 {offer.price}</p>
+              <p style={styles.propertyNote}>{offer.note}</p>
+
+              <div style={styles.sourceNotice}>
+                <strong>{offer.sourceName}</strong>
+                <span>
+                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
+                </span>
+              </div>
+
+              <div style={styles.propertyButtons}>
+                <a
+                  style={styles.map}
+                  href={offer.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  فتح المصدر
+                </a>
+                <a
+                  style={styles.whatsapp}
+                  href={contactData.whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  استفسار عبر المكتب
+                </a>
               </div>
             </article>
           ))}
@@ -2605,6 +2738,51 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
     gap: "24px",
+  },
+
+  externalSection: {
+    background: "#f8fafc",
+    padding: "64px 24px",
+    scrollMarginTop: "120px",
+  },
+
+  externalGrid: {
+    maxWidth: "1180px",
+    margin: "0 auto",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "24px",
+  },
+
+  externalCard: {
+    background: "white",
+    borderRadius: "16px",
+    padding: "20px",
+    boxShadow: "0 2px 24px rgba(15,23,42,.06)",
+    border: "1px solid #e2e8f0",
+  },
+
+  externalCardHead: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "14px",
+  },
+
+  externalTag: {
+    background: "#111827",
+    color: "#facc15",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    fontSize: "12px",
+    fontWeight: "900",
+  },
+
+  externalDate: {
+    color: "#64748b",
+    fontSize: "12px",
+    fontWeight: "800",
   },
 
   propertyCard: {
