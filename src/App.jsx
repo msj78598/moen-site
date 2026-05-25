@@ -1,23 +1,12 @@
 import { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
 
 export default function App() {
   const banner = "/9c049017-4f6a-4029-9071-700b2fdf099a.png";
 
-  const OWNER_PASSWORD = "Zzz2024";
-  const EMPLOYEE_PASSWORD = "Zzz2024";
-
-  const PERMISSIONS = {
-    owner: [
-      "add",
-      "edit",
-      "delete",
-      "upload",
-      "manage_team",
-      "edit_contact",
-      "view_dashboard",
-    ],
-    employee: ["add", "upload", "view_dashboard", "share"],
-  };
+  // غيّر الإيميلات هنا إذا غيرت حسابات المستخدمين في Supabase
+  const OWNER_EMAIL = "msj78598@gmail.com";
+  const EMPLOYEE_EMAIL = "nayf78598@gmail.com";
 
   const defaultTeam = [
     {
@@ -36,7 +25,7 @@ export default function App() {
       phone: "00962796181720",
       whatsapp: "https://wa.me/962796181720",
       email: "relations@ababneh.jo",
-      photo: "",
+      photo: "/moeen.png",
     },
     {
       id: 3,
@@ -45,7 +34,7 @@ export default function App() {
       phone: "00962797022220",
       whatsapp: "https://wa.me/962797022220",
       email: "external@ababneh.jo",
-      photo: "",
+      photo: "/zaid.png",
     },
   ];
 
@@ -93,12 +82,16 @@ export default function App() {
     whatsapp: "https://wa.me/962772050566",
     facebook: "https://www.facebook.com/share/1BtQWMWQgv/",
     maps: "https://maps.app.goo.gl/EWoAmhkhp5GmMhfB8",
+    banner_url: banner,
   };
 
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState(defaultProperties);
   const [team, setTeam] = useState(defaultTeam);
   const [contactData, setContactData] = useState(defaultContact);
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -116,6 +109,7 @@ export default function App() {
     badge: "عادي",
     phone: "",
     image: "🏡",
+    imageFile: null,
   });
 
   const [employeeForm, setEmployeeForm] = useState({
@@ -125,70 +119,204 @@ export default function App() {
     email: "",
     whatsapp: "",
     photo: "",
+    photoFile: null,
   });
 
   useEffect(() => {
-    const savedProps = localStorage.getItem("diftain_properties");
-    const savedTeam = localStorage.getItem("diftain_team");
-    const savedContact = localStorage.getItem("diftain_contact");
+    initApp();
 
-    if (savedProps) setProperties(JSON.parse(savedProps));
-    if (savedTeam) setTeam(JSON.parse(savedTeam));
-    if (savedContact) setContactData(JSON.parse(savedContact));
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        await loadUserProfile(session.user);
+      } else {
+        setUser(null);
+        setShowAdminDash(false);
+      }
+    });
+
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function saveProperties(nextProperties) {
-    setProperties(nextProperties);
-    localStorage.setItem("diftain_properties", JSON.stringify(nextProperties));
+  async function initApp() {
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      await Promise.all([loadContacts(), loadTeam(), loadProperties()]);
+
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        await loadUserProfile(data.session.user);
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر تحميل البيانات من قاعدة البيانات. تأكد من إعدادات Supabase.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function saveTeam(nextTeam) {
-    setTeam(nextTeam);
-    localStorage.setItem("diftain_team", JSON.stringify(nextTeam));
+  function mapProperty(row) {
+    return {
+      id: row.id,
+      type: row.type || "",
+      location: row.location || "",
+      size: row.size || "",
+      price: row.price || "",
+      note: row.note || "",
+      badge: row.badge || "عادي",
+      phone: row.phone || contactData.phone,
+      image: row.image_url || "🏡",
+      status: row.status || "متاح",
+      createdBy: "الإدارة",
+      created_at: row.created_at,
+    };
   }
 
-  function saveContact(nextContact) {
-    setContactData(nextContact);
-    localStorage.setItem("diftain_contact", JSON.stringify(nextContact));
+  function mapTeam(row) {
+    return {
+      id: row.id,
+      name: row.name || "",
+      title: row.title || "",
+      phone: row.phone || "",
+      whatsapp: row.whatsapp || "",
+      email: row.email || "",
+      photo: row.photo_url || "",
+      sort_order: row.sort_order || 0,
+      is_visible: row.is_visible,
+    };
+  }
+
+  async function loadContacts() {
+    const { data, error } = await supabase
+      .from("contacts")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      setContactData({
+        phone: data.phone || defaultContact.phone,
+        whatsapp: data.whatsapp || defaultContact.whatsapp,
+        facebook: data.facebook || defaultContact.facebook,
+        maps: data.maps || defaultContact.maps,
+        banner_url: data.banner_url || defaultContact.banner_url,
+      });
+    }
+  }
+
+  async function loadTeam() {
+    const { data, error } = await supabase
+      .from("team")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    if (data && data.length) {
+      setTeam(data.map(mapTeam));
+    }
+  }
+
+  async function loadProperties() {
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    if (data && data.length) {
+      setProperties(data.map(mapProperty));
+    } else {
+      setProperties([]);
+    }
+  }
+
+  async function loadUserProfile(authUser) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", authUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      setErrorMessage("تم تسجيل الدخول لكن لم يتم العثور على صلاحيات المستخدم.");
+      return;
+    }
+
+    if (!data) {
+      setErrorMessage("هذا الحساب غير مضاف في جدول الصلاحيات profiles.");
+      return;
+    }
+
+    setUser({
+      id: authUser.id,
+      email: authUser.email,
+      name: data.full_name || authUser.email,
+      role: data.role || "employee",
+      permissions: data.permissions || {},
+    });
   }
 
   function can(permission) {
     if (!user) return false;
-    return PERMISSIONS[user.role]?.includes(permission);
+    if (user.role === "owner") return true;
+    return Boolean(user.permissions?.[permission]);
   }
 
-  function login(role) {
+  async function login(role) {
     const password = prompt(
       `أدخل كلمة مرور ${role === "owner" ? "المالك" : "الموظف"}:`
     );
 
-    const correctPassword =
-      role === "owner" ? OWNER_PASSWORD : EMPLOYEE_PASSWORD;
+    if (!password) return;
 
-    if (password === correctPassword) {
-      setUser({
-        role,
-        name: role === "owner" ? "المالك" : "موظف",
-      });
+    const email = role === "owner" ? OWNER_EMAIL : EMPLOYEE_EMAIL;
+
+    setLoading(true);
+    setErrorMessage("");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      alert("بيانات الدخول غير صحيحة أو الحساب غير موجود");
+      console.error(error);
+      return;
+    }
+
+    if (data?.user) {
+      await loadUserProfile(data.user);
       setShowAdminDash(true);
       alert(`تم الدخول كـ ${role === "owner" ? "مالك" : "موظف"}`);
-    } else {
-      alert("كلمة المرور غير صحيحة");
     }
   }
 
   function adminLoginClick(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (user) {
-    setShowAdminDash(!showAdminDash);
-    return;
+    if (user) {
+      setShowAdminDash(!showAdminDash);
+      return;
+    }
+
+    setShowLoginPanel(!showLoginPanel);
   }
 
-  setShowLoginPanel(!showLoginPanel);
-}
-
-  function logout() {
+  async function logout() {
+    await supabase.auth.signOut();
     setUser(null);
     setShowAdminDash(false);
     setEditingProperty(null);
@@ -205,11 +333,31 @@ export default function App() {
       badge: "عادي",
       phone: "",
       image: "🏡",
+      imageFile: null,
     });
     setEditingProperty(null);
   }
 
-  function saveProperty(e) {
+  async function uploadFile(bucket, file) {
+    if (!file) return null;
+
+    const safeName = file.name.replace(/\s+/g, "-").replace(/[^\w.-]/g, "");
+    const filePath = `${Date.now()}-${safeName}`;
+
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    return data.publicUrl;
+  }
+
+  async function saveProperty(e) {
     e.preventDefault();
 
     if (!can("add") && !can("edit")) {
@@ -222,53 +370,92 @@ export default function App() {
       return;
     }
 
-    const phone = form.phone || contactData.phone;
+    setLoading(true);
+    setErrorMessage("");
 
-    if (editingProperty) {
-      if (!can("edit")) {
-        alert("ليس لديك صلاحية تعديل العروض");
-        return;
+    try {
+      let imageUrl = form.image;
+
+      if (form.imageFile) {
+        if (!can("upload")) {
+          alert("ليس لديك صلاحية رفع الصور");
+          return;
+        }
+        imageUrl = await uploadFile("property-images", form.imageFile);
       }
 
-      const updatedProps = properties.map((p) =>
-        p.id === editingProperty.id
-          ? {
-              ...p,
-              ...form,
-              phone,
-              updatedBy: user.name,
-            }
-          : p
-      );
-
-      saveProperties(updatedProps);
-    } else {
-      if (!can("add")) {
-        alert("ليس لديك صلاحية إضافة العروض");
-        return;
-      }
-
-      const newProperty = {
-        id: Date.now(),
-        ...form,
-        phone,
-        createdBy: user.name,
+      const payload = {
+        type: form.type,
+        location: form.location,
+        size: form.size,
+        price: form.price,
+        note: form.note,
+        badge: form.badge || "عادي",
+        phone: form.phone || contactData.phone,
+        image_url: imageUrl,
+        updated_at: new Date().toISOString(),
       };
 
-      saveProperties([newProperty, ...properties]);
-    }
+      if (editingProperty) {
+        if (!can("edit")) {
+          alert("ليس لديك صلاحية تعديل العروض");
+          return;
+        }
 
-    resetPropertyForm();
+        const { error } = await supabase
+          .from("properties")
+          .update(payload)
+          .eq("id", editingProperty.id);
+
+        if (error) throw error;
+      } else {
+        if (!can("add")) {
+          alert("ليس لديك صلاحية إضافة العروض");
+          return;
+        }
+
+        const { error } = await supabase.from("properties").insert({
+          ...payload,
+          created_by: user?.id || null,
+        });
+
+        if (error) throw error;
+      }
+
+      await loadProperties();
+      resetPropertyForm();
+      alert(editingProperty ? "تم تعديل العرض" : "تمت إضافة العرض وسيظهر للجميع");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر حفظ العرض. تحقق من الصلاحيات أو إعدادات Storage.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function deleteProperty(id) {
+  async function deleteProperty(id) {
     if (!can("delete")) {
       alert("ليس لديك صلاحية حذف العروض");
       return;
     }
 
     if (!window.confirm("هل تريد حذف هذا العرض؟")) return;
-    saveProperties(properties.filter((p) => p.id !== id));
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { error } = await supabase.from("properties").delete().eq("id", id);
+      if (error) throw error;
+
+      await loadProperties();
+      alert("تم حذف العرض");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر حذف العرض.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function editProperty(prop) {
@@ -287,13 +474,14 @@ export default function App() {
       badge: prop.badge || "عادي",
       phone: prop.phone || "",
       image: prop.image || "🏡",
+      imageFile: null,
     });
     setActiveTab("properties");
     setShowAdminDash(true);
     window.location.hash = "#admin";
   }
 
-  function saveEmployee(e) {
+  async function saveEmployee(e) {
     e.preventDefault();
 
     if (!can("manage_team")) {
@@ -306,38 +494,80 @@ export default function App() {
       return;
     }
 
-    if (editingEmployee) {
-      const updatedTeam = team.map((emp) =>
-        emp.id === editingEmployee.id ? { ...emp, ...employeeForm } : emp
-      );
-      saveTeam(updatedTeam);
-      setEditingEmployee(null);
-    } else {
-      const newEmployee = {
-        id: Date.now(),
-        ...employeeForm,
-      };
-      saveTeam([...team, newEmployee]);
-    }
+    setLoading(true);
+    setErrorMessage("");
 
-    setEmployeeForm({
-      name: "",
-      title: "",
-      phone: "",
-      email: "",
-      whatsapp: "",
-      photo: "",
-    });
+    try {
+      let photoUrl = employeeForm.photo;
+
+      if (employeeForm.photoFile) {
+        photoUrl = await uploadFile("team-images", employeeForm.photoFile);
+      }
+
+      const payload = {
+        name: employeeForm.name,
+        title: employeeForm.title,
+        phone: employeeForm.phone,
+        email: employeeForm.email,
+        whatsapp: employeeForm.whatsapp,
+        photo_url: photoUrl,
+        is_visible: true,
+      };
+
+      if (editingEmployee) {
+        const { error } = await supabase
+          .from("team")
+          .update(payload)
+          .eq("id", editingEmployee.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("team").insert(payload);
+        if (error) throw error;
+      }
+
+      await loadTeam();
+      setEditingEmployee(null);
+      setEmployeeForm({
+        name: "",
+        title: "",
+        phone: "",
+        email: "",
+        whatsapp: "",
+        photo: "",
+        photoFile: null,
+      });
+      alert(editingEmployee ? "تم تعديل بيانات الموظف" : "تمت إضافة الموظف");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر حفظ بيانات الموظف.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function deleteEmployee(id) {
+  async function deleteEmployee(id) {
     if (!can("manage_team")) {
       alert("ليس لديك صلاحية حذف الموظفين");
       return;
     }
 
     if (!window.confirm("هل تريد حذف هذا الموظف؟")) return;
-    saveTeam(team.filter((emp) => emp.id !== id));
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { error } = await supabase.from("team").delete().eq("id", id);
+      if (error) throw error;
+      await loadTeam();
+      alert("تم حذف الموظف");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر حذف الموظف.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handlePropertyImageUpload(e) {
@@ -349,16 +579,11 @@ export default function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      setForm({
-        ...form,
-        image: reader.result,
-      });
-    };
-
-    reader.readAsDataURL(file);
+    setForm({
+      ...form,
+      image: URL.createObjectURL(file),
+      imageFile: file,
+    });
   }
 
   function handleEmployeePhotoUpload(e) {
@@ -370,16 +595,47 @@ export default function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    setEmployeeForm({
+      ...employeeForm,
+      photo: URL.createObjectURL(file),
+      photoFile: file,
+    });
+  }
 
-    reader.onload = () => {
-      setEmployeeForm({
-        ...employeeForm,
-        photo: reader.result,
-      });
-    };
+  async function saveContact(nextContact) {
+    if (!can("edit_contact")) {
+      alert("ليس لديك صلاحية تعديل بيانات التواصل");
+      return;
+    }
 
-    reader.readAsDataURL(file);
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const payload = {
+        id: 1,
+        phone: nextContact.phone,
+        whatsapp: nextContact.whatsapp,
+        facebook: nextContact.facebook,
+        maps: nextContact.maps,
+        banner_url: nextContact.banner_url || banner,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("contacts")
+        .upsert(payload, { onConflict: "id" });
+
+      if (error) throw error;
+
+      setContactData(nextContact);
+      alert("تم حفظ بيانات التواصل وستظهر للجميع");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("تعذر حفظ بيانات التواصل.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function normalPhone(phone) {
@@ -435,8 +691,15 @@ ${property.note || ""}`;
     qrLink
   )}`;
 
+  const displayedBanner = contactData.banner_url || banner;
   return (
     <main dir="rtl" style={styles.page}>
+      {errorMessage && (
+        <div style={styles.errorBanner}>{errorMessage}</div>
+      )}
+      {loading && (
+        <div style={styles.loadingBanner}>جاري تحميل البيانات من قاعدة البيانات...</div>
+      )}
       {user && (
         <div style={styles.userBanner}>
           <span>
@@ -528,7 +791,7 @@ ${property.note || ""}`;
 )}
 
         <div style={styles.bannerBox}>
-          <img src={banner} alt="مكتب الضفتين العقاري" style={styles.banner} />
+          <img src={displayedBanner} alt="مكتب الضفتين العقاري" style={styles.banner} />
         </div>
 
         <div style={styles.heroContent}>
@@ -803,7 +1066,7 @@ ${property.note || ""}`;
                       <p style={styles.propInfo}>المساحة: {prop.size}</p>
                       <p style={styles.propInfo}>السعر: {prop.price}</p>
                       <small style={styles.propMeta}>
-                        أضيف بواسطة: {prop.createdBy}
+                        أضيف بواسطة: {prop.createdBy || "الإدارة"}
                       </small>
                     </div>
 
@@ -1091,7 +1354,7 @@ ${property.note || ""}`;
             <article style={styles.propertyCard} key={item.id}>
               <div style={styles.propertyImageWrapper}>
                 <div style={styles.propertyImage}>
-                  {item.image?.startsWith("data:image") ? (
+                  {(item.image?.startsWith("data:image") || item.image?.startsWith("http")) ? (
                     <img
                       src={item.image}
                       alt={item.type}
@@ -2363,4 +2626,21 @@ const styles = {
     textDecoration: "none",
     boxShadow: "0 4px 16px rgba(5,150,105,.4)",
   },
+
+  loadingBanner: {
+    background: "#0ea5e9",
+    color: "white",
+    padding: "12px 24px",
+    textAlign: "center",
+    fontWeight: "900",
+  },
+
+  errorBanner: {
+    background: "#ef4444",
+    color: "white",
+    padding: "12px 24px",
+    textAlign: "center",
+    fontWeight: "900",
+  },
+
 };
