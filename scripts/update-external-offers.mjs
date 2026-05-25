@@ -10,6 +10,20 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const MAX_OFFERS = Number(process.env.MAX_EXTERNAL_OFFERS || 18);
 const today = new Date().toISOString().slice(0, 10);
 
+function normalizeSupabaseUrl(value = "") {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const parsed = new URL(trimmed);
+  if (!parsed.hostname.endsWith(".supabase.co")) {
+    throw new Error(
+      "SUPABASE_URL must be the project URL like https://PROJECT_REF.supabase.co"
+    );
+  }
+
+  return parsed.origin;
+}
+
 const trustedSources = [
   {
     name: "دليل عقار",
@@ -159,7 +173,7 @@ async function main() {
     return;
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = createClient(normalizeSupabaseUrl(SUPABASE_URL), SUPABASE_KEY);
   const { error } = await supabase
     .from("external_offers")
     .upsert(offers, { onConflict: "source_url" });
