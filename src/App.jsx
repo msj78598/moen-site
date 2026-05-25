@@ -2193,8 +2193,9 @@ const styles = {
 
   banner: {
   width: "100%",
-  height: "50%",
-  objectFit: "contain",
+  height: "auto",
+  aspectRatio: "16 / 9",
+  objectFit: "cover",
   objectPosition: "center",
   display: "block",
   background: "#061a44",
