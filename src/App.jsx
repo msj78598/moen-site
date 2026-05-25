@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MapPin, PhoneCall } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
 export default function App() {
@@ -1734,9 +1735,18 @@ ${siteUrl}`;
               </div>
 
               <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
-              <p style={viewStyles.propertyLine}>📍 {offer.location}</p>
-              <p style={viewStyles.propertyLine}>📐 {offer.size}</p>
-              <p style={viewStyles.propertyLine}>💰 {offer.price}</p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📍</span>
+                <span>{offer.location}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📐</span>
+                <span>{offer.size}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>💰</span>
+                <span>{offer.price}</span>
+              </p>
               <p style={viewStyles.propertyNote}>{offer.note}</p>
 
               <div style={viewStyles.sourceNotice}>
@@ -1805,11 +1815,23 @@ ${siteUrl}`;
 
               <div style={viewStyles.propertyBody}>
                 <h3 style={viewStyles.cardTitle}>{item.type}</h3>
-                <p style={viewStyles.propertyLine}>📍 {item.location}</p>
-                <p style={viewStyles.propertyLine}>📐 {item.size}</p>
-                <p style={viewStyles.propertyLine}>💰 {item.price}</p>
+                <p style={viewStyles.propertyLine}>
+                  <span style={viewStyles.propertyLineIcon}>📍</span>
+                  <span>{item.location}</span>
+                </p>
+                <p style={viewStyles.propertyLine}>
+                  <span style={viewStyles.propertyLineIcon}>📐</span>
+                  <span>{item.size}</span>
+                </p>
+                <p style={viewStyles.propertyLine}>
+                  <span style={viewStyles.propertyLineIcon}>💰</span>
+                  <span>{item.price}</span>
+                </p>
                 {item.note && (
-                  <p style={viewStyles.propertyNote}>✨ {item.note}</p>
+                  <p style={viewStyles.propertyNote}>
+                    <span style={viewStyles.propertyNoteIcon}>✨</span>
+                    <span>{item.note}</span>
+                  </p>
                 )}
                 {isMarketingSource(item.sourceType) && (
                   <div style={viewStyles.sourceNotice}>
@@ -2063,7 +2085,7 @@ ${siteUrl}`;
           target="_blank"
           rel="noreferrer"
         >
-          📍
+          <MapPin size={21} strokeWidth={2.6} />
         </a>
         <a
           style={viewStyles.floatWhats}
@@ -2071,7 +2093,7 @@ ${siteUrl}`;
           target="_blank"
           rel="noreferrer"
         >
-          ☎️
+          <PhoneCall size={21} strokeWidth={2.6} />
         </a>
       </div>
     </main>
@@ -2803,6 +2825,7 @@ const styles = {
     padding: "20px",
     boxShadow: "0 2px 24px rgba(15,23,42,.06)",
     border: "1px solid #e2e8f0",
+    overflow: "hidden",
   },
 
   externalCardHead: {
@@ -2891,6 +2914,21 @@ const styles = {
     margin: "7px 0",
     fontSize: "14px",
     color: "#475569",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: "8px",
+    lineHeight: "1.7",
+    overflowWrap: "anywhere",
+  },
+
+  propertyLineIcon: {
+    width: "22px",
+    minWidth: "22px",
+    display: "inline-grid",
+    placeItems: "center",
+    fontSize: "16px",
+    lineHeight: 1,
   },
 
   propertyNote: {
@@ -2900,6 +2938,20 @@ const styles = {
     background: "#f0f9ff",
     padding: "10px",
     borderRadius: "10px",
+    display: "flex",
+    gap: "8px",
+    alignItems: "flex-start",
+    lineHeight: "1.8",
+    overflowWrap: "anywhere",
+  },
+
+  propertyNoteIcon: {
+    width: "20px",
+    minWidth: "20px",
+    display: "inline-grid",
+    placeItems: "center",
+    fontSize: "15px",
+    lineHeight: 1.2,
   },
 
   sourceNotice: {
@@ -2914,6 +2966,7 @@ const styles = {
     padding: "10px",
     borderRadius: "10px",
     marginTop: "10px",
+    overflowWrap: "anywhere",
   },
 
   sourceLink: {
@@ -3167,7 +3220,8 @@ const styles = {
   floating: {
     position: "fixed",
     bottom: "24px",
-    left: "24px",
+    right: "24px",
+    left: "auto",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
@@ -3181,7 +3235,7 @@ const styles = {
     borderRadius: "50%",
     display: "grid",
     placeItems: "center",
-    fontSize: "24px",
+    color: "white",
     textDecoration: "none",
     boxShadow: "0 4px 16px rgba(37,99,235,.4)",
   },
@@ -3193,7 +3247,7 @@ const styles = {
     borderRadius: "50%",
     display: "grid",
     placeItems: "center",
-    fontSize: "24px",
+    color: "white",
     textDecoration: "none",
     boxShadow: "0 4px 16px rgba(5,150,105,.4)",
   },
@@ -3576,11 +3630,35 @@ function createResponsiveStyles(base, viewportWidth) {
     propertyImage: {
       ...base.propertyImage,
       height: "168px",
-      fontSize: "42px",
+      fontSize: "34px",
+    },
+    propertyLine: {
+      ...base.propertyLine,
+      fontSize: "13px",
+      gap: "7px",
+      lineHeight: "1.8",
+    },
+    propertyLineIcon: {
+      ...base.propertyLineIcon,
+      width: "18px",
+      minWidth: "18px",
+      fontSize: "14px",
     },
     propertyBody: {
       ...base.propertyBody,
       padding: "16px",
+    },
+    propertyNote: {
+      ...base.propertyNote,
+      fontSize: "13px",
+      padding: "10px 12px",
+      gap: "6px",
+    },
+    propertyNoteIcon: {
+      ...base.propertyNoteIcon,
+      width: "18px",
+      minWidth: "18px",
+      fontSize: "13px",
     },
     propertyButtons: {
       ...base.propertyButtons,
@@ -3666,7 +3744,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     floating: {
       ...base.floating,
-      left: "12px",
+      right: "calc(env(safe-area-inset-right, 0px) + 12px)",
+      left: "auto",
       bottom: "14px",
       gap: "10px",
     },
