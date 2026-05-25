@@ -1758,7 +1758,7 @@ ${siteUrl}`;
 
               <div style={viewStyles.propertyButtons}>
                 <a
-                  style={viewStyles.map}
+                  style={{ ...viewStyles.map, ...viewStyles.cardActionButton }}
                   href={offer.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -1766,7 +1766,7 @@ ${siteUrl}`;
                   فتح المصدر
                 </a>
                 <a
-                  style={viewStyles.whatsapp}
+                  style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
                   href={contactData.whatsapp}
                   target="_blank"
                   rel="noreferrer"
@@ -1854,7 +1854,7 @@ ${siteUrl}`;
 
                 <div style={viewStyles.propertyButtons}>
                   <a
-                    style={viewStyles.whatsapp}
+                    style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
                     href={`https://wa.me/${normalPhone(item.phone)}`}
                     target="_blank"
                     rel="noreferrer"
@@ -1863,13 +1863,16 @@ ${siteUrl}`;
                   </a>
 
                   <button
-                    style={viewStyles.shareBtnLarge}
+                    style={{ ...viewStyles.shareBtnLarge, ...viewStyles.cardActionButton }}
                     onClick={() => shareProperty(item)}
                   >
                     مشاركة
                   </button>
 
-                  <a style={viewStyles.call} href={`tel:${item.phone}`}>
+                  <a
+                    style={{ ...viewStyles.call, ...viewStyles.cardActionButton }}
+                    href={`tel:${item.phone}`}
+                  >
                     اتصال
                   </a>
                 </div>
@@ -2292,7 +2295,11 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
     border: "none",
     cursor: "pointer",
   },
@@ -2304,7 +2311,11 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
     border: "none",
     cursor: "pointer",
   },
@@ -2316,7 +2327,11 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
     border: "none",
     cursor: "pointer",
   },
@@ -2328,7 +2343,11 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
     border: "1px solid rgba(250,204,21,.55)",
     cursor: "pointer",
     boxShadow: "0 12px 28px rgba(15,23,42,.18)",
@@ -2981,6 +3000,19 @@ const styles = {
     gap: "8px",
     flexWrap: "wrap",
     marginTop: "16px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+
+  cardActionButton: {
+    width: "100%",
+    maxWidth: "100%",
+    minHeight: "48px",
+    padding: "12px 14px",
+    borderRadius: "12px",
+    boxSizing: "border-box",
+    textAlign: "center",
+    lineHeight: "1.5",
   },
 
   darkSection: {
@@ -3666,6 +3698,17 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.propertyButtons,
       flexDirection: "column",
       gap: "10px",
+      alignItems: "stretch",
+      paddingInline: "0",
+    },
+    cardActionButton: {
+      ...base.cardActionButton,
+      width: "100%",
+      maxWidth: "100%",
+      minHeight: "46px",
+      padding: "11px 12px",
+      borderRadius: "12px",
+      fontSize: "14px",
     },
     badgeLabel: {
       ...base.badgeLabel,
@@ -3750,17 +3793,23 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     floating: {
       ...base.floating,
-      display: "none",
+      right: "calc(env(safe-area-inset-right, 0px) + 12px)",
+      left: "auto",
+      bottom: "calc(env(safe-area-inset-bottom, 0px) + 72px)",
+      gap: "9px",
+      zIndex: 40,
     },
     floatMap: {
       ...base.floatMap,
-      width: "38px",
-      height: "38px",
+      width: "40px",
+      height: "40px",
+      boxShadow: "0 8px 22px rgba(37,99,235,.28)",
     },
     floatWhats: {
       ...base.floatWhats,
-      width: "38px",
-      height: "38px",
+      width: "40px",
+      height: "40px",
+      boxShadow: "0 8px 22px rgba(5,150,105,.28)",
     },
     adminDashboard: {
       ...tablet.adminDashboard,
