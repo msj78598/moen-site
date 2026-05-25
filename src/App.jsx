@@ -201,6 +201,9 @@ export default function App() {
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window === "undefined" ? 1200 : window.innerWidth
+  );
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -272,6 +275,15 @@ export default function App() {
       listener?.subscription?.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      setViewportWidth(window.innerWidth);
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   async function initApp() {
@@ -964,60 +976,61 @@ ${siteUrl}`;
   )}`;
 
   const displayedBanner = normalizeBannerUrl(contactData.banner_url);
+  const viewStyles = createResponsiveStyles(styles, viewportWidth);
   return (
-    <main dir="rtl" style={styles.page}>
+    <main dir="rtl" style={viewStyles.page}>
       {errorMessage && (
-        <div style={styles.errorBanner}>{errorMessage}</div>
+        <div style={viewStyles.errorBanner}>{errorMessage}</div>
       )}
       {loading && (
-        <div style={styles.loadingBanner}>جاري تحميل البيانات من قاعدة البيانات...</div>
+        <div style={viewStyles.loadingBanner}>جاري تحميل البيانات من قاعدة البيانات...</div>
       )}
       {user && (
-        <div style={styles.userBanner}>
+        <div style={viewStyles.userBanner}>
           <span>
             ✅ مرحبًا {user.name} - دخول{" "}
             {user.role === "owner" ? "مالك" : "موظف"}
           </span>
-          <button style={styles.logoutQuickBtn} onClick={logout}>
+          <button style={viewStyles.logoutQuickBtn} onClick={logout}>
             خروج
           </button>
         </div>
       )}
 
-      <header id="home" style={styles.hero}>
-        <nav style={styles.nav}>
-          <a href="#home" style={styles.logoBox}>
-            <span style={styles.logoIcon}>🏛️</span>
+      <header id="home" style={viewStyles.hero}>
+        <nav style={viewStyles.nav}>
+          <a href="#home" style={viewStyles.logoBox}>
+            <span style={viewStyles.logoIcon}>🏛️</span>
             <span>
-              <strong style={styles.logo}>مكتب نور الضفتين العقاري</strong>
-              <small style={styles.subtitle}>بيع وشراء الأراضي والعقارات</small>
+              <strong style={viewStyles.logo}>مكتب نور الضفتين العقاري</strong>
+              <small style={viewStyles.subtitle}>بيع وشراء الأراضي والعقارات</small>
             </span>
           </a>
 
-          <div style={styles.navLinks}>
-            <a style={styles.navLink} href="#home">
+          <div style={viewStyles.navLinks}>
+            <a style={viewStyles.navLink} href="#home">
               الرئيسية
             </a>
-            <a style={styles.navLink} href="#services">
+            <a style={viewStyles.navLink} href="#services">
               الخدمات
             </a>
-            <a style={styles.navLink} href="#properties">
+            <a style={viewStyles.navLink} href="#properties">
               العروض
             </a>
-            <a style={styles.navLink} href="#external-offers">
+            <a style={viewStyles.navLink} href="#external-offers">
               عروض خارجية
             </a>
-            <a style={styles.navLink} href="#team">
+            <a style={viewStyles.navLink} href="#team">
               فريق العمل
             </a>
-            <a style={styles.navLink} href="#promo">
+            <a style={viewStyles.navLink} href="#promo">
               الباركود
             </a>
-            <a style={styles.navLink} href="#contact">
+            <a style={viewStyles.navLink} href="#contact">
               تواصل معنا
             </a>
             <button
-              style={styles.adminSecretBtn}
+              style={viewStyles.adminSecretBtn}
               onClick={adminLoginClick}
               title="دخول الإدارة"
             >
@@ -1026,29 +1039,29 @@ ${siteUrl}`;
           </div>
         </nav>
         {showLoginPanel && !user && (
-  <div style={styles.loginPanel}>
-    <div style={styles.loginPanelHeader}>
+  <div style={viewStyles.loginPanel}>
+    <div style={viewStyles.loginPanelHeader}>
       <strong>دخول الإدارة</strong>
       <button
-        style={styles.loginPanelClose}
+        style={viewStyles.loginPanelClose}
         onClick={() => setShowLoginPanel(false)}
       >
         ✕
       </button>
     </div>
 
-    <p style={styles.loginPanelText}>
+    <p style={viewStyles.loginPanelText}>
       اختر اسم المستخدم ثم أدخل كلمة المرور الخاصة به.
     </p>
 
-    <div style={styles.loginPanelButtons}>
+    <div style={viewStyles.loginPanelButtons}>
       {loginAccounts.map((account) => (
         <button
           key={account.id}
           style={
             account.roleLabel === "مالك"
-              ? styles.ownerLoginChoice
-              : styles.employeeLoginChoice
+              ? viewStyles.ownerLoginChoice
+              : viewStyles.employeeLoginChoice
           }
           onClick={() => {
             setShowLoginPanel(false);
@@ -1062,38 +1075,38 @@ ${siteUrl}`;
   </div>
 )}
 
-        <div style={styles.bannerBox}>
-          <img src={displayedBanner} alt="مكتب نور الضفتين العقاري" style={styles.banner} />
+        <div style={viewStyles.bannerBox}>
+          <img src={displayedBanner} alt="مكتب نور الضفتين العقاري" style={viewStyles.banner} />
         </div>
 
-        <div style={styles.heroContent}>
-          <span style={styles.badge}>
+        <div style={viewStyles.heroContent}>
+          <span style={viewStyles.badge}>
             مؤسسة تسويق عقاري بخدمة مباشرة وفريق متخصص
           </span>
 
-          <h1 style={styles.title}>
+          <h1 style={viewStyles.title}>
             نسوّق عقارك باحتراف ونوصلك بالمشتري الجاد
           </h1>
 
-          <p style={styles.description}>
+          <p style={viewStyles.description}>
             مكتب نور الضفتين العقاري يقدم خدمات البيع والشراء والتسويق العقاري
             للأراضي والعقارات، مع فريق إداري متخصص للتواصل السريع وخدمة العملاء.
           </p>
 
-          <div style={styles.buttons}>
+          <div style={viewStyles.buttons}>
             <a
-              style={styles.whatsapp}
+              style={viewStyles.whatsapp}
               href={contactData.whatsapp}
               target="_blank"
               rel="noreferrer"
             >
               واتساب المدير
             </a>
-            <a style={styles.call} href={`tel:${contactData.phone}`}>
+            <a style={viewStyles.call} href={`tel:${contactData.phone}`}>
               اتصال مباشر
             </a>
             <a
-              style={styles.map}
+              style={viewStyles.map}
               href={contactData.maps}
               target="_blank"
               rel="noreferrer"
@@ -1101,7 +1114,7 @@ ${siteUrl}`;
               الخريطة
             </a>
             <button
-              style={styles.cardShareButton}
+              style={viewStyles.cardShareButton}
               type="button"
               onClick={shareOfficeCard}
             >
@@ -1111,17 +1124,17 @@ ${siteUrl}`;
         </div>
       </header>
 
-      <section id="services" style={styles.section}>
-        <div style={styles.sectionHead}>
-          <span style={styles.sectionLabel}>خدماتنا</span>
-          <h2 style={styles.sectionTitle}>حلول عقارية متكاملة</h2>
-          <p style={styles.sectionText}>
+      <section id="services" style={viewStyles.section}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>خدماتنا</span>
+          <h2 style={viewStyles.sectionTitle}>حلول عقارية متكاملة</h2>
+          <p style={viewStyles.sectionText}>
             نخدم ملاك العقارات والباحثين عن فرص مناسبة من خلال تسويق واضح
             وتواصل مباشر.
           </p>
         </div>
 
-        <div style={styles.grid4}>
+        <div style={viewStyles.grid4}>
           {[
             [
               "🏞️",
@@ -1161,26 +1174,26 @@ ${siteUrl}`;
       
             
           ].map(([icon, title, text]) => (
-            <article style={styles.card} key={title}>
-              <div style={styles.iconBox}>{icon}</div>
-              <h3 style={styles.cardTitle}>{title}</h3>
-              <p style={styles.cardText}>{text}</p>
+            <article style={viewStyles.card} key={title}>
+              <div style={viewStyles.iconBox}>{icon}</div>
+              <h3 style={viewStyles.cardTitle}>{title}</h3>
+              <p style={viewStyles.cardText}>{text}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section style={styles.facebookCta}>
+      <section style={viewStyles.facebookCta}>
         <div>
-          <h2 style={styles.facebookTitle}>تابع أحدث العروض العقارية</h2>
-          <p style={styles.facebookText}>
+          <h2 style={viewStyles.facebookTitle}>تابع أحدث العروض العقارية</h2>
+          <p style={viewStyles.facebookText}>
             تابعوا صفحة مكتب نور الضفتين العقاري على فيسبوك للاطلاع على أحدث
             الأراضي والعقارات المتوفرة أولًا بأول.
           </p>
         </div>
 
         <a
-          style={styles.facebookButton}
+          style={viewStyles.facebookButton}
           href={contactData.facebook}
           target="_blank"
           rel="noreferrer"
@@ -1190,22 +1203,22 @@ ${siteUrl}`;
       </section>
 
       {user && showAdminDash && (
-        <section id="admin" style={styles.adminDashboard}>
-          <div style={styles.dashboardHeader}>
-            <h2 style={styles.dashboardTitle}>⚙️ لوحة الإدارة</h2>
+        <section id="admin" style={viewStyles.adminDashboard}>
+          <div style={viewStyles.dashboardHeader}>
+            <h2 style={viewStyles.dashboardTitle}>⚙️ لوحة الإدارة</h2>
             <button
-              style={styles.closeBtn}
+              style={viewStyles.closeBtn}
               onClick={() => setShowAdminDash(false)}
             >
               ✕
             </button>
           </div>
 
-          <div style={styles.tabs}>
+          <div style={viewStyles.tabs}>
             <button
               style={{
-                ...styles.tabBtn,
-                ...(activeTab === "properties" ? styles.tabBtnActive : {}),
+                ...viewStyles.tabBtn,
+                ...(activeTab === "properties" ? viewStyles.tabBtnActive : {}),
               }}
               onClick={() => setActiveTab("properties")}
             >
@@ -1215,8 +1228,8 @@ ${siteUrl}`;
             {can("manage_team") && (
               <button
                 style={{
-                  ...styles.tabBtn,
-                  ...(activeTab === "team" ? styles.tabBtnActive : {}),
+                  ...viewStyles.tabBtn,
+                  ...(activeTab === "team" ? viewStyles.tabBtnActive : {}),
                 }}
                 onClick={() => setActiveTab("team")}
               >
@@ -1227,8 +1240,8 @@ ${siteUrl}`;
             {can("edit_contact") && (
               <button
                 style={{
-                  ...styles.tabBtn,
-                  ...(activeTab === "contact" ? styles.tabBtnActive : {}),
+                  ...viewStyles.tabBtn,
+                  ...(activeTab === "contact" ? viewStyles.tabBtnActive : {}),
                 }}
                 onClick={() => setActiveTab("contact")}
               >
@@ -1238,13 +1251,13 @@ ${siteUrl}`;
           </div>
 
           {activeTab === "properties" && (
-            <div style={styles.tabContent}>
-              <h3 style={styles.tabTitle}>إدارة العروض العقارية</h3>
+            <div style={viewStyles.tabContent}>
+              <h3 style={viewStyles.tabTitle}>إدارة العروض العقارية</h3>
 
-              <form style={styles.form} onSubmit={saveProperty}>
-                <div style={styles.formRow}>
+              <form style={viewStyles.form} onSubmit={saveProperty}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="نوع العقار"
                     value={form.type}
                     onChange={(e) =>
@@ -1253,7 +1266,7 @@ ${siteUrl}`;
                   />
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="الموقع"
                     value={form.location}
                     onChange={(e) =>
@@ -1262,9 +1275,9 @@ ${siteUrl}`;
                   />
                 </div>
 
-                <div style={styles.formRow}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="المساحة"
                     value={form.size}
                     onChange={(e) =>
@@ -1273,7 +1286,7 @@ ${siteUrl}`;
                   />
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="السعر"
                     value={form.price}
                     onChange={(e) =>
@@ -1282,9 +1295,9 @@ ${siteUrl}`;
                   />
                 </div>
 
-                <div style={styles.formRow}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="رقم التواصل"
                     value={form.phone}
                     onChange={(e) =>
@@ -1293,7 +1306,7 @@ ${siteUrl}`;
                   />
 
                   <select
-                    style={styles.input}
+                    style={viewStyles.input}
                     value={form.badge}
                     onChange={(e) =>
                       setForm({ ...form, badge: e.target.value })
@@ -1311,7 +1324,7 @@ ${siteUrl}`;
                 </div>
 
                 <textarea
-                  style={styles.textarea}
+                  style={viewStyles.textarea}
                   placeholder="ملاحظات إضافية"
                   value={form.note}
                   onChange={(e) =>
@@ -1319,9 +1332,9 @@ ${siteUrl}`;
                   }
                 />
 
-                <div style={styles.formRow}>
+                <div style={viewStyles.formRow}>
                   <select
-                    style={styles.input}
+                    style={viewStyles.input}
                     value={form.sourceType}
                     onChange={(e) =>
                       setForm({ ...form, sourceType: e.target.value })
@@ -1333,7 +1346,7 @@ ${siteUrl}`;
                   </select>
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="اسم المصدر أو المسوق"
                     value={form.sourceName}
                     onChange={(e) =>
@@ -1342,9 +1355,9 @@ ${siteUrl}`;
                   />
                 </div>
 
-                <div style={styles.formRow}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="رابط مصدر العرض"
                     value={form.sourceUrl}
                     onChange={(e) =>
@@ -1353,7 +1366,7 @@ ${siteUrl}`;
                   />
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     type="date"
                     value={form.sourceCheckedAt}
                     onChange={(e) =>
@@ -1362,7 +1375,7 @@ ${siteUrl}`;
                   />
                 </div>
 
-                <label style={styles.checkboxLine}>
+                <label style={viewStyles.checkboxLine}>
                   <input
                     type="checkbox"
                     checked={form.sourceConsent}
@@ -1373,24 +1386,24 @@ ${siteUrl}`;
                   تم التحقق من المصدر أو أخذ موافقة مبدئية على التسويق
                 </label>
 
-                <div style={styles.fileInputWrapper}>
-                  <label style={styles.fileLabel}>📸 صورة العقار:</label>
+                <div style={viewStyles.fileInputWrapper}>
+                  <label style={viewStyles.fileLabel}>📸 صورة العقار:</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handlePropertyImageUpload}
-                    style={styles.fileInput}
+                    style={viewStyles.fileInput}
                   />
                 </div>
 
-                <div style={styles.formRow}>
-                  <button style={styles.addButton} type="submit">
+                <div style={viewStyles.formRow}>
+                  <button style={viewStyles.addButton} type="submit">
                     {editingProperty ? "حفظ التعديل" : "إضافة عرض"}
                   </button>
 
                   {editingProperty && (
                     <button
-                      style={styles.cancelButton}
+                      style={viewStyles.cancelButton}
                       type="button"
                       onClick={resetPropertyForm}
                     >
@@ -1400,47 +1413,47 @@ ${siteUrl}`;
                 </div>
               </form>
 
-              <div style={styles.propertyList}>
-                <h3 style={styles.listTitle}>
+              <div style={viewStyles.propertyList}>
+                <h3 style={viewStyles.listTitle}>
                   قائمة العروض ({properties.length})
                 </h3>
 
                 {properties.map((prop) => (
-                  <div key={prop.id} style={styles.propertyListItem}>
+                  <div key={prop.id} style={viewStyles.propertyListItem}>
                     <div>
-                      <strong style={styles.propTitle}>
+                      <strong style={viewStyles.propTitle}>
                         {prop.badge !== "عادي" ? `${prop.badge} • ` : ""}
                         {prop.type}
                       </strong>
-                      <p style={styles.propInfo}>الموقع: {prop.location}</p>
-                      <p style={styles.propInfo}>المساحة: {prop.size}</p>
-                      <p style={styles.propInfo}>السعر: {prop.price}</p>
-                      <small style={styles.propMeta}>
+                      <p style={viewStyles.propInfo}>الموقع: {prop.location}</p>
+                      <p style={viewStyles.propInfo}>المساحة: {prop.size}</p>
+                      <p style={viewStyles.propInfo}>السعر: {prop.price}</p>
+                      <small style={viewStyles.propMeta}>
                         أضيف بواسطة: {prop.createdBy || "الإدارة"}
                       </small>
                       {isMarketingSource(prop.sourceType) && (
-                        <small style={styles.propMeta}>
+                        <small style={viewStyles.propMeta}>
                           {sourceTypeLabel(prop.sourceType)}
                           {prop.sourceName ? ` - ${prop.sourceName}` : ""}
                         </small>
                       )}
                       {prop.updatedBy && (
-                        <small style={styles.propMeta}>
+                        <small style={viewStyles.propMeta}>
                           آخر تعديل بواسطة: {prop.updatedBy}
                         </small>
                       )}
                     </div>
 
-                    <div style={styles.propActions}>
+                    <div style={viewStyles.propActions}>
                       <button
-                        style={styles.shareBtn}
+                        style={viewStyles.shareBtn}
                         onClick={() => shareProperty(prop)}
                       >
                         مشاركة
                       </button>
 
                       <button
-                        style={styles.copyBtn}
+                        style={viewStyles.copyBtn}
                         onClick={() => copyPropertyLink(prop)}
                       >
                         نسخ
@@ -1448,7 +1461,7 @@ ${siteUrl}`;
 
                       {can("edit") && (
                         <button
-                          style={styles.editBtn}
+                          style={viewStyles.editBtn}
                           onClick={() => editProperty(prop)}
                         >
                           تعديل
@@ -1457,7 +1470,7 @@ ${siteUrl}`;
 
                       {can("delete") && (
                         <button
-                          style={styles.deleteBtn}
+                          style={viewStyles.deleteBtn}
                           onClick={() => deleteProperty(prop.id)}
                         >
                           حذف
@@ -1471,13 +1484,13 @@ ${siteUrl}`;
           )}
 
           {activeTab === "team" && can("manage_team") && (
-            <div style={styles.tabContent}>
-              <h3 style={styles.tabTitle}>إدارة الموظفين</h3>
+            <div style={viewStyles.tabContent}>
+              <h3 style={viewStyles.tabTitle}>إدارة الموظفين</h3>
 
-              <form style={styles.form} onSubmit={saveEmployee}>
-                <div style={styles.formRow}>
+              <form style={viewStyles.form} onSubmit={saveEmployee}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="اسم الموظف"
                     value={employeeForm.name}
                     onChange={(e) =>
@@ -1489,7 +1502,7 @@ ${siteUrl}`;
                   />
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="المسمى الوظيفي"
                     value={employeeForm.title}
                     onChange={(e) =>
@@ -1501,9 +1514,9 @@ ${siteUrl}`;
                   />
                 </div>
 
-                <div style={styles.formRow}>
+                <div style={viewStyles.formRow}>
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="رقم الهاتف"
                     value={employeeForm.phone}
                     onChange={(e) =>
@@ -1515,7 +1528,7 @@ ${siteUrl}`;
                   />
 
                   <input
-                    style={styles.input}
+                    style={viewStyles.input}
                     placeholder="البريد الإلكتروني"
                     value={employeeForm.email}
                     onChange={(e) =>
@@ -1528,7 +1541,7 @@ ${siteUrl}`;
                 </div>
 
                 <input
-                  style={styles.input}
+                  style={viewStyles.input}
                   placeholder="رابط واتساب"
                   value={employeeForm.whatsapp}
                   onChange={(e) =>
@@ -1539,34 +1552,34 @@ ${siteUrl}`;
                   }
                 />
 
-                <div style={styles.fileInputWrapper}>
-                  <label style={styles.fileLabel}>👤 صورة الموظف:</label>
+                <div style={viewStyles.fileInputWrapper}>
+                  <label style={viewStyles.fileLabel}>👤 صورة الموظف:</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleEmployeePhotoUpload}
-                    style={styles.fileInput}
+                    style={viewStyles.fileInput}
                   />
                 </div>
 
                 {employeeForm.photo && (
-                  <div style={styles.employeePhotoPreviewBox}>
+                  <div style={viewStyles.employeePhotoPreviewBox}>
                     <img
                       src={employeeForm.photo}
                       alt="معاينة"
-                      style={styles.employeePhotoPreview}
+                      style={viewStyles.employeePhotoPreview}
                     />
                   </div>
                 )}
 
-                <div style={styles.formRow}>
-                  <button style={styles.addButton} type="submit">
+                <div style={viewStyles.formRow}>
+                  <button style={viewStyles.addButton} type="submit">
                     {editingEmployee ? "حفظ بيانات الموظف" : "إضافة موظف"}
                   </button>
 
                   {editingEmployee && (
                     <button
-                      style={styles.cancelButton}
+                      style={viewStyles.cancelButton}
                       type="button"
                       onClick={() => {
                         setEditingEmployee(null);
@@ -1586,16 +1599,16 @@ ${siteUrl}`;
                 </div>
               </form>
 
-              <div style={styles.employeeList}>
+              <div style={viewStyles.employeeList}>
                 {team.map((emp) => (
-                  <div key={emp.id} style={styles.employeeCard}>
-                    <div style={styles.employeeCardInfo}>
-                      <div style={styles.employeeMiniPhotoBox}>
+                  <div key={emp.id} style={viewStyles.employeeCard}>
+                    <div style={viewStyles.employeeCardInfo}>
+                      <div style={viewStyles.employeeMiniPhotoBox}>
                         {emp.photo ? (
                           <img
                             src={emp.photo}
                             alt={emp.name}
-                            style={styles.employeeMiniPhoto}
+                            style={viewStyles.employeeMiniPhoto}
                           />
                         ) : (
                           <span>👤</span>
@@ -1603,15 +1616,15 @@ ${siteUrl}`;
                       </div>
 
                       <div>
-                        <h4 style={styles.empName}>{emp.name}</h4>
-                        <p style={styles.jobTitle}>{emp.title}</p>
-                        <p style={styles.empContact}>الهاتف: {emp.phone}</p>
+                        <h4 style={viewStyles.empName}>{emp.name}</h4>
+                        <p style={viewStyles.jobTitle}>{emp.title}</p>
+                        <p style={viewStyles.empContact}>الهاتف: {emp.phone}</p>
                       </div>
                     </div>
 
-                    <div style={styles.empActions}>
+                    <div style={viewStyles.empActions}>
                       <button
-                        style={styles.editBtn}
+                        style={viewStyles.editBtn}
                         onClick={() => {
                           setEditingEmployee(emp);
                           setEmployeeForm(emp);
@@ -1620,7 +1633,7 @@ ${siteUrl}`;
                         تعديل
                       </button>
                       <button
-                        style={styles.deleteBtn}
+                        style={viewStyles.deleteBtn}
                         onClick={() => deleteEmployee(emp.id)}
                       >
                         حذف
@@ -1633,11 +1646,11 @@ ${siteUrl}`;
           )}
 
           {activeTab === "contact" && can("edit_contact") && (
-            <div style={styles.tabContent}>
-              <h3 style={styles.tabTitle}>بيانات التواصل</h3>
+            <div style={viewStyles.tabContent}>
+              <h3 style={viewStyles.tabTitle}>بيانات التواصل</h3>
 
               <form
-                style={styles.form}
+                style={viewStyles.form}
                 onSubmit={(e) => {
                   e.preventDefault();
                   saveContact(contactData);
@@ -1645,7 +1658,7 @@ ${siteUrl}`;
                 }}
               >
                 <input
-                  style={styles.input}
+                  style={viewStyles.input}
                   placeholder="رقم الهاتف الرئيسي"
                   value={contactData.phone}
                   onChange={(e) =>
@@ -1657,7 +1670,7 @@ ${siteUrl}`;
                 />
 
                 <input
-                  style={styles.input}
+                  style={viewStyles.input}
                   placeholder="رابط واتساب"
                   value={contactData.whatsapp}
                   onChange={(e) =>
@@ -1669,7 +1682,7 @@ ${siteUrl}`;
                 />
 
                 <input
-                  style={styles.input}
+                  style={viewStyles.input}
                   placeholder="رابط فيسبوك"
                   value={contactData.facebook}
                   onChange={(e) =>
@@ -1681,7 +1694,7 @@ ${siteUrl}`;
                 />
 
                 <input
-                  style={styles.input}
+                  style={viewStyles.input}
                   placeholder="رابط الخريطة"
                   value={contactData.maps}
                   onChange={(e) =>
@@ -1692,7 +1705,7 @@ ${siteUrl}`;
                   }
                 />
 
-                <button style={styles.addButton} type="submit">
+                <button style={viewStyles.addButton} type="submit">
                   حفظ البيانات
                 </button>
               </form>
@@ -1701,41 +1714,41 @@ ${siteUrl}`;
         </section>
       )}
 
-      <section id="external-offers" style={styles.externalSection}>
-        <div style={styles.sectionHead}>
-          <span style={styles.sectionLabel}>وساطة تسويقية</span>
-          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
-          <p style={styles.sectionText}>
+      <section id="external-offers" style={viewStyles.externalSection}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>وساطة تسويقية</span>
+          <h2 style={viewStyles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
+          <p style={viewStyles.sectionText}>
             فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
           </p>
         </div>
 
-        <div style={styles.externalGrid}>
+        <div style={viewStyles.externalGrid}>
           {externalMarketingOffers.map((offer) => (
-            <article style={styles.externalCard} key={offer.id}>
-              <div style={styles.externalCardHead}>
-                <span style={styles.externalTag}>وساطة تسويقية</span>
-                <span style={styles.externalDate}>
+            <article style={viewStyles.externalCard} key={offer.id}>
+              <div style={viewStyles.externalCardHead}>
+                <span style={viewStyles.externalTag}>وساطة تسويقية</span>
+                <span style={viewStyles.externalDate}>
                   تحقق: {offer.checkedAt}
                 </span>
               </div>
 
-              <h3 style={styles.cardTitle}>{offer.type}</h3>
-              <p style={styles.propertyLine}>📍 {offer.location}</p>
-              <p style={styles.propertyLine}>📐 {offer.size}</p>
-              <p style={styles.propertyLine}>💰 {offer.price}</p>
-              <p style={styles.propertyNote}>{offer.note}</p>
+              <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
+              <p style={viewStyles.propertyLine}>📍 {offer.location}</p>
+              <p style={viewStyles.propertyLine}>📐 {offer.size}</p>
+              <p style={viewStyles.propertyLine}>💰 {offer.price}</p>
+              <p style={viewStyles.propertyNote}>{offer.note}</p>
 
-              <div style={styles.sourceNotice}>
+              <div style={viewStyles.sourceNotice}>
                 <strong>{offer.sourceName}</strong>
                 <span>
                   العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
                 </span>
               </div>
 
-              <div style={styles.propertyButtons}>
+              <div style={viewStyles.propertyButtons}>
                 <a
-                  style={styles.map}
+                  style={viewStyles.map}
                   href={offer.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -1743,7 +1756,7 @@ ${siteUrl}`;
                   فتح المصدر
                 </a>
                 <a
-                  style={styles.whatsapp}
+                  style={viewStyles.whatsapp}
                   href={contactData.whatsapp}
                   target="_blank"
                   rel="noreferrer"
@@ -1755,25 +1768,25 @@ ${siteUrl}`;
           ))}
         </div>
       </section>
-      <section id="properties" style={styles.section}>
-        <div style={styles.sectionHead}>
-          <span style={styles.sectionLabel}>العروض العقارية</span>
-          <h2 style={styles.sectionTitle}>العروض المتاحة</h2>
-          <p style={styles.sectionText}>
+      <section id="properties" style={viewStyles.section}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>العروض العقارية</span>
+          <h2 style={viewStyles.sectionTitle}>العروض المتاحة</h2>
+          <p style={viewStyles.sectionText}>
             أحدث العروض العقارية المتاحة للبيع والشراء
           </p>
         </div>
 
-        <div style={styles.propertyGrid}>
+        <div style={viewStyles.propertyGrid}>
           {properties.map((item) => (
-            <article style={styles.propertyCard} key={item.id}>
-              <div style={styles.propertyImageWrapper}>
-                <div style={styles.propertyImage}>
+            <article style={viewStyles.propertyCard} key={item.id}>
+              <div style={viewStyles.propertyImageWrapper}>
+                <div style={viewStyles.propertyImage}>
                   {(item.image?.startsWith("data:image") || item.image?.startsWith("http")) ? (
                     <img
                       src={item.image}
                       alt={item.type}
-                      style={styles.propertyUploadedImage}
+                      style={viewStyles.propertyUploadedImage}
                     />
                   ) : (
                     item.image || "🏡"
@@ -1781,25 +1794,25 @@ ${siteUrl}`;
                 </div>
 
                 {item.badge && item.badge !== "عادي" && (
-                  <div style={styles.badgeLabel}>{item.badge}</div>
+                  <div style={viewStyles.badgeLabel}>{item.badge}</div>
                 )}
                 {isMarketingSource(item.sourceType) && (
-                  <div style={styles.sourceLabel}>
+                  <div style={viewStyles.sourceLabel}>
                     {sourceTypeLabel(item.sourceType)}
                   </div>
                 )}
               </div>
 
-              <div style={styles.propertyBody}>
-                <h3 style={styles.cardTitle}>{item.type}</h3>
-                <p style={styles.propertyLine}>📍 {item.location}</p>
-                <p style={styles.propertyLine}>📐 {item.size}</p>
-                <p style={styles.propertyLine}>💰 {item.price}</p>
+              <div style={viewStyles.propertyBody}>
+                <h3 style={viewStyles.cardTitle}>{item.type}</h3>
+                <p style={viewStyles.propertyLine}>📍 {item.location}</p>
+                <p style={viewStyles.propertyLine}>📐 {item.size}</p>
+                <p style={viewStyles.propertyLine}>💰 {item.price}</p>
                 {item.note && (
-                  <p style={styles.propertyNote}>✨ {item.note}</p>
+                  <p style={viewStyles.propertyNote}>✨ {item.note}</p>
                 )}
                 {isMarketingSource(item.sourceType) && (
-                  <div style={styles.sourceNotice}>
+                  <div style={viewStyles.sourceNotice}>
                     <strong>{sourceTypeLabel(item.sourceType)}</strong>
                     <span>
                       عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب نور الضفتين إلا إذا ذكر ذلك صراحة.
@@ -1809,7 +1822,7 @@ ${siteUrl}`;
                         href={item.sourceUrl}
                         target="_blank"
                         rel="noreferrer"
-                        style={styles.sourceLink}
+                        style={viewStyles.sourceLink}
                       >
                         رابط المصدر
                       </a>
@@ -1817,9 +1830,9 @@ ${siteUrl}`;
                   </div>
                 )}
 
-                <div style={styles.propertyButtons}>
+                <div style={viewStyles.propertyButtons}>
                   <a
-                    style={styles.whatsapp}
+                    style={viewStyles.whatsapp}
                     href={`https://wa.me/${normalPhone(item.phone)}`}
                     target="_blank"
                     rel="noreferrer"
@@ -1828,13 +1841,13 @@ ${siteUrl}`;
                   </a>
 
                   <button
-                    style={styles.shareBtnLarge}
+                    style={viewStyles.shareBtnLarge}
                     onClick={() => shareProperty(item)}
                   >
                     مشاركة
                   </button>
 
-                  <a style={styles.call} href={`tel:${item.phone}`}>
+                  <a style={viewStyles.call} href={`tel:${item.phone}`}>
                     اتصال
                   </a>
                 </div>
@@ -1845,39 +1858,39 @@ ${siteUrl}`;
       </section>
 
 
-      <section id="team" style={styles.darkSection}>
-        <div style={styles.inner}>
-          <div style={styles.sectionHeadLight}>
-            <span style={styles.goldLabel}>فريق التواصل</span>
-            <h2 style={styles.darkTitle}>إدارة متخصصة لخدمتكم</h2>
-            <p style={styles.darkText}>
+      <section id="team" style={viewStyles.darkSection}>
+        <div style={viewStyles.inner}>
+          <div style={viewStyles.sectionHeadLight}>
+            <span style={viewStyles.goldLabel}>فريق التواصل</span>
+            <h2 style={viewStyles.darkTitle}>إدارة متخصصة لخدمتكم</h2>
+            <p style={viewStyles.darkText}>
               أرقام مباشرة لكل مسؤول لتسهيل الاستفسارات والعروض العقارية
               والتنسيق مع العملاء.
             </p>
           </div>
 
-          <div style={styles.teamGrid}>
+          <div style={viewStyles.teamGrid}>
             {team.map((person) => (
-              <article style={styles.teamCard} key={person.id}>
-                <div style={styles.teamPhotoBox}>
+              <article style={viewStyles.teamCard} key={person.id}>
+                <div style={viewStyles.teamPhotoBox}>
                   {person.photo ? (
                     <img
                       src={person.photo}
                       alt={person.name}
-                      style={styles.teamPhoto}
+                      style={viewStyles.teamPhoto}
                     />
                   ) : (
-                    <span style={styles.teamFallbackIcon}>👤</span>
+                    <span style={viewStyles.teamFallbackIcon}>👤</span>
                   )}
                 </div>
 
-                <p style={styles.job}>{person.title}</p>
-                <h3 style={styles.name}>{person.name}</h3>
-                <p style={styles.phone}>{person.phone}</p>
+                <p style={viewStyles.job}>{person.title}</p>
+                <h3 style={viewStyles.name}>{person.name}</h3>
+                <p style={viewStyles.phone}>{person.phone}</p>
 
-                <div style={styles.buttons}>
+                <div style={viewStyles.buttons}>
                   <a
-                    style={styles.whatsapp}
+                    style={viewStyles.whatsapp}
                     href={
                       person.whatsapp ||
                       `https://wa.me/${normalPhone(person.phone)}`
@@ -1887,7 +1900,7 @@ ${siteUrl}`;
                   >
                     واتساب
                   </a>
-                  <a style={styles.outline} href={`tel:${person.phone}`}>
+                  <a style={viewStyles.outline} href={`tel:${person.phone}`}>
                     اتصال
                   </a>
                 </div>
@@ -1897,19 +1910,19 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <section style={styles.facebookPromoCta}>
+      <section style={viewStyles.facebookPromoCta}>
         <div>
-          <h2 style={styles.facebookPromoTitle}>
+          <h2 style={viewStyles.facebookPromoTitle}>
             🎯 تابع أحدث عروضنا على فيسبوك
           </h2>
-          <p style={styles.facebookPromoText}>
+          <p style={viewStyles.facebookPromoText}>
             لا تفوت أي عرض جديد! تابع صفحتنا على فيسبوك والتي نحدثها بأحدث
             العروض العقارية والفرص الاستثمارية المتاحة.
           </p>
         </div>
 
         <a
-          style={styles.facebookPromoButton}
+          style={viewStyles.facebookPromoButton}
           href={contactData.facebook}
           target="_blank"
           rel="noreferrer"
@@ -1918,36 +1931,36 @@ ${siteUrl}`;
         </a>
       </section>
 
-      <section id="promo" style={styles.section}>
-        <div style={styles.sectionHead}>
-          <span style={styles.sectionLabel}>QR Code</span>
-          <h2 style={styles.sectionTitle}>بطاقة المكتب الإلكترونية</h2>
-          <p style={styles.sectionText}>
+      <section id="promo" style={viewStyles.section}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>QR Code</span>
+          <h2 style={viewStyles.sectionTitle}>بطاقة المكتب الإلكترونية</h2>
+          <p style={viewStyles.sectionText}>
             عند مسح الباركود تظهر صفحة فيها أرقام التواصل وروابط المكتب
           </p>
         </div>
 
-        <div style={styles.promo}>
+        <div style={viewStyles.promo}>
           <div>
-            <span style={styles.badge}>امسح الباركود واحفظ بيانات المكتب</span>
-            <h2 style={styles.promoTitle}>مكتب نور الضفتين العقاري</h2>
-            <p style={styles.promoText}>
+            <span style={viewStyles.badge}>امسح الباركود واحفظ بيانات المكتب</span>
+            <h2 style={viewStyles.promoTitle}>مكتب نور الضفتين العقاري</h2>
+            <p style={viewStyles.promoText}>
               بيع وشراء الأراضي والعقارات، وتسويق العروض العقارية باحترافية
               وسرعة في التواصل.
             </p>
 
-            <div style={styles.infoBox}>
+            <div style={viewStyles.infoBox}>
               {team.map((person) => (
-                <p key={person.id} style={styles.infoLine}>
+                <p key={person.id} style={viewStyles.infoLine}>
                   <strong>{person.title}</strong> - {person.name}:{" "}
                   {person.phone}
                 </p>
               ))}
             </div>
 
-            <div style={styles.buttons}>
+            <div style={viewStyles.buttons}>
               <a
-                style={styles.whatsapp}
+                style={viewStyles.whatsapp}
                 href={contactData.whatsapp}
                 target="_blank"
                 rel="noreferrer"
@@ -1955,7 +1968,7 @@ ${siteUrl}`;
                 واتساب
               </a>
               <a
-                style={styles.call}
+                style={viewStyles.call}
                 href={contactData.facebook}
                 target="_blank"
                 rel="noreferrer"
@@ -1963,7 +1976,7 @@ ${siteUrl}`;
                 فيسبوك
               </a>
               <a
-                style={styles.map}
+                style={viewStyles.map}
                 href={contactData.maps}
                 target="_blank"
                 rel="noreferrer"
@@ -1971,7 +1984,7 @@ ${siteUrl}`;
                 الخريطة
               </a>
               <button
-                style={styles.cardShareButton}
+                style={viewStyles.cardShareButton}
                 type="button"
                 onClick={shareOfficeCard}
               >
@@ -1980,25 +1993,25 @@ ${siteUrl}`;
             </div>
           </div>
 
-          <div style={styles.qrBox}>
-            <img src={qrImage} alt="QR Code" style={styles.qr} />
-            <h3 style={styles.qrTitle}>امسح الباركود</h3>
-            <p style={styles.qrText}>للوصول إلى بيانات المكتب وروابط التواصل.</p>
+          <div style={viewStyles.qrBox}>
+            <img src={qrImage} alt="QR Code" style={viewStyles.qr} />
+            <h3 style={viewStyles.qrTitle}>امسح الباركود</h3>
+            <p style={viewStyles.qrText}>للوصول إلى بيانات المكتب وروابط التواصل.</p>
           </div>
         </div>
       </section>
 
-      <footer id="contact" style={styles.footer}>
-        <h2 style={styles.footerTitle}>مكتب  نور الضفتين العقاري</h2>
-        <p style={styles.footerText}>
+      <footer id="contact" style={viewStyles.footer}>
+        <h2 style={viewStyles.footerTitle}>مكتب  نور الضفتين العقاري</h2>
+        <p style={viewStyles.footerText}>
           بيع وشراء الأراضي والعقارات وتسويق العروض العقارية باحترافية.
         </p>
 
-        <div style={styles.footerContacts}>
+        <div style={viewStyles.footerContacts}>
           {team.map((person) => (
             <a
               key={person.id}
-              style={styles.footerLink}
+              style={viewStyles.footerLink}
               href={`tel:${person.phone}`}
             >
               {person.title} - {person.name}: {person.phone}
@@ -2006,9 +2019,9 @@ ${siteUrl}`;
           ))}
         </div>
 
-        <div style={styles.buttonsCenter}>
+        <div style={viewStyles.buttonsCenter}>
           <a
-            style={styles.call}
+            style={viewStyles.call}
             href={contactData.facebook}
             target="_blank"
             rel="noreferrer"
@@ -2016,7 +2029,7 @@ ${siteUrl}`;
             صفحة فيسبوك
           </a>
           <a
-            style={styles.map}
+            style={viewStyles.map}
             href={contactData.maps}
             target="_blank"
             rel="noreferrer"
@@ -2024,7 +2037,7 @@ ${siteUrl}`;
             الموقع على الخريطة
           </a>
           <a
-            style={styles.whatsapp}
+            style={viewStyles.whatsapp}
             href={contactData.whatsapp}
             target="_blank"
             rel="noreferrer"
@@ -2032,7 +2045,7 @@ ${siteUrl}`;
             واتساب
           </a>
           <button
-            style={styles.cardShareButton}
+            style={viewStyles.cardShareButton}
             type="button"
             onClick={shareOfficeCard}
           >
@@ -2040,12 +2053,12 @@ ${siteUrl}`;
           </button>
         </div>
 
-        <p style={styles.copy}>© جميع الحقوق محفوظة لمكتب نور الضفتين العقاري</p>
+        <p style={viewStyles.copy}>© جميع الحقوق محفوظة لمكتب نور الضفتين العقاري</p>
       </footer>
 
-      <div style={styles.floating}>
+      <div style={viewStyles.floating}>
         <a
-          style={styles.floatMap}
+          style={viewStyles.floatMap}
           href={contactData.maps}
           target="_blank"
           rel="noreferrer"
@@ -2053,7 +2066,7 @@ ${siteUrl}`;
           📍
         </a>
         <a
-          style={styles.floatWhats}
+          style={viewStyles.floatWhats}
           href={contactData.whatsapp}
           target="_blank"
           rel="noreferrer"
@@ -3202,3 +3215,569 @@ const styles = {
   },
 
 };
+
+function createResponsiveStyles(base, viewportWidth) {
+  const isTablet = viewportWidth <= 960;
+  const isMobile = viewportWidth <= 680;
+
+  if (!isTablet) return base;
+
+  const tablet = {
+    hero: {
+      ...base.hero,
+      padding: "18px",
+    },
+    nav: {
+      ...base.nav,
+      margin: "0 auto 18px",
+      padding: "12px",
+      borderRadius: "18px",
+      gap: "14px",
+      position: "relative",
+      top: "auto",
+    },
+    navLinks: {
+      ...base.navLinks,
+      width: "100%",
+      justifyContent: "center",
+      gap: "8px",
+    },
+    navLink: {
+      ...base.navLink,
+      padding: "9px 11px",
+      borderRadius: "12px",
+      fontSize: "13px",
+      whiteSpace: "nowrap",
+    },
+    logo: {
+      ...base.logo,
+      fontSize: "22px",
+    },
+    title: {
+      ...base.title,
+      fontSize: "clamp(30px, 7vw, 48px)",
+      lineHeight: "1.35",
+    },
+    description: {
+      ...base.description,
+      fontSize: "17px",
+      lineHeight: "1.85",
+    },
+    bannerBox: {
+      ...base.bannerBox,
+      borderRadius: "20px",
+    },
+    banner: {
+      ...base.banner,
+      height: "auto",
+      maxHeight: "520px",
+    },
+    section: {
+      ...base.section,
+      padding: "52px 18px",
+      scrollMarginTop: "24px",
+    },
+    externalSection: {
+      ...base.externalSection,
+      padding: "52px 18px",
+      scrollMarginTop: "24px",
+    },
+    darkSection: {
+      ...base.darkSection,
+      padding: "52px 18px",
+      scrollMarginTop: "24px",
+    },
+    adminDashboard: {
+      ...base.adminDashboard,
+      margin: "28px 16px",
+      padding: "22px",
+    },
+    dashboardHeader: {
+      ...base.dashboardHeader,
+      alignItems: "flex-start",
+      gap: "14px",
+      flexWrap: "wrap",
+    },
+  };
+
+  if (!isMobile) return { ...base, ...tablet };
+
+  return {
+    ...base,
+    ...tablet,
+    userBanner: {
+      ...base.userBanner,
+      padding: "10px 14px",
+      fontSize: "12px",
+      gap: "10px",
+    },
+    logoutQuickBtn: {
+      ...base.logoutQuickBtn,
+      padding: "6px 10px",
+      borderRadius: "10px",
+    },
+    hero: {
+      ...tablet.hero,
+      padding: "12px",
+    },
+    nav: {
+      ...tablet.nav,
+      marginBottom: "14px",
+      padding: "10px",
+      borderRadius: "16px",
+      justifyContent: "center",
+    },
+    logoBox: {
+      ...base.logoBox,
+      width: "100%",
+      justifyContent: "center",
+      textAlign: "center",
+      gap: "8px",
+    },
+    logoIcon: {
+      ...base.logoIcon,
+      width: "38px",
+      height: "38px",
+      borderRadius: "12px",
+      fontSize: "18px",
+      flex: "0 0 auto",
+    },
+    logo: {
+      ...base.logo,
+      fontSize: "16px",
+      lineHeight: "1.45",
+    },
+    subtitle: {
+      ...base.subtitle,
+      fontSize: "11px",
+      lineHeight: "1.5",
+    },
+    navLinks: {
+      ...tablet.navLinks,
+      display: "grid",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: "7px",
+    },
+    navLink: {
+      ...tablet.navLink,
+      padding: "8px 5px",
+      fontSize: "11px",
+      borderRadius: "10px",
+      textAlign: "center",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    },
+    adminSecretBtn: {
+      ...base.adminSecretBtn,
+      width: "34px",
+      height: "34px",
+      fontSize: "14px",
+      justifySelf: "center",
+    },
+    loginPanel: {
+      ...base.loginPanel,
+      left: "12px",
+      right: "12px",
+      width: "auto",
+      top: "96px",
+      padding: "16px",
+    },
+    loginPanelButtons: {
+      ...base.loginPanelButtons,
+      gridTemplateColumns: "1fr",
+    },
+    bannerBox: {
+      ...tablet.bannerBox,
+      borderRadius: "16px",
+      boxShadow: "0 16px 40px rgba(0,0,0,.24)",
+    },
+    banner: {
+      ...tablet.banner,
+      maxHeight: "300px",
+      objectFit: "contain",
+    },
+    heroContent: {
+      ...base.heroContent,
+      margin: "24px auto 28px",
+      padding: "0 4px",
+    },
+    badge: {
+      ...base.badge,
+      padding: "8px 12px",
+      fontSize: "12px",
+      lineHeight: "1.7",
+      borderRadius: "18px",
+    },
+    title: {
+      ...tablet.title,
+      maxWidth: "100%",
+      fontSize: "28px",
+      lineHeight: "1.45",
+      margin: "14px auto 10px",
+    },
+    description: {
+      ...tablet.description,
+      fontSize: "14px",
+      lineHeight: "1.9",
+    },
+    buttons: {
+      ...base.buttons,
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: "10px",
+      marginTop: "18px",
+    },
+    buttonsCenter: {
+      ...base.buttonsCenter,
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: "10px",
+    },
+    whatsapp: {
+      ...base.whatsapp,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      textAlign: "center",
+      fontSize: "14px",
+      lineHeight: "1.5",
+    },
+    call: {
+      ...base.call,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      textAlign: "center",
+      fontSize: "14px",
+      lineHeight: "1.5",
+    },
+    map: {
+      ...base.map,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      textAlign: "center",
+      fontSize: "14px",
+      lineHeight: "1.5",
+    },
+    cardShareButton: {
+      ...base.cardShareButton,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      textAlign: "center",
+      fontSize: "14px",
+      lineHeight: "1.5",
+    },
+    section: {
+      ...tablet.section,
+      padding: "40px 14px",
+    },
+    externalSection: {
+      ...tablet.externalSection,
+      padding: "40px 14px",
+    },
+    darkSection: {
+      ...tablet.darkSection,
+      padding: "42px 14px",
+    },
+    sectionHead: {
+      ...base.sectionHead,
+      marginBottom: "28px",
+    },
+    sectionHeadLight: {
+      ...base.sectionHeadLight,
+      marginBottom: "28px",
+    },
+    sectionTitle: {
+      ...base.sectionTitle,
+      fontSize: "28px",
+      lineHeight: "1.35",
+      marginBottom: "10px",
+    },
+    darkTitle: {
+      ...base.darkTitle,
+      fontSize: "28px",
+      lineHeight: "1.35",
+      marginBottom: "10px",
+    },
+    sectionText: {
+      ...base.sectionText,
+      fontSize: "14px",
+      lineHeight: "1.8",
+    },
+    darkText: {
+      ...base.darkText,
+      fontSize: "14px",
+      lineHeight: "1.8",
+    },
+    grid4: {
+      ...base.grid4,
+      gridTemplateColumns: "1fr",
+      gap: "14px",
+    },
+    card: {
+      ...base.card,
+      padding: "22px 18px",
+      borderRadius: "16px",
+    },
+    iconBox: {
+      ...base.iconBox,
+      width: "48px",
+      height: "48px",
+      borderRadius: "14px",
+      fontSize: "24px",
+    },
+    cardTitle: {
+      ...base.cardTitle,
+      fontSize: "18px",
+      lineHeight: "1.5",
+    },
+    facebookCta: {
+      ...base.facebookCta,
+      margin: "0 14px 40px",
+      padding: "24px 18px",
+      borderRadius: "18px",
+      flexDirection: "column",
+      alignItems: "stretch",
+      textAlign: "center",
+    },
+    facebookTitle: {
+      ...base.facebookTitle,
+      fontSize: "22px",
+      lineHeight: "1.45",
+    },
+    facebookButton: {
+      ...base.facebookButton,
+      width: "100%",
+      padding: "13px 18px",
+      textAlign: "center",
+    },
+    propertyGrid: {
+      ...base.propertyGrid,
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+    externalGrid: {
+      ...base.externalGrid,
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+    externalCard: {
+      ...base.externalCard,
+      padding: "18px",
+      borderRadius: "14px",
+    },
+    externalCardHead: {
+      ...base.externalCardHead,
+      alignItems: "flex-start",
+      flexDirection: "column",
+    },
+    propertyImage: {
+      ...base.propertyImage,
+      height: "168px",
+      fontSize: "42px",
+    },
+    propertyBody: {
+      ...base.propertyBody,
+      padding: "16px",
+    },
+    propertyButtons: {
+      ...base.propertyButtons,
+      flexDirection: "column",
+      gap: "10px",
+    },
+    badgeLabel: {
+      ...base.badgeLabel,
+      fontSize: "11px",
+      padding: "6px 10px",
+    },
+    sourceLabel: {
+      ...base.sourceLabel,
+      fontSize: "11px",
+      padding: "6px 10px",
+    },
+    teamGrid: {
+      ...base.teamGrid,
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+    teamCard: {
+      ...base.teamCard,
+      padding: "22px 18px",
+      borderRadius: "14px",
+    },
+    teamPhotoBox: {
+      ...base.teamPhotoBox,
+      width: "78px",
+      height: "78px",
+    },
+    facebookPromoCta: {
+      ...base.facebookPromoCta,
+      margin: "40px 0",
+      padding: "24px 18px",
+      borderRadius: "18px",
+      flexDirection: "column",
+      alignItems: "stretch",
+      textAlign: "center",
+    },
+    facebookPromoTitle: {
+      ...base.facebookPromoTitle,
+      fontSize: "22px",
+      lineHeight: "1.45",
+    },
+    facebookPromoButton: {
+      ...base.facebookPromoButton,
+      width: "100%",
+      padding: "13px 18px",
+      textAlign: "center",
+    },
+    promo: {
+      ...base.promo,
+      gridTemplateColumns: "1fr",
+      gap: "24px",
+    },
+    promoTitle: {
+      ...base.promoTitle,
+      fontSize: "25px",
+      lineHeight: "1.4",
+    },
+    infoBox: {
+      ...base.infoBox,
+      padding: "16px",
+    },
+    qrBox: {
+      ...base.qrBox,
+      padding: "20px 14px",
+    },
+    qr: {
+      ...base.qr,
+      width: "200px",
+      height: "200px",
+    },
+    footer: {
+      ...base.footer,
+      padding: "44px 14px",
+    },
+    footerTitle: {
+      ...base.footerTitle,
+      fontSize: "24px",
+      lineHeight: "1.45",
+    },
+    floating: {
+      ...base.floating,
+      left: "12px",
+      bottom: "14px",
+      gap: "10px",
+    },
+    floatMap: {
+      ...base.floatMap,
+      width: "46px",
+      height: "46px",
+      fontSize: "20px",
+    },
+    floatWhats: {
+      ...base.floatWhats,
+      width: "46px",
+      height: "46px",
+      fontSize: "20px",
+    },
+    adminDashboard: {
+      ...tablet.adminDashboard,
+      margin: "18px 10px",
+      padding: "16px",
+      borderRadius: "18px",
+    },
+    dashboardTitle: {
+      ...base.dashboardTitle,
+      fontSize: "22px",
+      lineHeight: "1.4",
+    },
+    tabs: {
+      ...base.tabs,
+      flexWrap: "nowrap",
+      overflowX: "auto",
+      paddingBottom: "10px",
+    },
+    tabBtn: {
+      ...base.tabBtn,
+      flex: "0 0 auto",
+      padding: "9px 12px",
+      fontSize: "12px",
+    },
+    form: {
+      ...base.form,
+      padding: "16px",
+      borderRadius: "14px",
+    },
+    formRow: {
+      ...base.formRow,
+      gridTemplateColumns: "1fr",
+      gap: "12px",
+    },
+    input: {
+      ...base.input,
+      fontSize: "16px",
+    },
+    textarea: {
+      ...base.textarea,
+      fontSize: "16px",
+    },
+    fileInputWrapper: {
+      ...base.fileInputWrapper,
+      alignItems: "stretch",
+      flexDirection: "column",
+    },
+    fileInput: {
+      ...base.fileInput,
+      width: "100%",
+    },
+    addButton: {
+      ...base.addButton,
+      width: "100%",
+      padding: "13px 16px",
+    },
+    cancelButton: {
+      ...base.cancelButton,
+      width: "100%",
+      padding: "13px 16px",
+    },
+    propertyListItem: {
+      ...base.propertyListItem,
+      alignItems: "stretch",
+      gap: "14px",
+    },
+    propActions: {
+      ...base.propActions,
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "8px",
+    },
+    employeeCard: {
+      ...base.employeeCard,
+      alignItems: "stretch",
+    },
+    employeeCardInfo: {
+      ...base.employeeCardInfo,
+      alignItems: "center",
+    },
+    empActions: {
+      ...base.empActions,
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "8px",
+    },
+    loadingBanner: {
+      ...base.loadingBanner,
+      padding: "10px 12px",
+      fontSize: "13px",
+      lineHeight: "1.6",
+    },
+    errorBanner: {
+      ...base.errorBanner,
+      padding: "10px 12px",
+      fontSize: "13px",
+      lineHeight: "1.6",
+    },
+  };
+}
