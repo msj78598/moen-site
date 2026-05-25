@@ -2,7 +2,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
 export default function App() {
-  const banner = "/9c049017-4f6a-4029-9071-700b2fdf099a.png";
+  const banner = "/panr.png";
+  const legacyBannerNames = [
+    "9c049017-4f6a-4029-9071-700b2fdf099a.png",
+    "alsaqeen-banner.jpeg.jpeg",
+  ];
+
+  function normalizeBannerUrl(value) {
+    if (!value || legacyBannerNames.some((name) => value.includes(name))) {
+      return banner;
+    }
+
+    return value;
+  }
 
   // هذه الحسابات تظهر بالأسماء للموظفين، والبريد يبقى مخفيًا لاستخدام Supabase Auth.
   const loginAccounts = [
@@ -336,7 +348,7 @@ export default function App() {
         whatsapp: data.whatsapp || defaultContact.whatsapp,
         facebook: data.facebook || defaultContact.facebook,
         maps: data.maps || defaultContact.maps,
-        banner_url: data.banner_url || defaultContact.banner_url,
+        banner_url: normalizeBannerUrl(data.banner_url || defaultContact.banner_url),
       });
     }
   }
@@ -951,7 +963,7 @@ ${siteUrl}`;
     qrLink
   )}`;
 
-  const displayedBanner = contactData.banner_url || banner;
+  const displayedBanner = normalizeBannerUrl(contactData.banner_url);
   return (
     <main dir="rtl" style={styles.page}>
       {errorMessage && (
