@@ -1681,7 +1681,7 @@ ${siteUrl}`;
       <section id="external-offers" style={styles.externalSection}>
         <div style={styles.sectionHead}>
           <span style={styles.sectionLabel}>وساطة تسويقية</span>
-          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد وقراها</h2>
+          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
           <p style={styles.sectionText}>
             فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
           </p>
