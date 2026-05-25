@@ -38,6 +38,7 @@ export default function App() {
     },
   ];
 
+  // eslint-disable-next-line no-unused-vars
   const defaultProperties = [
     {
       id: 1,
@@ -86,7 +87,7 @@ export default function App() {
   };
 
   const [user, setUser] = useState(null);
-  const [properties, setProperties] = useState(defaultProperties);
+  const [properties, setProperties] = useState([]);
   const [team, setTeam] = useState(defaultTeam);
   const [contactData, setContactData] = useState(defaultContact);
 
@@ -431,27 +432,34 @@ export default function App() {
           return;
         }
 
-        const { error } = await withTimeout(
+        const { data, error } = await withTimeout(
           "تعديل العرض",
-          supabase.from("properties").update(payload).eq("id", editingProperty.id)
+          supabase
+            .from("properties")
+            .update(payload)
+            .eq("id", editingProperty.id)
+            .select("id")
+            .maybeSingle()
         );
 
         if (error) throw error;
+        if (!data) throw new Error("لم يتم العثور على هذا العرض في قاعدة البيانات. ألغ التعديل وأضف العرض من جديد.");
       } else {
         if (!can("add")) {
           alert("ليس لديك صلاحية إضافة العروض");
           return;
         }
 
-        const { error } = await withTimeout(
+        const { data, error } = await withTimeout(
           "إضافة العرض",
           supabase.from("properties").insert({
             ...payload,
             created_by: user?.id || null,
-          })
+          }).select("id").single()
         );
 
         if (error) throw error;
+        if (!data) throw new Error("لم ترجع قاعدة البيانات رقم العرض الجديد.");
       }
 
       await loadProperties();
@@ -550,18 +558,25 @@ export default function App() {
       };
 
       if (editingEmployee) {
-        const { error } = await withTimeout(
+        const { data, error } = await withTimeout(
           "تعديل بيانات الموظف",
-          supabase.from("team").update(payload).eq("id", editingEmployee.id)
+          supabase
+            .from("team")
+            .update(payload)
+            .eq("id", editingEmployee.id)
+            .select("id")
+            .maybeSingle()
         );
 
         if (error) throw error;
+        if (!data) throw new Error("لم يتم العثور على هذا الموظف في قاعدة البيانات. ألغ التعديل وأضفه من جديد.");
       } else {
-        const { error } = await withTimeout(
+        const { data, error } = await withTimeout(
           "إضافة الموظف",
-          supabase.from("team").insert(payload)
+          supabase.from("team").insert(payload).select("id").single()
         );
         if (error) throw error;
+        if (!data) throw new Error("لم ترجع قاعدة البيانات رقم الموظف الجديد.");
       }
 
       await loadTeam();
