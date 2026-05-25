@@ -250,6 +250,18 @@ export default function App() {
     photoFile: null,
   });
 
+  const [marketingRequest, setMarketingRequest] = useState({
+    ownerName: "",
+    phone: "",
+    propertyType: "",
+    location: "",
+    area: "",
+    price: "",
+    exclusive: "غير محدد",
+    details: "",
+    attachment: null,
+  });
+
   function errorText(error, fallback) {
     return error?.message || error?.error_description || fallback;
   }
@@ -877,6 +889,87 @@ export default function App() {
       .replace(/\D/g, "");
   }
 
+  function updateMarketingRequest(field, value) {
+    setMarketingRequest((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  async function submitMarketingRequest(e) {
+    e.preventDefault();
+
+    if (
+      !marketingRequest.ownerName ||
+      !marketingRequest.phone ||
+      !marketingRequest.propertyType ||
+      !marketingRequest.location
+    ) {
+      alert("يرجى تعبئة الاسم ورقم التواصل ونوع العقار والموقع");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    let attachmentLine = "المرفق: لم يتم إرفاق ملف";
+
+    try {
+      if (marketingRequest.attachment) {
+        try {
+          const attachmentUrl = await uploadFile(
+            "marketing-requests",
+            marketingRequest.attachment
+          );
+          attachmentLine = `رابط المرفق: ${attachmentUrl}`;
+        } catch (uploadError) {
+          console.warn("Could not upload marketing request attachment", uploadError);
+          attachmentLine = `المرفق المختار: ${marketingRequest.attachment.name} - يرجى إرساله يدويًا في نفس محادثة الواتساب`;
+        }
+      }
+
+      const officePhone = normalPhone(contactData.phone || contactData.whatsapp);
+      const message = `طلب تسويق عقار جديد - مكتب نور الضفتين العقاري
+
+اسم صاحب الطلب: ${marketingRequest.ownerName}
+رقم التواصل: ${marketingRequest.phone}
+نوع العقار: ${marketingRequest.propertyType}
+الموقع / الحوض: ${marketingRequest.location}
+المساحة: ${marketingRequest.area || "غير محددة"}
+السعر المطلوب: ${marketingRequest.price || "غير محدد"}
+هل العرض حصري؟ ${marketingRequest.exclusive}
+التفاصيل:
+${marketingRequest.details || "لا توجد تفاصيل إضافية"}
+
+${attachmentLine}
+
+أرغب بالتواصل مع المكتب لمراجعة الطلب وتجهيز التسويق العقاري.`;
+
+      window.open(
+        `https://wa.me/${officePhone}?text=${encodeURIComponent(message)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      setMarketingRequest({
+        ownerName: "",
+        phone: "",
+        propertyType: "",
+        location: "",
+        area: "",
+        price: "",
+        exclusive: "غير محدد",
+        details: "",
+        attachment: null,
+      });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(errorText(error, "تعذر تجهيز طلب التسويق العقاري."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function shareProperty(property) {
     const phone = normalPhone(property.phone || contactData.phone);
 
@@ -1033,6 +1126,9 @@ ${siteUrl}`;
             <a style={viewStyles.navLink} href="#services">
               الخدمات
             </a>
+            <a style={viewStyles.navLink} href="#marketing-request">
+              سوّق عقارك
+            </a>
             <a style={viewStyles.navLink} href="#properties">
               العروض
             </a>
@@ -1095,7 +1191,7 @@ ${siteUrl}`;
 )}
 
         <div style={viewStyles.dhikrBar} aria-live="polite">
-          <span style={viewStyles.dhikrLabel}>ذكر</span>
+          <span style={viewStyles.dhikrLabel}>ذكر الله</span>
           <span style={viewStyles.dhikrText}>
             {adhkarMessages[dhikrIndex]}
           </span>
@@ -1207,6 +1303,110 @@ ${siteUrl}`;
             </article>
           ))}
         </div>
+      </section>
+
+      <section id="marketing-request" style={viewStyles.requestSection}>
+        <div style={viewStyles.requestIntro}>
+          <span style={viewStyles.sectionLabel}>خدمة متاحة بالمكتب</span>
+          <h2 style={viewStyles.requestTitle}>سوّق عقارك معنا</h2>
+          <p style={viewStyles.requestText}>
+            أرسل بيانات الأرض أو العقار، وسيقوم فريق مكتب نور الضفتين بمراجعة الطلب
+            والتواصل معك لتجهيز العرض وتسويقه باحتراف.
+          </p>
+        </div>
+
+        <form style={viewStyles.requestForm} onSubmit={submitMarketingRequest}>
+          <div style={viewStyles.formRow}>
+            <input
+              style={viewStyles.input}
+              placeholder="اسم صاحب الطلب"
+              value={marketingRequest.ownerName}
+              onChange={(e) => updateMarketingRequest("ownerName", e.target.value)}
+            />
+            <input
+              style={viewStyles.input}
+              placeholder="رقم التواصل / واتساب"
+              value={marketingRequest.phone}
+              onChange={(e) => updateMarketingRequest("phone", e.target.value)}
+            />
+          </div>
+
+          <div style={viewStyles.formRow}>
+            <select
+              style={viewStyles.input}
+              value={marketingRequest.propertyType}
+              onChange={(e) => updateMarketingRequest("propertyType", e.target.value)}
+            >
+              <option value="">نوع العقار</option>
+              <option value="أرض">أرض</option>
+              <option value="منزل">منزل</option>
+              <option value="شقة">شقة</option>
+              <option value="مزرعة">مزرعة</option>
+              <option value="محل / تجاري">محل / تجاري</option>
+              <option value="عقار آخر">عقار آخر</option>
+            </select>
+            <input
+              style={viewStyles.input}
+              placeholder="المنطقة / الحوض / الموقع"
+              value={marketingRequest.location}
+              onChange={(e) => updateMarketingRequest("location", e.target.value)}
+            />
+          </div>
+
+          <div style={viewStyles.formRow}>
+            <input
+              style={viewStyles.input}
+              placeholder="المساحة"
+              value={marketingRequest.area}
+              onChange={(e) => updateMarketingRequest("area", e.target.value)}
+            />
+            <input
+              style={viewStyles.input}
+              placeholder="السعر المطلوب"
+              value={marketingRequest.price}
+              onChange={(e) => updateMarketingRequest("price", e.target.value)}
+            />
+          </div>
+
+          <div style={viewStyles.formRow}>
+            <select
+              style={viewStyles.input}
+              value={marketingRequest.exclusive}
+              onChange={(e) => updateMarketingRequest("exclusive", e.target.value)}
+            >
+              <option value="غير محدد">هل العرض حصري للمكتب؟</option>
+              <option value="نعم، حصري للمكتب">نعم، حصري للمكتب</option>
+              <option value="لا، عرض تسويقي عام">لا، عرض تسويقي عام</option>
+            </select>
+            <div style={viewStyles.requestFileBox}>
+              <span style={viewStyles.fileLabel}>صورة الصك أو الكروكي</span>
+              <input
+                style={viewStyles.fileInput}
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) =>
+                  updateMarketingRequest("attachment", e.target.files?.[0] || null)
+                }
+              />
+            </div>
+          </div>
+
+          <textarea
+            style={viewStyles.textarea}
+            placeholder="تفاصيل إضافية عن العقار، الشوارع، الخدمات، الملاحظات..."
+            value={marketingRequest.details}
+            onChange={(e) => updateMarketingRequest("details", e.target.value)}
+          />
+
+          <p style={viewStyles.requestHint}>
+            عند الإرسال ستفتح رسالة واتساب جاهزة للمكتب. إذا تعذر رفع المرفق، أرسله
+            يدويًا في نفس المحادثة.
+          </p>
+
+          <button style={viewStyles.requestButton} type="submit" disabled={loading}>
+            إرسال طلب التسويق عبر واتساب
+          </button>
+        </form>
       </section>
 
       <section style={viewStyles.facebookCta}>
@@ -2498,6 +2698,86 @@ const styles = {
     lineHeight: "1.6",
   },
 
+  requestSection: {
+    maxWidth: "1180px",
+    margin: "0 auto 64px",
+    padding: "42px",
+    borderRadius: "24px",
+    background: "linear-gradient(135deg, #061a44 0%, #0b4aa2 100%)",
+    color: "white",
+    display: "grid",
+    gridTemplateColumns: "0.75fr 1.25fr",
+    gap: "28px",
+    alignItems: "start",
+    boxShadow: "0 22px 60px rgba(15,23,42,.16)",
+    border: "1px solid rgba(250,204,21,.30)",
+    scrollMarginTop: "120px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+  },
+
+  requestIntro: {
+    textAlign: "right",
+  },
+
+  requestTitle: {
+    fontSize: "34px",
+    lineHeight: "1.35",
+    fontWeight: "900",
+    margin: "10px 0 12px",
+    color: "#facc15",
+  },
+
+  requestText: {
+    color: "#dbeafe",
+    fontSize: "16px",
+    lineHeight: "1.9",
+  },
+
+  requestForm: {
+    background: "rgba(255,255,255,.96)",
+    color: "#0f172a",
+    borderRadius: "18px",
+    padding: "22px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+    border: "1px solid rgba(255,255,255,.45)",
+    boxSizing: "border-box",
+  },
+
+  requestFileBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    border: "1px solid #cbd5e1",
+    background: "white",
+    boxSizing: "border-box",
+    minWidth: 0,
+  },
+
+  requestHint: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: "12px",
+    lineHeight: "1.7",
+    textAlign: "center",
+  },
+
+  requestButton: {
+    background: "#059669",
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    fontWeight: "900",
+    cursor: "pointer",
+    fontSize: "15px",
+    boxShadow: "0 12px 26px rgba(5,150,105,.22)",
+  },
+
   facebookCta: {
     maxWidth: "1180px",
     margin: "0 auto 64px",
@@ -3720,6 +4000,46 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.cardTitle,
       fontSize: "18px",
       lineHeight: "1.5",
+    },
+    requestSection: {
+      ...base.requestSection,
+      margin: "0 14px 40px",
+      padding: "24px 16px",
+      borderRadius: "18px",
+      gridTemplateColumns: "1fr",
+      gap: "18px",
+      scrollMarginTop: "24px",
+    },
+    requestIntro: {
+      ...base.requestIntro,
+      textAlign: "center",
+    },
+    requestTitle: {
+      ...base.requestTitle,
+      fontSize: "27px",
+      lineHeight: "1.4",
+    },
+    requestText: {
+      ...base.requestText,
+      fontSize: "14px",
+      lineHeight: "1.8",
+    },
+    requestForm: {
+      ...base.requestForm,
+      padding: "16px",
+      borderRadius: "14px",
+    },
+    requestFileBox: {
+      ...base.requestFileBox,
+      flexDirection: "column",
+      alignItems: "stretch",
+      gap: "8px",
+    },
+    requestButton: {
+      ...base.requestButton,
+      width: "100%",
+      padding: "13px 14px",
+      fontSize: "14px",
     },
     facebookCta: {
       ...base.facebookCta,
