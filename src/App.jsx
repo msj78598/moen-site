@@ -741,6 +741,44 @@ ${property.note || ""}`;
     alert("تم نسخ تفاصيل العرض");
   }
 
+  async function shareOfficeCard() {
+    const siteUrl =
+      typeof window !== "undefined" ? `${window.location.origin}/#promo` : "";
+    const teamLines = team
+      .map((person) => `${person.title} - ${person.name}: ${person.phone}`)
+      .join("\n");
+    const text = `بطاقة مكتب الضفتين العقاري الإلكترونية
+
+بيع وشراء الأراضي والعقارات وتسويق العروض العقارية.
+
+الهاتف: ${contactData.phone}
+واتساب: ${contactData.whatsapp}
+فيسبوك: ${contactData.facebook}
+الموقع على الخريطة: ${contactData.maps}
+
+فريق المكتب:
+${teamLines}
+
+رابط البطاقة:
+${siteUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "بطاقة مكتب الضفتين العقاري",
+          text,
+          url: siteUrl,
+        });
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  }
+
   const qrLink =
     typeof window !== "undefined" ? window.location.origin + "/#promo" : "";
 
@@ -885,6 +923,13 @@ ${property.note || ""}`;
             >
               الخريطة
             </a>
+            <button
+              style={styles.cardShareButton}
+              type="button"
+              onClick={shareOfficeCard}
+            >
+              مشاركة البطاقة الإلكترونية
+            </button>
           </div>
         </div>
       </header>
@@ -1588,6 +1633,13 @@ ${property.note || ""}`;
               >
                 الخريطة
               </a>
+              <button
+                style={styles.cardShareButton}
+                type="button"
+                onClick={shareOfficeCard}
+              >
+                مشاركة البطاقة الإلكترونية
+              </button>
             </div>
           </div>
 
@@ -1642,6 +1694,13 @@ ${property.note || ""}`;
           >
             واتساب
           </a>
+          <button
+            style={styles.cardShareButton}
+            type="button"
+            onClick={shareOfficeCard}
+          >
+            مشاركة البطاقة الإلكترونية
+          </button>
         </div>
 
         <p style={styles.copy}>© جميع الحقوق محفوظة لمكتب الضفتين العقاري</p>
@@ -1887,6 +1946,19 @@ const styles = {
     display: "inline-block",
     border: "none",
     cursor: "pointer",
+  },
+
+  cardShareButton: {
+    background: "linear-gradient(135deg, #111827 0%, #334155 100%)",
+    color: "white",
+    padding: "13px 22px",
+    borderRadius: "16px",
+    textDecoration: "none",
+    fontWeight: "900",
+    display: "inline-block",
+    border: "1px solid rgba(250,204,21,.55)",
+    cursor: "pointer",
+    boxShadow: "0 12px 28px rgba(15,23,42,.18)",
   },
 
   outline: {
