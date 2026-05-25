@@ -744,6 +744,10 @@ ${property.note || ""}`;
   async function shareOfficeCard() {
     const siteUrl =
       typeof window !== "undefined" ? `${window.location.origin}/#promo` : "";
+    const bannerUrl =
+      typeof window !== "undefined"
+        ? new URL(displayedBanner, window.location.origin).href
+        : displayedBanner;
     const teamLines = team
       .map((person) => `${person.title} - ${person.name}: ${person.phone}`)
       .join("\n");
@@ -764,6 +768,17 @@ ${siteUrl}`;
 
     if (navigator.share) {
       try {
+        const bannerFile = await getShareableBannerFile(bannerUrl);
+        if (bannerFile && navigator.canShare?.({ files: [bannerFile] })) {
+          await navigator.share({
+            title: "بطاقة مكتب الضفتين العقاري",
+            text,
+            url: siteUrl,
+            files: [bannerFile],
+          });
+          return;
+        }
+
         await navigator.share({
           title: "بطاقة مكتب الضفتين العقاري",
           text,
@@ -777,6 +792,24 @@ ${siteUrl}`;
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  }
+
+  async function getShareableBannerFile(bannerUrl) {
+    try {
+      const response = await fetch(bannerUrl);
+      if (!response.ok) return null;
+
+      const blob = await response.blob();
+      if (!blob.type.startsWith("image/")) return null;
+
+      const extension = blob.type.split("/")[1] || "png";
+      return new File([blob], `diftain-office-card.${extension}`, {
+        type: blob.type,
+      });
+    } catch (error) {
+      console.warn("Could not attach office card banner to share", error);
+      return null;
+    }
   }
 
   const qrLink =
