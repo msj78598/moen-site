@@ -10,14 +10,14 @@ export default function App() {
       id: "mokhtar",
       name: "المختار محمود عبابنه",
       label: "المختار",
-      email: "msj78598@gmail.com",
+      email: "mokhtar@diftain.local",
       roleLabel: "مالك",
     },
     {
       id: "moeen",
       name: "معين عبابنه",
       label: "معين",
-      email: "nayf78598@gmail.com",
+      email: "moeen@diftain.local",
       roleLabel: "موظف",
     },
     {
