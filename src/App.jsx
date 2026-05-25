@@ -261,6 +261,7 @@ export default function App() {
     details: "",
     attachment: null,
   });
+  const [showMarketingForm, setShowMarketingForm] = useState(false);
 
   function errorText(error, fallback) {
     return error?.message || error?.error_description || fallback;
@@ -896,6 +897,22 @@ export default function App() {
     }));
   }
 
+  function propertyWhatsAppUrl(property) {
+    const phone = normalPhone(property.phone || contactData.phone);
+    const message = `استفسار بخصوص عرض عقاري من مكتب نور الضفتين العقاري
+
+نوع العقار: ${property.type}
+الموقع: ${property.location}
+المساحة: ${property.size}
+السعر: ${property.price}
+${property.badge && property.badge !== "عادي" ? `التصنيف: ${property.badge}` : ""}
+${property.note ? `ملاحظات: ${property.note}` : ""}
+
+أرغب بمعرفة المزيد عن هذا العرض.`;
+
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  }
+
   async function submitMarketingRequest(e) {
     e.preventDefault();
 
@@ -962,6 +979,7 @@ ${attachmentLine}
         details: "",
         attachment: null,
       });
+      setShowMarketingForm(false);
     } catch (error) {
       console.error(error);
       setErrorMessage(errorText(error, "تعذر تجهيز طلب التسويق العقاري."));
@@ -1305,7 +1323,13 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <section id="marketing-request" style={viewStyles.requestSection}>
+      <section
+        id="marketing-request"
+        style={{
+          ...viewStyles.requestSection,
+          ...(!showMarketingForm ? viewStyles.requestSectionCompact : {}),
+        }}
+      >
         <div style={viewStyles.requestIntro}>
           <span style={viewStyles.sectionLabel}>خدمة متاحة بالمكتب</span>
           <h2 style={viewStyles.requestTitle}>سوّق عقارك معنا</h2>
@@ -1313,8 +1337,16 @@ ${siteUrl}`;
             أرسل بيانات الأرض أو العقار، وسيقوم فريق مكتب نور الضفتين بمراجعة الطلب
             والتواصل معك لتجهيز العرض وتسويقه باحتراف.
           </p>
+          <button
+            type="button"
+            style={viewStyles.requestToggleButton}
+            onClick={() => setShowMarketingForm((current) => !current)}
+          >
+            {showMarketingForm ? "إخفاء نموذج الطلب" : "فتح نموذج طلب التسويق"}
+          </button>
         </div>
 
+        {showMarketingForm && (
         <form style={viewStyles.requestForm} onSubmit={submitMarketingRequest}>
           <div style={viewStyles.formRow}>
             <input
@@ -1407,6 +1439,7 @@ ${siteUrl}`;
             إرسال طلب التسويق عبر واتساب
           </button>
         </form>
+        )}
       </section>
 
       <section style={viewStyles.facebookCta}>
@@ -2017,11 +2050,11 @@ ${siteUrl}`;
                 <div style={viewStyles.propertyButtons}>
                   <a
                     style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
-                    href={`https://wa.me/${normalPhone(item.phone)}`}
+                    href={propertyWhatsAppUrl(item)}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    واتساب
+                    استفسار عن العرض
                   </a>
 
                   <button
@@ -2716,6 +2749,12 @@ const styles = {
     overflow: "hidden",
   },
 
+  requestSectionCompact: {
+    gridTemplateColumns: "1fr",
+    textAlign: "center",
+    padding: "34px 42px",
+  },
+
   requestIntro: {
     textAlign: "right",
   },
@@ -2732,6 +2771,18 @@ const styles = {
     color: "#dbeafe",
     fontSize: "16px",
     lineHeight: "1.9",
+  },
+
+  requestToggleButton: {
+    marginTop: "18px",
+    background: "#facc15",
+    color: "#061a44",
+    border: "none",
+    borderRadius: "14px",
+    padding: "13px 22px",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 12px 26px rgba(250,204,21,.22)",
   },
 
   requestForm: {
@@ -4010,6 +4061,11 @@ function createResponsiveStyles(base, viewportWidth) {
       gap: "18px",
       scrollMarginTop: "24px",
     },
+    requestSectionCompact: {
+      ...base.requestSectionCompact,
+      padding: "24px 16px",
+      gridTemplateColumns: "1fr",
+    },
     requestIntro: {
       ...base.requestIntro,
       textAlign: "center",
@@ -4023,6 +4079,12 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.requestText,
       fontSize: "14px",
       lineHeight: "1.8",
+    },
+    requestToggleButton: {
+      ...base.requestToggleButton,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
     },
     requestForm: {
       ...base.requestForm,
