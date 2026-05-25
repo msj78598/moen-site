@@ -2392,6 +2392,7 @@ const styles = {
     boxShadow: "0 2px 24px rgba(15,23,42,.06)",
     textAlign: "center",
     border: "1px solid #e2e8f0",
+    overflow: "hidden",
   },
 
   iconBox: {
@@ -3033,6 +3034,7 @@ const styles = {
     textAlign: "center",
     border: "1px solid rgba(255,255,255,0.18)",
     backdropFilter: "blur(8px)",
+    overflow: "hidden",
   },
 
   teamPhotoBox: {
@@ -3577,10 +3579,10 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     iconBox: {
       ...base.iconBox,
-      width: "48px",
-      height: "48px",
+      width: "44px",
+      height: "44px",
       borderRadius: "14px",
-      fontSize: "24px",
+      fontSize: "20px",
     },
     cardTitle: {
       ...base.cardTitle,
@@ -3629,8 +3631,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     propertyImage: {
       ...base.propertyImage,
-      height: "168px",
-      fontSize: "34px",
+      height: "150px",
+      fontSize: "26px",
     },
     propertyLine: {
       ...base.propertyLine,
@@ -3690,6 +3692,10 @@ function createResponsiveStyles(base, viewportWidth) {
       width: "78px",
       height: "78px",
     },
+    teamFallbackIcon: {
+      ...base.teamFallbackIcon,
+      fontSize: "22px",
+    },
     facebookPromoCta: {
       ...base.facebookPromoCta,
       margin: "40px 0",
@@ -3744,22 +3750,17 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     floating: {
       ...base.floating,
-      right: "calc(env(safe-area-inset-right, 0px) + 12px)",
-      left: "auto",
-      bottom: "14px",
-      gap: "10px",
+      display: "none",
     },
     floatMap: {
       ...base.floatMap,
-      width: "46px",
-      height: "46px",
-      fontSize: "20px",
+      width: "38px",
+      height: "38px",
     },
     floatWhats: {
       ...base.floatWhats,
-      width: "46px",
-      height: "46px",
-      fontSize: "20px",
+      width: "38px",
+      height: "38px",
     },
     adminDashboard: {
       ...tablet.adminDashboard,
