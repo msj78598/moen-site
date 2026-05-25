@@ -1672,6 +1672,60 @@ ${siteUrl}`;
         </section>
       )}
 
+      <section id="external-offers" style={styles.externalSection}>
+        <div style={styles.sectionHead}>
+          <span style={styles.sectionLabel}>وساطة تسويقية</span>
+          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد وقراها</h2>
+          <p style={styles.sectionText}>
+            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
+          </p>
+        </div>
+
+        <div style={styles.externalGrid}>
+          {externalMarketingOffers.map((offer) => (
+            <article style={styles.externalCard} key={offer.id}>
+              <div style={styles.externalCardHead}>
+                <span style={styles.externalTag}>وساطة تسويقية</span>
+                <span style={styles.externalDate}>
+                  تحقق: {offer.checkedAt}
+                </span>
+              </div>
+
+              <h3 style={styles.cardTitle}>{offer.type}</h3>
+              <p style={styles.propertyLine}>📍 {offer.location}</p>
+              <p style={styles.propertyLine}>📐 {offer.size}</p>
+              <p style={styles.propertyLine}>💰 {offer.price}</p>
+              <p style={styles.propertyNote}>{offer.note}</p>
+
+              <div style={styles.sourceNotice}>
+                <strong>{offer.sourceName}</strong>
+                <span>
+                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
+                </span>
+              </div>
+
+              <div style={styles.propertyButtons}>
+                <a
+                  style={styles.map}
+                  href={offer.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  فتح المصدر
+                </a>
+                <a
+                  style={styles.whatsapp}
+                  href={contactData.whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  استفسار عبر المكتب
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
       <section id="properties" style={styles.section}>
         <div style={styles.sectionHead}>
           <span style={styles.sectionLabel}>العروض العقارية</span>
@@ -1761,60 +1815,6 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <section id="external-offers" style={styles.externalSection}>
-        <div style={styles.sectionHead}>
-          <span style={styles.sectionLabel}>وساطة تسويقية</span>
-          <h2 style={styles.sectionTitle}>عروض تسويقية خارجية في إربد وقراها</h2>
-          <p style={styles.sectionText}>
-            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
-          </p>
-        </div>
-
-        <div style={styles.externalGrid}>
-          {externalMarketingOffers.map((offer) => (
-            <article style={styles.externalCard} key={offer.id}>
-              <div style={styles.externalCardHead}>
-                <span style={styles.externalTag}>وساطة تسويقية</span>
-                <span style={styles.externalDate}>
-                  تحقق: {offer.checkedAt}
-                </span>
-              </div>
-
-              <h3 style={styles.cardTitle}>{offer.type}</h3>
-              <p style={styles.propertyLine}>📍 {offer.location}</p>
-              <p style={styles.propertyLine}>📐 {offer.size}</p>
-              <p style={styles.propertyLine}>💰 {offer.price}</p>
-              <p style={styles.propertyNote}>{offer.note}</p>
-
-              <div style={styles.sourceNotice}>
-                <strong>{offer.sourceName}</strong>
-                <span>
-                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
-                </span>
-              </div>
-
-              <div style={styles.propertyButtons}>
-                <a
-                  style={styles.map}
-                  href={offer.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  فتح المصدر
-                </a>
-                <a
-                  style={styles.whatsapp}
-                  href={contactData.whatsapp}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  استفسار عبر المكتب
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
 
       <section id="team" style={styles.darkSection}>
         <div style={styles.inner}>
