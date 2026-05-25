@@ -36,7 +36,7 @@ export default function App() {
       phone: "00962796181720",
       whatsapp: "https://wa.me/962796181720",
       email: "relations@ababneh.jo",
-      photo: "",
+      photo: "/moeen.png",
     },
     {
       id: 3,
@@ -45,7 +45,7 @@ export default function App() {
       phone: "00962797022220",
       whatsapp: "https://wa.me/962797022220",
       email: "external@ababneh.jo",
-      photo: "",
+      photo: "/zaid.png",
     },
   ];
 
