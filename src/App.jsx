@@ -4,9 +4,30 @@ import { supabase } from "./supabaseClient";
 export default function App() {
   const banner = "/9c049017-4f6a-4029-9071-700b2fdf099a.png";
 
-  // غيّر الإيميلات هنا إذا غيرت حسابات المستخدمين في Supabase
-  const OWNER_EMAIL = "msj78598@gmail.com";
-  const EMPLOYEE_EMAIL = "nayf78598@gmail.com";
+  // هذه الحسابات تظهر بالأسماء للموظفين، والبريد يبقى مخفيًا لاستخدام Supabase Auth.
+  const loginAccounts = [
+    {
+      id: "mokhtar",
+      name: "المختار محمود عبابنه",
+      label: "المختار",
+      email: "msj78598@gmail.com",
+      roleLabel: "مالك",
+    },
+    {
+      id: "moeen",
+      name: "معين عبابنه",
+      label: "معين",
+      email: "nayf78598@gmail.com",
+      roleLabel: "موظف",
+    },
+    {
+      id: "zaid",
+      name: "زيد عبابنه",
+      label: "زيد",
+      email: "zaid@diftain.local",
+      roleLabel: "موظف",
+    },
+  ];
 
   const defaultTeam = [
     {
@@ -195,8 +216,10 @@ export default function App() {
       phone: row.phone || contactData.phone,
       image: row.image_url || "🏡",
       status: row.status || "متاح",
-      createdBy: "الإدارة",
+      createdBy: row.created_by_name || "الإدارة",
+      updatedBy: row.updated_by_name || "",
       created_at: row.created_at,
+      updated_at: row.updated_at,
     };
   }
 
@@ -297,14 +320,10 @@ export default function App() {
     return Boolean(user.permissions?.[permission]);
   }
 
-  async function login(role) {
-    const password = prompt(
-      `أدخل كلمة مرور ${role === "owner" ? "المالك" : "الموظف"}:`
-    );
+  async function login(account) {
+    const password = prompt(`أدخل كلمة مرور ${account.label}:`);
 
     if (!password) return;
-
-    const email = role === "owner" ? OWNER_EMAIL : EMPLOYEE_EMAIL;
 
     setLoading(true);
     setErrorMessage("");
@@ -312,7 +331,7 @@ export default function App() {
     const { data, error } = await withTimeout(
       "تسجيل الدخول",
       supabase.auth.signInWithPassword({
-        email,
+        email: account.email,
         password,
       })
     );
@@ -329,7 +348,7 @@ export default function App() {
     if (data?.user) {
       await loadUserProfile(data.user);
       setShowAdminDash(true);
-      alert(`تم الدخول كـ ${role === "owner" ? "مالك" : "موظف"}`);
+      alert(`تم الدخول باسم ${account.name}`);
     }
   }
 
@@ -423,6 +442,8 @@ export default function App() {
         badge: form.badge || "عادي",
         phone: form.phone || contactData.phone,
         image_url: imageUrl,
+        updated_by: user?.id || null,
+        updated_by_name: user?.name || user?.email || "الإدارة",
         updated_at: new Date().toISOString(),
       };
 
@@ -455,6 +476,7 @@ export default function App() {
           supabase.from("properties").insert({
             ...payload,
             created_by: user?.id || null,
+            created_by_name: user?.name || user?.email || "الإدارة",
           }).select("id").single()
         );
 
@@ -891,29 +913,26 @@ ${siteUrl}`;
     </div>
 
     <p style={styles.loginPanelText}>
-      اختر نوع الدخول ثم أدخل كلمة المرور.
+      اختر اسم المستخدم ثم أدخل كلمة المرور الخاصة به.
     </p>
 
     <div style={styles.loginPanelButtons}>
-      <button
-        style={styles.ownerLoginChoice}
-        onClick={() => {
-          setShowLoginPanel(false);
-          login("owner");
-        }}
-      >
-        👑 دخول المالك
-      </button>
-
-      <button
-        style={styles.employeeLoginChoice}
-        onClick={() => {
-          setShowLoginPanel(false);
-          login("employee");
-        }}
-      >
-        👤 دخول الموظف
-      </button>
+      {loginAccounts.map((account) => (
+        <button
+          key={account.id}
+          style={
+            account.roleLabel === "مالك"
+              ? styles.ownerLoginChoice
+              : styles.employeeLoginChoice
+          }
+          onClick={() => {
+            setShowLoginPanel(false);
+            login(account);
+          }}
+        >
+          {account.roleLabel === "مالك" ? "👑" : "👤"} {account.label}
+        </button>
+      ))}
     </div>
   </div>
 )}
@@ -1203,6 +1222,11 @@ ${siteUrl}`;
                       <small style={styles.propMeta}>
                         أضيف بواسطة: {prop.createdBy || "الإدارة"}
                       </small>
+                      {prop.updatedBy && (
+                        <small style={styles.propMeta}>
+                          آخر تعديل بواسطة: {prop.updatedBy}
+                        </small>
+                      )}
                     </div>
 
                     <div style={styles.propActions}>
