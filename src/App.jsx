@@ -206,6 +206,7 @@ export default function App() {
 
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
+  const [externalOffers, setExternalOffers] = useState(externalMarketingOffers);
   const [team, setTeam] = useState(defaultTeam);
   const [contactData, setContactData] = useState(defaultContact);
 
@@ -325,7 +326,7 @@ export default function App() {
     try {
       await withTimeout(
         "تحميل البيانات",
-        Promise.all([loadContacts(), loadTeam(), loadProperties()])
+        Promise.all([loadContacts(), loadTeam(), loadProperties(), loadExternalOffers()])
       );
 
       const { data } = await withTimeout("فحص جلسة الدخول", supabase.auth.getSession());
@@ -888,6 +889,46 @@ export default function App() {
       .replace(/^00962/, "962")
       .replace(/^0/, "962")
       .replace(/\D/g, "");
+  }
+
+  function mapExternalOffer(row) {
+    return {
+      id: row.id,
+      type: row.type || "",
+      location: row.location || "",
+      size: row.size || "",
+      price: row.price || "السعر عند التواصل",
+      sourceName: row.source_name || "مصدر معلن",
+      sourceUrl: row.source_url || "#",
+      checkedAt: row.checked_at || "",
+      note: row.note || "",
+    };
+  }
+
+  async function loadExternalOffers() {
+    try {
+      const { data, error } = await withTimeout(
+        "قراءة العروض التسويقية الخارجية",
+        supabase
+          .from("external_offers")
+          .select("*")
+          .eq("status", "published")
+          .order("checked_at", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(24)
+      );
+
+      if (error) {
+        console.warn("External offers table is not ready yet", error);
+        return;
+      }
+
+      if (data?.length) {
+        setExternalOffers(data.map(mapExternalOffer));
+      }
+    } catch (error) {
+      console.warn("Using built-in external offers fallback", error);
+    }
   }
 
   function updateMarketingRequest(field, value) {
@@ -2086,7 +2127,7 @@ ${siteUrl}`;
         </div>
 
         <div style={viewStyles.externalGrid}>
-          {externalMarketingOffers.map((offer) => (
+          {externalOffers.map((offer) => (
             <article style={viewStyles.externalCard} key={offer.id}>
               <div style={viewStyles.externalCardHead}>
                 <span style={viewStyles.externalTag}>وساطة تسويقية</span>

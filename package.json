@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "update:external-offers": "node scripts/update-external-offers.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
