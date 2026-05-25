@@ -131,6 +131,11 @@ export default function App() {
     badge: "عادي",
     phone: "",
     image: "🏡",
+    sourceType: "office",
+    sourceName: "",
+    sourceUrl: "",
+    sourceCheckedAt: "",
+    sourceConsent: false,
     imageFile: null,
   });
 
@@ -216,6 +221,11 @@ export default function App() {
       phone: row.phone || contactData.phone,
       image: row.image_url || "🏡",
       status: row.status || "متاح",
+      sourceType: row.source_type || "office",
+      sourceName: row.source_name || "",
+      sourceUrl: row.source_url || "",
+      sourceCheckedAt: row.source_checked_at || "",
+      sourceConsent: Boolean(row.source_consent),
       createdBy: row.created_by_name || "الإدارة",
       updatedBy: row.updated_by_name || "",
       created_at: row.created_at,
@@ -381,6 +391,11 @@ export default function App() {
       badge: "عادي",
       phone: "",
       image: "🏡",
+      sourceType: "office",
+      sourceName: "",
+      sourceUrl: "",
+      sourceCheckedAt: "",
+      sourceConsent: false,
       imageFile: null,
     });
     setEditingProperty(null);
@@ -442,6 +457,11 @@ export default function App() {
         badge: form.badge || "عادي",
         phone: form.phone || contactData.phone,
         image_url: imageUrl,
+        source_type: form.sourceType,
+        source_name: form.sourceName,
+        source_url: form.sourceUrl,
+        source_checked_at: form.sourceCheckedAt || null,
+        source_consent: form.sourceConsent,
         updated_by: user?.id || null,
         updated_by_name: user?.name || user?.email || "الإدارة",
         updated_at: new Date().toISOString(),
@@ -539,11 +559,26 @@ export default function App() {
       badge: prop.badge || "عادي",
       phone: prop.phone || "",
       image: prop.image || "🏡",
+      sourceType: prop.sourceType || "office",
+      sourceName: prop.sourceName || "",
+      sourceUrl: prop.sourceUrl || "",
+      sourceCheckedAt: prop.sourceCheckedAt || "",
+      sourceConsent: Boolean(prop.sourceConsent),
       imageFile: null,
     });
     setActiveTab("properties");
     setShowAdminDash(true);
     window.location.hash = "#admin";
+  }
+
+  function sourceTypeLabel(type) {
+    if (type === "published") return "عرض تسويقي منشور";
+    if (type === "marketing") return "وساطة تسويقية";
+    return "عرض خاص بالمكتب";
+  }
+
+  function isMarketingSource(type) {
+    return type === "published" || type === "marketing";
   }
 
   async function saveEmployee(e) {
@@ -1177,6 +1212,60 @@ ${siteUrl}`;
                   }
                 />
 
+                <div style={styles.formRow}>
+                  <select
+                    style={styles.input}
+                    value={form.sourceType}
+                    onChange={(e) =>
+                      setForm({ ...form, sourceType: e.target.value })
+                    }
+                  >
+                    <option value="office">عرض خاص بالمكتب</option>
+                    <option value="published">عرض تسويقي منشور</option>
+                    <option value="marketing">وساطة تسويقية</option>
+                  </select>
+
+                  <input
+                    style={styles.input}
+                    placeholder="اسم المصدر أو المسوق"
+                    value={form.sourceName}
+                    onChange={(e) =>
+                      setForm({ ...form, sourceName: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div style={styles.formRow}>
+                  <input
+                    style={styles.input}
+                    placeholder="رابط مصدر العرض"
+                    value={form.sourceUrl}
+                    onChange={(e) =>
+                      setForm({ ...form, sourceUrl: e.target.value })
+                    }
+                  />
+
+                  <input
+                    style={styles.input}
+                    type="date"
+                    value={form.sourceCheckedAt}
+                    onChange={(e) =>
+                      setForm({ ...form, sourceCheckedAt: e.target.value })
+                    }
+                  />
+                </div>
+
+                <label style={styles.checkboxLine}>
+                  <input
+                    type="checkbox"
+                    checked={form.sourceConsent}
+                    onChange={(e) =>
+                      setForm({ ...form, sourceConsent: e.target.checked })
+                    }
+                  />
+                  تم التحقق من المصدر أو أخذ موافقة مبدئية على التسويق
+                </label>
+
                 <div style={styles.fileInputWrapper}>
                   <label style={styles.fileLabel}>📸 صورة العقار:</label>
                   <input
@@ -1222,6 +1311,12 @@ ${siteUrl}`;
                       <small style={styles.propMeta}>
                         أضيف بواسطة: {prop.createdBy || "الإدارة"}
                       </small>
+                      {isMarketingSource(prop.sourceType) && (
+                        <small style={styles.propMeta}>
+                          {sourceTypeLabel(prop.sourceType)}
+                          {prop.sourceName ? ` - ${prop.sourceName}` : ""}
+                        </small>
+                      )}
                       {prop.updatedBy && (
                         <small style={styles.propMeta}>
                           آخر تعديل بواسطة: {prop.updatedBy}
@@ -1527,6 +1622,11 @@ ${siteUrl}`;
                 {item.badge && item.badge !== "عادي" && (
                   <div style={styles.badgeLabel}>{item.badge}</div>
                 )}
+                {isMarketingSource(item.sourceType) && (
+                  <div style={styles.sourceLabel}>
+                    {sourceTypeLabel(item.sourceType)}
+                  </div>
+                )}
               </div>
 
               <div style={styles.propertyBody}>
@@ -1536,6 +1636,24 @@ ${siteUrl}`;
                 <p style={styles.propertyLine}>💰 {item.price}</p>
                 {item.note && (
                   <p style={styles.propertyNote}>✨ {item.note}</p>
+                )}
+                {isMarketingSource(item.sourceType) && (
+                  <div style={styles.sourceNotice}>
+                    <strong>{sourceTypeLabel(item.sourceType)}</strong>
+                    <span>
+                      عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب الضفتين إلا إذا ذكر ذلك صراحة.
+                    </span>
+                    {item.sourceUrl && (
+                      <a
+                        href={item.sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={styles.sourceLink}
+                      >
+                        رابط المصدر
+                      </a>
+                    )}
+                  </div>
                 )}
 
                 <div style={styles.propertyButtons}>
@@ -2266,6 +2384,19 @@ const styles = {
     flex: 1,
   },
 
+  checkboxLine: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px 14px",
+    background: "white",
+    borderRadius: "8px",
+    border: "1px solid #cbd5e1",
+    color: "#334155",
+    fontSize: "14px",
+    fontWeight: "700",
+  },
+
   addButton: {
     background: "#10b981",
     color: "white",
@@ -2518,6 +2649,19 @@ const styles = {
     fontWeight: "bold",
   },
 
+  sourceLabel: {
+    position: "absolute",
+    bottom: "12px",
+    right: "12px",
+    background: "#111827",
+    color: "#facc15",
+    padding: "7px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "900",
+    border: "1px solid rgba(250,204,21,.5)",
+  },
+
   propertyBody: {
     padding: "18px",
   },
@@ -2535,6 +2679,26 @@ const styles = {
     background: "#f0f9ff",
     padding: "10px",
     borderRadius: "10px",
+  },
+
+  sourceNotice: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    fontSize: "12px",
+    lineHeight: "1.7",
+    color: "#475569",
+    background: "#fffbeb",
+    border: "1px solid #fde68a",
+    padding: "10px",
+    borderRadius: "10px",
+    marginTop: "10px",
+  },
+
+  sourceLink: {
+    color: "#0b4aa2",
+    fontWeight: "900",
+    textDecoration: "none",
   },
 
   propertyButtons: {
