@@ -1185,7 +1185,7 @@ ${siteUrl}`;
       </section>
 
       <section style={viewStyles.facebookCta}>
-        <div>
+        <div style={viewStyles.facebookContent}>
           <h2 style={viewStyles.facebookTitle}>تابع أحدث العروض العقارية</h2>
           <p style={viewStyles.facebookText}>
             تابعوا صفحة مكتب نور الضفتين العقاري على فيسبوك للاطلاع على أحدث
@@ -2449,6 +2449,13 @@ const styles = {
     alignItems: "center",
     gap: "32px",
     flexWrap: "wrap",
+    boxSizing: "border-box",
+    overflow: "hidden",
+  },
+
+  facebookContent: {
+    minWidth: 0,
+    flex: "1 1 320px",
   },
 
   facebookTitle: {
@@ -2471,7 +2478,13 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
+    textAlign: "center",
+    lineHeight: "1.5",
   },
 
   adminDashboard: {
@@ -3124,6 +3137,8 @@ const styles = {
     gap: "32px",
     color: "white",
     flexWrap: "wrap",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
 
   facebookPromoTitle: {
@@ -3145,7 +3160,13 @@ const styles = {
     borderRadius: "16px",
     textDecoration: "none",
     fontWeight: "900",
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    maxWidth: "100%",
+    textAlign: "center",
+    lineHeight: "1.5",
   },
 
   promo: {
@@ -3629,6 +3650,14 @@ function createResponsiveStyles(base, viewportWidth) {
       flexDirection: "column",
       alignItems: "stretch",
       textAlign: "center",
+      maxWidth: "calc(100% - 28px)",
+      width: "auto",
+    },
+    facebookContent: {
+      ...base.facebookContent,
+      width: "100%",
+      flex: "0 1 auto",
+      minWidth: 0,
     },
     facebookTitle: {
       ...base.facebookTitle,
@@ -3638,6 +3667,8 @@ function createResponsiveStyles(base, viewportWidth) {
     facebookButton: {
       ...base.facebookButton,
       width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
       padding: "13px 18px",
       textAlign: "center",
     },
@@ -3747,6 +3778,8 @@ function createResponsiveStyles(base, viewportWidth) {
       flexDirection: "column",
       alignItems: "stretch",
       textAlign: "center",
+      maxWidth: "100%",
+      width: "100%",
     },
     facebookPromoTitle: {
       ...base.facebookPromoTitle,
@@ -3756,6 +3789,8 @@ function createResponsiveStyles(base, viewportWidth) {
     facebookPromoButton: {
       ...base.facebookPromoButton,
       width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
       padding: "13px 18px",
       textAlign: "center",
     },
