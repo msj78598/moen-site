@@ -55,26 +55,17 @@ body {
   overflow-x: hidden;
 }
 
-.live-offer-track {
-  animation: live-offer-scroll 64s linear infinite;
-  will-change: transform;
-}
-
-.live-offer-track:hover {
-  animation-play-state: running;
-}
-
-.live-offer-track a span {
+.live-offer-marquee a span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.live-offer-track a small {
+.live-offer-marquee a small {
   color: #0b4aa2;
   font-weight: 900;
 }
 
-.live-offer-track a:not(:last-child)::after {
+.live-offer-marquee a:not(:last-child)::after {
   content: "";
   width: 6px;
   height: 6px;
@@ -94,22 +85,6 @@ body {
 [id^="external-offer-"]:target {
   outline: 3px solid rgba(250, 204, 21, 0.85);
   box-shadow: 0 0 0 8px rgba(250, 204, 21, 0.18), 0 18px 45px rgba(15, 23, 42, 0.12);
-}
-
-@keyframes live-offer-scroll {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .live-offer-track {
-    animation: none;
-  }
 }
 
 #root {

@@ -1462,34 +1462,30 @@ ${siteUrl}`;
           <span>آخر العروض</span>
         </div>
         <div style={viewStyles.liveTickerWindow}>
-          <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
-            {[0, 1].map((group) => (
-              <div
-                className="live-offer-group"
-                style={viewStyles.liveTickerGroup}
-                key={group}
-                aria-hidden={group === 1}
+          <marquee
+            className="live-offer-marquee"
+            style={viewStyles.liveTickerMarquee}
+            direction="right"
+            scrollamount="2"
+          >
+            {tickerDisplayOffers.map((offer, index) => (
+              <a
+                key={`${offer.id || offer.type}-${index}`}
+                href={offer.anchor}
+                style={viewStyles.liveTickerItem}
+                title={`${offer.type} - ${offer.location}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  goToOffer(offer.anchor);
+                }}
               >
-                {tickerDisplayOffers.map((offer, index) => (
-                  <a
-                    key={`${group}-${offer.id || offer.type}-${index}`}
-                    href={offer.anchor}
-                    style={viewStyles.liveTickerItem}
-                    title={`${offer.type} - ${offer.location}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      goToOffer(offer.anchor);
-                    }}
-                  >
-                    <small>{offer.sourceLabel}</small>
-                    <strong>{offer.type}</strong>
-                    <span>{offer.location}</span>
-                    <b>{offer.price}</b>
-                  </a>
-                ))}
-              </div>
+                <small>{offer.sourceLabel}</small>
+                <strong>{offer.type}</strong>
+                <span>{offer.location}</span>
+                <b>{offer.price}</b>
+              </a>
             ))}
-          </div>
+          </marquee>
         </div>
       </section>
 
@@ -3023,27 +3019,14 @@ const styles = {
     borderRadius: "999px",
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
-    direction: "ltr",
-    WebkitMaskImage:
-      "linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)",
-    maskImage:
-      "linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)",
+    direction: "rtl",
   },
 
-  liveTickerTrack: {
-    display: "flex",
-    width: "max-content",
-    gap: 0,
-    padding: "4px 0",
-    direction: "ltr",
-  },
-
-  liveTickerGroup: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-    paddingInline: "10px",
-    flexShrink: 0,
+  liveTickerMarquee: {
+    display: "block",
+    width: "100%",
+    padding: "7px 0",
+    direction: "rtl",
   },
 
   liveTickerItem: {
