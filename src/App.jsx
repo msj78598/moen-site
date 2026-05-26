@@ -2192,7 +2192,7 @@ ${siteUrl}`;
         </section>
       )}
 
-      <section id="properties" style={viewStyles.section}>
+      <section id="properties" style={{ ...viewStyles.section, order: 4 }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>العروض العقارية</span>
           <h2 style={viewStyles.sectionTitle}>العروض المتاحة</h2>
@@ -2327,23 +2327,6 @@ ${siteUrl}`;
           <p style={viewStyles.sectionText}>
             فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
           </p>
-        </div>
-
-        <div style={viewStyles.filterBar} aria-label="تصفية كل العروض">
-          {offerFilters.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              type="button"
-              style={{
-                ...viewStyles.filterButton,
-                ...(offerFilter === id ? viewStyles.filterButtonActive : {}),
-              }}
-              onClick={() => setOfferFilter(id)}
-            >
-              <Icon size={16} strokeWidth={2.4} />
-              <span>{label}</span>
-            </button>
-          ))}
         </div>
 
         <div style={viewStyles.externalGrid}>
@@ -2503,7 +2486,7 @@ ${siteUrl}`;
         </a>
       </section>
 
-      <section id="promo" style={viewStyles.section}>
+      <section id="promo" style={{ ...viewStyles.section, order: 11 }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>QR Code</span>
           <h2 style={viewStyles.sectionTitle}>بطاقة المكتب الإلكترونية</h2>
@@ -2656,9 +2639,12 @@ const styles = {
     fontFamily: "Tahoma, Arial, sans-serif",
     background: "#f8fafc",
     color: "#0f172a",
+    display: "flex",
+    flexDirection: "column",
   },
 
   userBanner: {
+    order: 0,
     background: "#10b981",
     color: "white",
     padding: "12px 24px",
@@ -2680,6 +2666,7 @@ const styles = {
   },
 
   hero: {
+    order: 1,
     background:
       "linear-gradient(135deg, #061a44 0%, #0b4aa2 55%, #0284c7 100%)",
     color: "white",
@@ -2936,6 +2923,7 @@ const styles = {
   },
 
   trustStrip: {
+    order: 2,
     maxWidth: "1180px",
     margin: "-30px auto 34px",
     padding: "0 24px",
@@ -2984,6 +2972,7 @@ const styles = {
   },
 
   liveTicker: {
+    order: 3,
     maxWidth: "1180px",
     margin: "0 auto 18px",
     padding: "0 24px",
@@ -3068,6 +3057,7 @@ const styles = {
   },
 
   assuranceSection: {
+    order: 9,
     maxWidth: "1180px",
     margin: "18px auto 42px",
     padding: "0 24px",
@@ -3177,6 +3167,7 @@ const styles = {
   },
 
   servicesSection: {
+    order: 7,
     paddingTop: "20px",
     paddingBottom: "42px",
   },
@@ -3234,6 +3225,7 @@ const styles = {
   },
 
   requestSection: {
+    order: 6,
     maxWidth: "1180px",
     margin: "0 auto 64px",
     padding: "42px",
@@ -3332,6 +3324,7 @@ const styles = {
   },
 
   facebookCta: {
+    order: 8,
     maxWidth: "1180px",
     margin: "0 auto 64px",
     padding: "48px",
@@ -3381,6 +3374,7 @@ const styles = {
   },
 
   adminDashboard: {
+    order: 99,
     maxWidth: "1180px",
     margin: "64px auto",
     padding: "32px",
@@ -3774,6 +3768,7 @@ const styles = {
   },
 
   externalSection: {
+    order: 5,
     background: "#f8fafc",
     padding: "64px 24px",
     scrollMarginTop: "120px",
@@ -3966,6 +3961,7 @@ const styles = {
   },
 
   darkSection: {
+    order: 10,
     background: "linear-gradient(135deg, #061a44 0%, #0b4aa2 100%)",
     color: "white",
     padding: "64px 24px",
@@ -4063,6 +4059,7 @@ const styles = {
   },
 
   facebookPromoCta: {
+    display: "none",
     maxWidth: "1180px",
     margin: "64px auto",
     padding: "48px",
@@ -4107,6 +4104,7 @@ const styles = {
   },
 
   promo: {
+    order: 11,
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "48px",
@@ -4169,6 +4167,7 @@ const styles = {
   },
 
   footer: {
+    order: 12,
     background: "#1e293b",
     color: "white",
     padding: "64px 24px",
