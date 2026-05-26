@@ -1229,6 +1229,10 @@ ${siteUrl}`;
     ...liveTickerOffers,
     ...liveTickerOffers,
     ...liveTickerOffers,
+    ...liveTickerOffers,
+    ...liveTickerOffers,
+    ...liveTickerOffers,
+    ...liveTickerOffers,
   ];
   const trustMetrics = [
     {
@@ -3018,7 +3022,7 @@ const styles = {
     width: "max-content",
     gap: "6px",
     padding: "4px 6px",
-    direction: "rtl",
+    direction: "ltr",
   },
 
   liveTickerItem: {
@@ -3038,6 +3042,7 @@ const styles = {
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
+    direction: "rtl",
   },
 
   assuranceSection: {

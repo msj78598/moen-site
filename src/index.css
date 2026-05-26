@@ -56,7 +56,7 @@ body {
 }
 
 .live-offer-track {
-  animation: live-offer-scroll 58s linear infinite;
+  animation: live-offer-scroll 72s linear infinite;
   will-change: transform;
 }
 
@@ -92,7 +92,7 @@ body {
   }
 
   to {
-    transform: translateX(-25%);
+    transform: translateX(-12.5%);
   }
 }
 
