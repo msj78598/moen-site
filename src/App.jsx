@@ -1679,7 +1679,7 @@ ${siteUrl}`;
         )}
       </section>
 
-      <section style={viewStyles.facebookCta}>
+      <section style={{ display: "none" }}>
         <div style={viewStyles.facebookContent}>
           <h2 style={viewStyles.facebookTitle}>تابع أحدث العروض العقارية</h2>
           <p style={viewStyles.facebookText}>
@@ -2483,7 +2483,7 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <section style={viewStyles.facebookPromoCta}>
+      <section style={{ display: "none" }}>
         <div>
           <h2 style={viewStyles.facebookPromoTitle}>
             🎯 تابع أحدث عروضنا على فيسبوك
