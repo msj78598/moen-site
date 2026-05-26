@@ -3157,13 +3157,13 @@ const styles = {
 
   grid4: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "14px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+    gap: "16px",
   },
 
   card: {
     background: "white",
-    padding: "16px",
+    padding: "18px",
     borderRadius: "16px",
     boxShadow: "0 10px 26px rgba(15,23,42,.055)",
     textAlign: "right",
@@ -3171,9 +3171,9 @@ const styles = {
     overflow: "hidden",
     display: "grid",
     gridTemplateColumns: "46px minmax(0, 1fr)",
-    gap: "12px",
+    gap: "14px",
     alignItems: "start",
-    minHeight: "116px",
+    minHeight: "132px",
     transition: "transform .2s ease, box-shadow .2s ease, border-color .2s ease",
   },
 
@@ -3190,7 +3190,7 @@ const styles = {
   },
 
   cardTitle: {
-    fontSize: "16px",
+    fontSize: "17px",
     fontWeight: "900",
     margin: "0 0 5px",
     color: "#061a44",
@@ -3198,9 +3198,10 @@ const styles = {
   },
 
   cardText: {
-    fontSize: "13px",
+    fontSize: "14px",
     color: "#475569",
-    lineHeight: "1.75",
+    lineHeight: "1.9",
+    overflowWrap: "anywhere",
   },
 
   requestSection: {
@@ -4641,11 +4642,11 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     card: {
       ...base.card,
-      padding: "13px",
+      padding: "15px",
       borderRadius: "14px",
       minHeight: "auto",
       gridTemplateColumns: "40px minmax(0, 1fr)",
-      gap: "10px",
+      gap: "12px",
     },
     iconBox: {
       ...base.iconBox,
@@ -4661,8 +4662,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     cardText: {
       ...base.cardText,
-      fontSize: "12px",
-      lineHeight: "1.7",
+      fontSize: "13px",
+      lineHeight: "1.85",
     },
     requestSection: {
       ...base.requestSection,
