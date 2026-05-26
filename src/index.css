@@ -56,7 +56,8 @@ body {
 }
 
 .live-offer-track {
-  animation: live-offer-scroll 26s linear infinite;
+  animation: live-offer-scroll 42s linear infinite;
+  will-change: transform;
 }
 
 .live-offer-track:hover {
@@ -85,7 +86,7 @@ body {
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translateX(-25%);
   }
 }
 

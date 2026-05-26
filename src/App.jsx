@@ -1224,6 +1224,12 @@ ${siteUrl}`;
     sourceLabel: "عرض تسويقي",
   }));
   const liveTickerOffers = liveOffers.length ? liveOffers : fallbackTickerOffers;
+  const tickerDisplayOffers = [
+    ...liveTickerOffers,
+    ...liveTickerOffers,
+    ...liveTickerOffers,
+    ...liveTickerOffers,
+  ];
   const trustMetrics = [
     {
       value: `${properties.length + externalOffers.length}+`,
@@ -1453,7 +1459,7 @@ ${siteUrl}`;
         </div>
         <div style={viewStyles.liveTickerWindow}>
           <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
-            {[...liveTickerOffers, ...liveTickerOffers].map((offer, index) => (
+            {tickerDisplayOffers.map((offer, index) => (
               <a
                 key={`${offer.id || offer.type}-${index}`}
                 href={offer.anchor}
@@ -1528,28 +1534,6 @@ ${siteUrl}`;
               <div style={viewStyles.iconBox}>{icon}</div>
               <h3 style={viewStyles.cardTitle}>{title}</h3>
               <p style={viewStyles.cardText}>{text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section style={viewStyles.assuranceSection}>
-        <div style={viewStyles.sectionHead}>
-          <span style={viewStyles.sectionLabel}>ثقة ووضوح</span>
-          <h2 style={viewStyles.sectionTitle}>لماذا نور الضفتين؟</h2>
-          <p style={viewStyles.sectionText}>
-            تجربة عقارية أكثر تنظيما للمالك والباحث، من أول عرض حتى أول تواصل جاد.
-          </p>
-        </div>
-
-        <div style={viewStyles.assuranceGrid}>
-          {assuranceItems.map(({ title, text, Icon }) => (
-            <article style={viewStyles.assuranceItem} key={title}>
-              <span style={viewStyles.assuranceIcon}>
-                <Icon size={22} strokeWidth={2.4} />
-              </span>
-              <h3 style={viewStyles.assuranceTitle}>{title}</h3>
-              <p style={viewStyles.assuranceText}>{text}</p>
             </article>
           ))}
         </div>
@@ -2421,6 +2405,28 @@ ${siteUrl}`;
         )}
 
       </section>
+
+      <section style={viewStyles.assuranceSection}>
+        <div style={viewStyles.assuranceHeader}>
+          <span style={viewStyles.sectionLabel}>ثقة ووضوح</span>
+          <h2 style={viewStyles.assuranceMainTitle}>لماذا نور الضفتين؟</h2>
+        </div>
+
+        <div style={viewStyles.assuranceGrid}>
+          {assuranceItems.map(({ title, text, Icon }) => (
+            <article style={viewStyles.assuranceItem} key={title}>
+              <span style={viewStyles.assuranceIcon}>
+                <Icon size={18} strokeWidth={2.4} />
+              </span>
+              <div>
+                <h3 style={viewStyles.assuranceTitle}>{title}</h3>
+                <p style={viewStyles.assuranceText}>{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="team" style={viewStyles.darkSection}>
         <div style={viewStyles.inner}>
           <div style={viewStyles.sectionHeadLight}>
@@ -2976,11 +2982,11 @@ const styles = {
 
   liveTicker: {
     maxWidth: "1180px",
-    margin: "0 auto 28px",
+    margin: "0 auto 18px",
     padding: "0 24px",
     display: "grid",
-    gridTemplateColumns: "150px minmax(0, 1fr)",
-    gap: "10px",
+    gridTemplateColumns: "120px minmax(0, 1fr)",
+    gap: "8px",
     alignItems: "stretch",
     boxSizing: "border-box",
   },
@@ -2989,12 +2995,13 @@ const styles = {
     background: "#061a44",
     color: "#facc15",
     borderRadius: "999px",
-    padding: "9px 14px",
+    padding: "7px 12px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
     fontWeight: "900",
+    fontSize: "13px",
     boxShadow: "0 12px 26px rgba(6,26,68,.14)",
   },
 
@@ -3004,28 +3011,31 @@ const styles = {
     borderRadius: "999px",
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
+    direction: "ltr",
   },
 
   liveTickerTrack: {
     display: "flex",
     width: "max-content",
-    gap: "8px",
-    padding: "6px 8px",
+    gap: "6px",
+    padding: "4px 6px",
+    direction: "rtl",
   },
 
   liveTickerItem: {
-    minWidth: "360px",
-    maxWidth: "420px",
+    minWidth: "260px",
+    maxWidth: "320px",
     color: "#061a44",
     background: "#f8fafc",
     border: "1px solid #e2e8f0",
     borderRadius: "999px",
-    padding: "7px 12px",
+    padding: "6px 11px",
     textDecoration: "none",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "8px",
     lineHeight: "1.4",
+    fontSize: "12px",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -3033,48 +3043,66 @@ const styles = {
 
   assuranceSection: {
     maxWidth: "1180px",
-    margin: "0 auto 64px",
-    padding: "56px 24px",
+    margin: "18px auto 42px",
+    padding: "0 24px",
     boxSizing: "border-box",
+  },
+
+  assuranceHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginBottom: "14px",
+  },
+
+  assuranceMainTitle: {
+    color: "#061a44",
+    fontSize: "22px",
+    fontWeight: "900",
+    margin: 0,
   },
 
   assuranceGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-    gap: "18px",
+    gap: "12px",
   },
 
   assuranceItem: {
-    background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+    background: "white",
     border: "1px solid #dbeafe",
-    borderRadius: "18px",
-    padding: "22px 18px",
-    boxShadow: "0 16px 34px rgba(15,23,42,.07)",
+    borderRadius: "14px",
+    padding: "14px",
+    boxShadow: "0 8px 22px rgba(15,23,42,.05)",
     minWidth: 0,
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
   },
 
   assuranceIcon: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "14px",
+    width: "34px",
+    minWidth: "34px",
+    height: "34px",
+    borderRadius: "12px",
     background: "#0b4aa2",
     color: "#facc15",
     display: "grid",
     placeItems: "center",
-    marginBottom: "14px",
   },
 
   assuranceTitle: {
     color: "#061a44",
-    fontSize: "18px",
+    fontSize: "14px",
     fontWeight: "900",
-    margin: "0 0 8px",
+    margin: "0 0 4px",
   },
 
   assuranceText: {
     color: "#475569",
-    fontSize: "13px",
-    lineHeight: "1.8",
+    fontSize: "12px",
+    lineHeight: "1.7",
   },
 
   outline: {
@@ -4275,7 +4303,7 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     assuranceSection: {
       ...base.assuranceSection,
-      padding: "48px 18px",
+      padding: "0 18px",
     },
     assuranceGrid: {
       ...base.assuranceGrid,
@@ -4516,7 +4544,7 @@ function createResponsiveStyles(base, viewportWidth) {
     liveTicker: {
       ...tablet.liveTicker,
       padding: "0 14px",
-      marginBottom: "22px",
+      marginBottom: "14px",
       gap: "8px",
     },
     liveTickerHead: {
@@ -4526,24 +4554,34 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     liveTickerItem: {
       ...base.liveTickerItem,
-      minWidth: "280px",
-      maxWidth: "320px",
+      minWidth: "220px",
+      maxWidth: "260px",
       fontSize: "12px",
     },
     assuranceSection: {
       ...tablet.assuranceSection,
-      padding: "40px 14px",
-      marginBottom: "40px",
+      padding: "0 14px",
+      marginBottom: "32px",
+    },
+    assuranceHeader: {
+      ...base.assuranceHeader,
+      alignItems: "flex-start",
+      flexDirection: "column",
+      marginBottom: "12px",
+    },
+    assuranceMainTitle: {
+      ...base.assuranceMainTitle,
+      fontSize: "20px",
     },
     assuranceGrid: {
       ...tablet.assuranceGrid,
       gridTemplateColumns: "1fr",
-      gap: "14px",
+      gap: "10px",
     },
     assuranceItem: {
       ...base.assuranceItem,
-      padding: "18px 16px",
-      borderRadius: "16px",
+      padding: "12px",
+      borderRadius: "12px",
     },
     externalSection: {
       ...tablet.externalSection,
