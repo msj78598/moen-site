@@ -55,17 +55,21 @@ body {
   overflow-x: hidden;
 }
 
-.live-offer-marquee a span {
+.live-offer-track {
+  animation: live-offer-scroll 110s linear infinite;
+}
+
+.live-offer-track a span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.live-offer-marquee a small {
+.live-offer-track a small {
   color: #0b4aa2;
   font-weight: 900;
 }
 
-.live-offer-marquee a:not(:last-child)::after {
+.live-offer-track a:not(:last-child)::after {
   content: "";
   width: 6px;
   height: 6px;
@@ -73,6 +77,16 @@ body {
   background: #facc15;
   margin-inline-start: 12px;
   flex: 0 0 auto;
+}
+
+@keyframes live-offer-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .service-card:hover {
