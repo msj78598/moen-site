@@ -1209,7 +1209,7 @@ ${siteUrl}`;
       Icon: RefreshCw,
     },
     {
-      value: "إربد وقراها",
+      value: "إربد ومناطقها",
       label: "نطاق التغطية",
       Icon: MapPin,
     },
