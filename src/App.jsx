@@ -1484,6 +1484,24 @@ ${siteUrl}`;
         </div>
       </section>
 
+      <section style={viewStyles.quickServices} aria-label="خدمات المكتب السريعة">
+        {[
+          { title: "بيع أراضي", Icon: MapPin },
+          { title: "بيع عقارات", Icon: Home },
+          { title: "بحث عقاري", Icon: SearchCheck },
+          { title: "وساطة موثوقة", Icon: Handshake },
+          { title: "إنجاز معاملات", Icon: ShieldCheck },
+          { title: "تواصل مباشر", Icon: PhoneCall },
+        ].map(({ title, Icon }) => (
+          <a style={viewStyles.quickServiceItem} href="#services" key={title}>
+            <span style={viewStyles.quickServiceIcon}>
+              <Icon size={17} strokeWidth={2.5} />
+            </span>
+            <strong>{title}</strong>
+          </a>
+        ))}
+      </section>
+
       <section id="services" style={{ ...viewStyles.section, ...viewStyles.servicesSection }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>خدماتنا</span>
@@ -2192,7 +2210,7 @@ ${siteUrl}`;
         </section>
       )}
 
-      <section id="properties" style={{ ...viewStyles.section, order: 4 }}>
+      <section id="properties" style={{ ...viewStyles.section, order: 5 }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>العروض العقارية</span>
           <h2 style={viewStyles.sectionTitle}>العروض المتاحة</h2>
@@ -3056,8 +3074,46 @@ const styles = {
     flex: "0 0 auto",
   },
 
+  quickServices: {
+    order: 4,
+    maxWidth: "1180px",
+    margin: "0 auto 24px",
+    padding: "0 24px",
+    display: "grid",
+    gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+    gap: "10px",
+    boxSizing: "border-box",
+  },
+
+  quickServiceItem: {
+    minWidth: 0,
+    background: "rgba(255,255,255,.98)",
+    border: "1px solid #dbeafe",
+    borderRadius: "16px",
+    padding: "12px 8px",
+    textDecoration: "none",
+    color: "#061a44",
+    display: "grid",
+    justifyItems: "center",
+    gap: "7px",
+    fontSize: "12px",
+    fontWeight: "900",
+    textAlign: "center",
+    boxShadow: "0 10px 24px rgba(15,23,42,.055)",
+  },
+
+  quickServiceIcon: {
+    width: "34px",
+    height: "34px",
+    borderRadius: "13px",
+    background: "#eff6ff",
+    color: "#0b4aa2",
+    display: "grid",
+    placeItems: "center",
+  },
+
   assuranceSection: {
-    order: 9,
+    order: 10,
     maxWidth: "1180px",
     margin: "18px auto 42px",
     padding: "0 24px",
@@ -3167,7 +3223,7 @@ const styles = {
   },
 
   servicesSection: {
-    order: 7,
+    order: 8,
     paddingTop: "20px",
     paddingBottom: "42px",
   },
@@ -3225,7 +3281,7 @@ const styles = {
   },
 
   requestSection: {
-    order: 6,
+    order: 7,
     maxWidth: "1180px",
     margin: "0 auto 64px",
     padding: "42px",
@@ -3324,13 +3380,13 @@ const styles = {
   },
 
   facebookCta: {
-    order: 8,
+    order: 9,
     maxWidth: "1180px",
     margin: "0 auto 64px",
     padding: "48px",
     background: "#f0f9ff",
     borderRadius: "24px",
-    display: "flex",
+    display: "none",
     justifyContent: "space-between",
     alignItems: "center",
     gap: "32px",
@@ -3721,8 +3777,8 @@ const styles = {
 
   propertyGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "24px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+    gap: "16px",
   },
 
   filterBar: {
@@ -3768,7 +3824,7 @@ const styles = {
   },
 
   externalSection: {
-    order: 5,
+    order: 6,
     background: "#f8fafc",
     padding: "64px 24px",
     scrollMarginTop: "120px",
@@ -3778,15 +3834,15 @@ const styles = {
     maxWidth: "1180px",
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "24px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+    gap: "16px",
   },
 
   externalCard: {
     background: "white",
-    borderRadius: "16px",
-    padding: "20px",
-    boxShadow: "0 2px 24px rgba(15,23,42,.06)",
+    borderRadius: "14px",
+    padding: "16px",
+    boxShadow: "0 8px 20px rgba(15,23,42,.045)",
     border: "1px solid #e2e8f0",
     overflow: "hidden",
     scrollMarginTop: "120px",
@@ -3817,9 +3873,9 @@ const styles = {
 
   propertyCard: {
     background: "white",
-    borderRadius: "16px",
+    borderRadius: "14px",
     overflow: "hidden",
-    boxShadow: "0 2px 24px rgba(15,23,42,.06)",
+    boxShadow: "0 8px 20px rgba(15,23,42,.045)",
     border: "1px solid #e2e8f0",
     transition: "transform 0.3s ease",
     scrollMarginTop: "120px",
@@ -3831,11 +3887,11 @@ const styles = {
 
   propertyImage: {
     width: "100%",
-    height: "200px",
+    height: "132px",
     background: "linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%)",
     display: "grid",
     placeItems: "center",
-    fontSize: "64px",
+    fontSize: "34px",
     overflow: "hidden",
   },
 
@@ -3872,41 +3928,41 @@ const styles = {
   },
 
   propertyBody: {
-    padding: "18px",
+    padding: "14px",
   },
 
   propertyLine: {
-    margin: "7px 0",
-    fontSize: "14px",
+    margin: "4px 0",
+    fontSize: "13px",
     color: "#475569",
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
     gap: "8px",
-    lineHeight: "1.7",
+    lineHeight: "1.55",
     overflowWrap: "anywhere",
   },
 
   propertyLineIcon: {
-    width: "22px",
-    minWidth: "22px",
+    width: "18px",
+    minWidth: "18px",
     display: "inline-grid",
     placeItems: "center",
-    fontSize: "16px",
+    fontSize: "14px",
     lineHeight: 1,
   },
 
   propertyNote: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: "#0b4aa2",
     fontStyle: "italic",
     background: "#f0f9ff",
-    padding: "10px",
-    borderRadius: "10px",
+    padding: "8px 10px",
+    borderRadius: "9px",
     display: "flex",
     gap: "8px",
     alignItems: "flex-start",
-    lineHeight: "1.8",
+    lineHeight: "1.65",
     overflowWrap: "anywhere",
   },
 
@@ -3941,23 +3997,24 @@ const styles = {
   },
 
   propertyButtons: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))",
     gap: "8px",
-    flexWrap: "wrap",
-    marginTop: "16px",
+    marginTop: "12px",
     width: "100%",
     boxSizing: "border-box",
   },
 
   cardActionButton: {
-    width: "100%",
+    width: "auto",
     maxWidth: "100%",
-    minHeight: "48px",
-    padding: "12px 14px",
-    borderRadius: "12px",
+    minHeight: "40px",
+    padding: "9px 10px",
+    borderRadius: "10px",
     boxSizing: "border-box",
     textAlign: "center",
-    lineHeight: "1.5",
+    lineHeight: "1.4",
+    fontSize: "12px",
   },
 
   darkSection: {
@@ -4605,6 +4662,26 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.liveTickerLocation,
       maxWidth: "34%",
     },
+    quickServices: {
+      ...base.quickServices,
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: "8px",
+      padding: "0 14px",
+      marginBottom: "18px",
+    },
+    quickServiceItem: {
+      ...base.quickServiceItem,
+      padding: "10px 6px",
+      borderRadius: "13px",
+      fontSize: "11px",
+      gap: "6px",
+    },
+    quickServiceIcon: {
+      ...base.quickServiceIcon,
+      width: "30px",
+      height: "30px",
+      borderRadius: "11px",
+    },
     assuranceSection: {
       ...tablet.assuranceSection,
       padding: "0 14px",
@@ -4816,8 +4893,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     propertyImage: {
       ...base.propertyImage,
-      height: "150px",
-      fontSize: "26px",
+      height: "116px",
+      fontSize: "24px",
     },
     propertyLine: {
       ...base.propertyLine,
@@ -4849,7 +4926,7 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     propertyButtons: {
       ...base.propertyButtons,
-      flexDirection: "column",
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
       gap: "10px",
       alignItems: "stretch",
       paddingInline: "0",
