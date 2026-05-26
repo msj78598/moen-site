@@ -3187,6 +3187,7 @@ const styles = {
     fontSize: "22px",
     margin: 0,
     border: "1px solid #bfdbfe",
+    gridRow: "1 / span 2",
   },
 
   cardTitle: {
@@ -3195,6 +3196,7 @@ const styles = {
     margin: "0 0 5px",
     color: "#061a44",
     lineHeight: "1.45",
+    gridColumn: "2",
   },
 
   cardText: {
@@ -3202,6 +3204,7 @@ const styles = {
     color: "#475569",
     lineHeight: "1.9",
     overflowWrap: "anywhere",
+    gridColumn: "2",
   },
 
   requestSection: {
