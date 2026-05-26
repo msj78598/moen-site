@@ -1463,22 +1463,31 @@ ${siteUrl}`;
         </div>
         <div style={viewStyles.liveTickerWindow}>
           <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
-            {tickerDisplayOffers.map((offer, index) => (
-              <a
-                key={`${offer.id || offer.type}-${index}`}
-                href={offer.anchor}
-                style={viewStyles.liveTickerItem}
-                title={`${offer.type} - ${offer.location}`}
-                onClick={(event) => {
-                  event.preventDefault();
-                  goToOffer(offer.anchor);
-                }}
+            {[0, 1].map((group) => (
+              <div
+                className="live-offer-group"
+                style={viewStyles.liveTickerGroup}
+                key={group}
+                aria-hidden={group === 1}
               >
-                <small>{offer.sourceLabel}</small>
-                <strong>{offer.type}</strong>
-                <span>{offer.location}</span>
-                <b>{offer.price}</b>
-              </a>
+                {tickerDisplayOffers.map((offer, index) => (
+                  <a
+                    key={`${group}-${offer.id || offer.type}-${index}`}
+                    href={offer.anchor}
+                    style={viewStyles.liveTickerItem}
+                    title={`${offer.type} - ${offer.location}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      goToOffer(offer.anchor);
+                    }}
+                  >
+                    <small>{offer.sourceLabel}</small>
+                    <strong>{offer.type}</strong>
+                    <span>{offer.location}</span>
+                    <b>{offer.price}</b>
+                  </a>
+                ))}
+              </div>
             ))}
           </div>
         </div>
@@ -3015,24 +3024,36 @@ const styles = {
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
     direction: "ltr",
+    WebkitMaskImage:
+      "linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)",
+    maskImage:
+      "linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)",
   },
 
   liveTickerTrack: {
     display: "flex",
     width: "max-content",
-    gap: "6px",
-    padding: "4px 6px",
+    gap: 0,
+    padding: "4px 0",
     direction: "ltr",
   },
 
+  liveTickerGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+    paddingInline: "10px",
+    flexShrink: 0,
+  },
+
   liveTickerItem: {
-    minWidth: "260px",
-    maxWidth: "320px",
+    minWidth: 0,
+    maxWidth: "none",
     color: "#061a44",
-    background: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    borderRadius: "999px",
-    padding: "6px 11px",
+    background: "transparent",
+    border: "none",
+    borderRadius: 0,
+    padding: "7px 0",
     textDecoration: "none",
     display: "flex",
     alignItems: "center",
@@ -3040,9 +3061,9 @@ const styles = {
     lineHeight: "1.4",
     fontSize: "12px",
     whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    overflow: "visible",
     direction: "rtl",
+    flexShrink: 0,
   },
 
   assuranceSection: {

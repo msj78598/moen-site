@@ -56,7 +56,7 @@ body {
 }
 
 .live-offer-track {
-  animation: live-offer-scroll 72s linear infinite;
+  animation: live-offer-scroll 64s linear infinite;
   will-change: transform;
 }
 
@@ -72,6 +72,16 @@ body {
 .live-offer-track a small {
   color: #0b4aa2;
   font-weight: 900;
+}
+
+.live-offer-track a:not(:last-child)::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #facc15;
+  margin-inline-start: 12px;
+  flex: 0 0 auto;
 }
 
 .service-card:hover {
@@ -92,7 +102,7 @@ body {
   }
 
   to {
-    transform: translateX(-12.5%);
+    transform: translateX(-50%);
   }
 }
 
