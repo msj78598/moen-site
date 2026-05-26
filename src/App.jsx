@@ -227,6 +227,7 @@ export default function App() {
     typeof window === "undefined" ? 1200 : window.innerWidth
   );
   const [dhikrIndex, setDhikrIndex] = useState(0);
+  const [activeTickerIndex, setActiveTickerIndex] = useState(0);
   const [offerFilter, setOfferFilter] = useState("all");
 
   const [showAdminDash, setShowAdminDash] = useState(false);
@@ -330,6 +331,14 @@ export default function App() {
 
     return () => window.clearInterval(intervalId);
   }, [adhkarMessages.length]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveTickerIndex((current) => current + 1);
+    }, 4500);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   async function initApp() {
     setLoading(true);
@@ -1224,16 +1233,9 @@ ${siteUrl}`;
     sourceLabel: "عرض تسويقي",
   }));
   const liveTickerOffers = liveOffers.length ? liveOffers : fallbackTickerOffers;
-  const tickerDisplayOffers = [
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-    ...liveTickerOffers,
-  ];
+  const activeTickerOffer =
+    liveTickerOffers[activeTickerIndex % Math.max(liveTickerOffers.length, 1)] ||
+    fallbackTickerOffers[0];
   const trustMetrics = [
     {
       value: `${properties.length + externalOffers.length}+`,
@@ -1462,33 +1464,23 @@ ${siteUrl}`;
           <span>آخر العروض</span>
         </div>
         <div style={viewStyles.liveTickerWindow}>
-          <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
-            {[0, 1].map((group) => (
-              <div
-                className="live-offer-group"
-                style={viewStyles.liveTickerGroup}
-                key={group}
-              >
-                {tickerDisplayOffers.map((offer, index) => (
-                  <a
-                    key={`${group}-${offer.id || offer.type}-${index}`}
-                    href={offer.anchor}
-                    style={viewStyles.liveTickerItem}
-                    title={`${offer.type} - ${offer.location}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      goToOffer(offer.anchor);
-                    }}
-                  >
-                    <small>{offer.sourceLabel}</small>
-                    <strong>{offer.type}</strong>
-                    <span>{offer.location}</span>
-                    <b>{offer.price}</b>
-                  </a>
-                ))}
-              </div>
-            ))}
-          </div>
+          {activeTickerOffer && (
+            <button
+              type="button"
+              style={viewStyles.liveTickerSpotlight}
+              title={`${activeTickerOffer.type} - ${activeTickerOffer.location}`}
+              onClick={() => goToOffer(activeTickerOffer.anchor)}
+            >
+              <small style={viewStyles.liveTickerSource}>
+                {activeTickerOffer.sourceLabel}
+              </small>
+              <strong style={viewStyles.liveTickerType}>{activeTickerOffer.type}</strong>
+              <span style={viewStyles.liveTickerLocation}>
+                {activeTickerOffer.location}
+              </span>
+              <b style={viewStyles.liveTickerPrice}>{activeTickerOffer.price}</b>
+            </button>
+          )}
         </div>
       </section>
 
@@ -3022,47 +3014,57 @@ const styles = {
     borderRadius: "999px",
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
-    direction: "ltr",
     position: "relative",
     height: "42px",
-  },
-
-  liveTickerTrack: {
-    position: "absolute",
-    inset: 0,
     display: "flex",
     alignItems: "center",
-    width: "max-content",
-    direction: "ltr",
-    willChange: "transform",
+    direction: "rtl",
   },
 
-  liveTickerGroup: {
-    display: "flex",
-    alignItems: "center",
-    gap: "22px",
-    paddingInline: "12px",
-    flexShrink: 0,
-  },
-
-  liveTickerItem: {
-    minWidth: 0,
-    maxWidth: "none",
+  liveTickerSpotlight: {
+    width: "100%",
+    height: "100%",
     color: "#061a44",
     background: "transparent",
     border: "none",
-    borderRadius: 0,
-    padding: "7px 0",
-    textDecoration: "none",
+    padding: "8px 16px",
+    cursor: "pointer",
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    justifyContent: "center",
+    gap: "10px",
     lineHeight: "1.4",
     fontSize: "12px",
     whiteSpace: "nowrap",
-    overflow: "visible",
+    overflow: "hidden",
     direction: "rtl",
-    flexShrink: 0,
+    fontFamily: "inherit",
+  },
+
+  liveTickerSource: {
+    color: "#0b4aa2",
+    fontWeight: "900",
+    flex: "0 0 auto",
+  },
+
+  liveTickerType: {
+    fontWeight: "900",
+    flex: "0 0 auto",
+  },
+
+  liveTickerLocation: {
+    minWidth: 0,
+    maxWidth: "48%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    color: "#334155",
+  },
+
+  liveTickerPrice: {
+    color: "#061a44",
+    fontWeight: "950",
+    flex: "0 0 auto",
   },
 
   assuranceSection: {
@@ -4593,11 +4595,16 @@ function createResponsiveStyles(base, viewportWidth) {
       padding: "9px 12px",
       fontSize: "13px",
     },
-    liveTickerItem: {
-      ...base.liveTickerItem,
-      minWidth: "220px",
-      maxWidth: "260px",
-      fontSize: "12px",
+    liveTickerSpotlight: {
+      ...base.liveTickerSpotlight,
+      padding: "8px 10px",
+      gap: "7px",
+      fontSize: "11px",
+      justifyContent: "center",
+    },
+    liveTickerLocation: {
+      ...base.liveTickerLocation,
+      maxWidth: "34%",
     },
     assuranceSection: {
       ...tablet.assuranceSection,
