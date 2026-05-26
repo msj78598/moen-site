@@ -55,6 +55,30 @@ body {
   overflow-x: hidden;
 }
 
+.live-offer-track {
+  animation: live-offer-scroll 38s linear infinite;
+}
+
+.live-offer-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes live-offer-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-offer-track {
+    animation: none;
+  }
+}
+
 #root {
   width: 100%;
   max-width: 100%;

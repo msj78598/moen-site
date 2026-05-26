@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
-import { MapPin, PhoneCall } from "lucide-react";
+import {
+  BadgeCheck,
+  Building2,
+  Handshake,
+  Home,
+  ListFilter,
+  MapPin,
+  PhoneCall,
+  RefreshCw,
+  SearchCheck,
+  ShieldCheck,
+} from "lucide-react";
 import { supabase } from "./supabaseClient";
 
 export default function App() {
@@ -216,6 +227,8 @@ export default function App() {
     typeof window === "undefined" ? 1200 : window.innerWidth
   );
   const [dhikrIndex, setDhikrIndex] = useState(0);
+  const [propertyFilter, setPropertyFilter] = useState("all");
+  const [externalFilter, setExternalFilter] = useState("all");
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -1139,6 +1152,96 @@ ${siteUrl}`;
     }
   }
 
+  function offerCategory(offer) {
+    const text = `${offer.type || ""} ${offer.location || ""}`.toLowerCase();
+    if (
+      text.includes("أرض") ||
+      text.includes("أراضي") ||
+      text.includes("ارض") ||
+      text.includes("اراضي")
+    ) {
+      return "land";
+    }
+    if (text.includes("شقة") || text.includes("شقه")) return "apartment";
+    if (
+      text.includes("منزل") ||
+      text.includes("فيلا") ||
+      text.includes("مبنى") ||
+      text.includes("بناية")
+    ) {
+      return "building";
+    }
+    return "other";
+  }
+
+  function filteredByCategory(items, filter) {
+    if (filter === "all") return items;
+    return items.filter((item) => offerCategory(item) === filter);
+  }
+
+  function latestCheckedDate(items) {
+    const latest = items.map((item) => item.checkedAt).filter(Boolean).sort().at(-1);
+    return latest || "يوميا";
+  }
+
+  const propertyFilters = [
+    { id: "all", label: "الكل", Icon: ListFilter },
+    { id: "land", label: "أراضي", Icon: MapPin },
+    { id: "apartment", label: "شقق", Icon: Home },
+    { id: "building", label: "مبان ومنازل", Icon: Building2 },
+  ];
+  const externalFilters = propertyFilters;
+  const filteredProperties = filteredByCategory(properties, propertyFilter);
+  const filteredExternalOffers = filteredByCategory(externalOffers, externalFilter);
+  const liveOffers = [...properties, ...externalOffers]
+    .filter((offer) => offer.type && offer.location)
+    .slice(0, 10);
+  const liveTickerOffers = liveOffers.length ? liveOffers : externalMarketingOffers.slice(0, 6);
+  const trustMetrics = [
+    {
+      value: `${properties.length + externalOffers.length}+`,
+      label: "عرض متابع",
+      Icon: BadgeCheck,
+    },
+    {
+      value: latestCheckedDate(externalOffers),
+      label: "آخر تحديث للعروض الخارجية",
+      Icon: RefreshCw,
+    },
+    {
+      value: "إربد وقراها",
+      label: "نطاق التغطية",
+      Icon: MapPin,
+    },
+    {
+      value: "فريق مباشر",
+      label: "تواصل سريع مع المكتب",
+      Icon: PhoneCall,
+    },
+  ];
+  const assuranceItems = [
+    {
+      title: "تحقق قبل التواصل",
+      text: "نراجع توفر العرض وتفاصيله قبل أي متابعة مباشرة مع العميل.",
+      Icon: SearchCheck,
+    },
+    {
+      title: "وساطة واضحة",
+      text: "نوضح مصدر العرض ونفصل بين عروض المكتب والعروض التسويقية الخارجية.",
+      Icon: ShieldCheck,
+    },
+    {
+      title: "تسويق منظم",
+      text: "نرتب بيانات العقار بطريقة تسهل القرار والاستفسار والمشاركة.",
+      Icon: BadgeCheck,
+    },
+    {
+      title: "متابعة بشرية",
+      text: "فريق المكتب يتابع الطلبات والاستفسارات بدل ترك العميل بين الروابط.",
+      Icon: Handshake,
+    },
+  ];
+
   const qrLink =
     typeof window !== "undefined" ? window.location.origin + "/#promo" : "";
 
@@ -1304,6 +1407,40 @@ ${siteUrl}`;
         </div>
       </header>
 
+      <section style={viewStyles.trustStrip} aria-label="مؤشرات المكتب">
+        {trustMetrics.map(({ value, label, Icon }) => (
+          <div style={viewStyles.trustMetric} key={label}>
+            <span style={viewStyles.trustMetricIcon}>
+              <Icon size={20} strokeWidth={2.4} />
+            </span>
+            <strong style={viewStyles.trustMetricValue}>{value}</strong>
+            <span style={viewStyles.trustMetricLabel}>{label}</span>
+          </div>
+        ))}
+      </section>
+
+      <section style={viewStyles.liveTicker} aria-label="آخر العروض">
+        <div style={viewStyles.liveTickerHead}>
+          <RefreshCw size={18} strokeWidth={2.4} />
+          <span>عروض تتحرك باستمرار</span>
+        </div>
+        <div style={viewStyles.liveTickerWindow}>
+          <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
+            {[...liveTickerOffers, ...liveTickerOffers].map((offer, index) => (
+              <a
+                key={`${offer.id || offer.type}-${index}`}
+                href="#external-offers"
+                style={viewStyles.liveTickerItem}
+              >
+                <strong>{offer.type}</strong>
+                <span>{offer.location}</span>
+                <b>{offer.price}</b>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="services" style={viewStyles.section}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>خدماتنا</span>
@@ -1358,6 +1495,28 @@ ${siteUrl}`;
               <div style={viewStyles.iconBox}>{icon}</div>
               <h3 style={viewStyles.cardTitle}>{title}</h3>
               <p style={viewStyles.cardText}>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section style={viewStyles.assuranceSection}>
+        <div style={viewStyles.sectionHead}>
+          <span style={viewStyles.sectionLabel}>ثقة ووضوح</span>
+          <h2 style={viewStyles.sectionTitle}>لماذا نور الضفتين؟</h2>
+          <p style={viewStyles.sectionText}>
+            تجربة عقارية أكثر تنظيما للمالك والباحث، من أول عرض حتى أول تواصل جاد.
+          </p>
+        </div>
+
+        <div style={viewStyles.assuranceGrid}>
+          {assuranceItems.map(({ title, text, Icon }) => (
+            <article style={viewStyles.assuranceItem} key={title}>
+              <span style={viewStyles.assuranceIcon}>
+                <Icon size={22} strokeWidth={2.4} />
+              </span>
+              <h3 style={viewStyles.assuranceTitle}>{title}</h3>
+              <p style={viewStyles.assuranceText}>{text}</p>
             </article>
           ))}
         </div>
@@ -2022,8 +2181,25 @@ ${siteUrl}`;
           </p>
         </div>
 
+        <div style={viewStyles.filterBar} aria-label="تصفية عروض المكتب">
+          {propertyFilters.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              style={{
+                ...viewStyles.filterButton,
+                ...(propertyFilter === id ? viewStyles.filterButtonActive : {}),
+              }}
+              onClick={() => setPropertyFilter(id)}
+            >
+              <Icon size={16} strokeWidth={2.4} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
         <div style={viewStyles.propertyGrid}>
-          {properties.map((item) => (
+          {filteredProperties.map((item) => (
             <article style={viewStyles.propertyCard} key={item.id}>
               <div style={viewStyles.propertyImageWrapper}>
                 <div style={viewStyles.propertyImage}>
@@ -2115,6 +2291,9 @@ ${siteUrl}`;
             </article>
           ))}
         </div>
+        {!filteredProperties.length && (
+          <p style={viewStyles.emptyState}>لا توجد عروض ضمن هذا التصنيف حاليا.</p>
+        )}
       </section>
 
       <section id="external-offers" style={viewStyles.externalSection}>
@@ -2126,8 +2305,25 @@ ${siteUrl}`;
           </p>
         </div>
 
+        <div style={viewStyles.filterBar} aria-label="تصفية العروض الخارجية">
+          {externalFilters.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              style={{
+                ...viewStyles.filterButton,
+                ...(externalFilter === id ? viewStyles.filterButtonActive : {}),
+              }}
+              onClick={() => setExternalFilter(id)}
+            >
+              <Icon size={16} strokeWidth={2.4} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
         <div style={viewStyles.externalGrid}>
-          {externalOffers.map((offer) => (
+          {filteredExternalOffers.map((offer) => (
             <article style={viewStyles.externalCard} key={offer.id}>
               <div style={viewStyles.externalCardHead}>
                 <span style={viewStyles.externalTag}>وساطة تسويقية</span>
@@ -2179,6 +2375,9 @@ ${siteUrl}`;
             </article>
           ))}
         </div>
+        {!filteredExternalOffers.length && (
+          <p style={viewStyles.emptyState}>لا توجد عروض خارجية ضمن هذا التصنيف حاليا.</p>
+        )}
 
       </section>
       <section id="team" style={viewStyles.darkSection}>
@@ -2684,6 +2883,153 @@ const styles = {
     border: "1px solid rgba(250,204,21,.55)",
     cursor: "pointer",
     boxShadow: "0 12px 28px rgba(15,23,42,.18)",
+  },
+
+  trustStrip: {
+    maxWidth: "1180px",
+    margin: "-30px auto 34px",
+    padding: "0 24px",
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "14px",
+    position: "relative",
+    zIndex: 2,
+    boxSizing: "border-box",
+  },
+
+  trustMetric: {
+    background: "rgba(255,255,255,.97)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "18px",
+    padding: "18px 16px",
+    boxShadow: "0 18px 45px rgba(15,23,42,.10)",
+    display: "grid",
+    gap: "7px",
+    justifyItems: "center",
+    textAlign: "center",
+    minWidth: 0,
+  },
+
+  trustMetricIcon: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "14px",
+    background: "#eff6ff",
+    color: "#0b4aa2",
+    display: "grid",
+    placeItems: "center",
+  },
+
+  trustMetricValue: {
+    color: "#061a44",
+    fontSize: "18px",
+    lineHeight: "1.4",
+  },
+
+  trustMetricLabel: {
+    color: "#64748b",
+    fontSize: "12px",
+    fontWeight: "800",
+    lineHeight: "1.5",
+  },
+
+  liveTicker: {
+    maxWidth: "1180px",
+    margin: "0 auto 32px",
+    padding: "0 24px",
+    display: "grid",
+    gridTemplateColumns: "220px minmax(0, 1fr)",
+    gap: "12px",
+    alignItems: "stretch",
+    boxSizing: "border-box",
+  },
+
+  liveTickerHead: {
+    background: "#061a44",
+    color: "#facc15",
+    borderRadius: "16px",
+    padding: "14px 16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    fontWeight: "900",
+    boxShadow: "0 12px 26px rgba(6,26,68,.14)",
+  },
+
+  liveTickerWindow: {
+    background: "white",
+    border: "1px solid #e2e8f0",
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 12px 30px rgba(15,23,42,.06)",
+  },
+
+  liveTickerTrack: {
+    display: "flex",
+    width: "max-content",
+    gap: "10px",
+    padding: "10px",
+  },
+
+  liveTickerItem: {
+    minWidth: "280px",
+    maxWidth: "320px",
+    color: "#061a44",
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    padding: "10px 12px",
+    textDecoration: "none",
+    display: "grid",
+    gap: "3px",
+    lineHeight: "1.5",
+  },
+
+  assuranceSection: {
+    maxWidth: "1180px",
+    margin: "0 auto 64px",
+    padding: "56px 24px",
+    boxSizing: "border-box",
+  },
+
+  assuranceGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "18px",
+  },
+
+  assuranceItem: {
+    background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+    border: "1px solid #dbeafe",
+    borderRadius: "18px",
+    padding: "22px 18px",
+    boxShadow: "0 16px 34px rgba(15,23,42,.07)",
+    minWidth: 0,
+  },
+
+  assuranceIcon: {
+    width: "44px",
+    height: "44px",
+    borderRadius: "14px",
+    background: "#0b4aa2",
+    color: "#facc15",
+    display: "grid",
+    placeItems: "center",
+    marginBottom: "14px",
+  },
+
+  assuranceTitle: {
+    color: "#061a44",
+    fontSize: "18px",
+    fontWeight: "900",
+    margin: "0 0 8px",
+  },
+
+  assuranceText: {
+    color: "#475569",
+    fontSize: "13px",
+    lineHeight: "1.8",
   },
 
   outline: {
@@ -3269,6 +3615,48 @@ const styles = {
     gap: "24px",
   },
 
+  filterBar: {
+    maxWidth: "1180px",
+    margin: "0 auto 28px",
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    flexWrap: "wrap",
+  },
+
+  filterButton: {
+    border: "1px solid #cbd5e1",
+    background: "white",
+    color: "#334155",
+    borderRadius: "999px",
+    padding: "10px 16px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "7px",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 8px 20px rgba(15,23,42,.04)",
+  },
+
+  filterButtonActive: {
+    background: "#061a44",
+    color: "#facc15",
+    borderColor: "#061a44",
+  },
+
+  emptyState: {
+    maxWidth: "620px",
+    margin: "24px auto 0",
+    padding: "18px",
+    borderRadius: "16px",
+    background: "white",
+    border: "1px dashed #cbd5e1",
+    color: "#64748b",
+    textAlign: "center",
+    fontWeight: "800",
+  },
+
   externalSection: {
     background: "#f8fafc",
     padding: "64px 24px",
@@ -3827,6 +4215,25 @@ function createResponsiveStyles(base, viewportWidth) {
       padding: "52px 18px",
       scrollMarginTop: "24px",
     },
+    trustStrip: {
+      ...base.trustStrip,
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      margin: "-18px auto 28px",
+      padding: "0 18px",
+    },
+    liveTicker: {
+      ...base.liveTicker,
+      gridTemplateColumns: "1fr",
+      padding: "0 18px",
+    },
+    assuranceSection: {
+      ...base.assuranceSection,
+      padding: "48px 18px",
+    },
+    assuranceGrid: {
+      ...base.assuranceGrid,
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
     adminDashboard: {
       ...base.adminDashboard,
       margin: "28px 16px",
@@ -4032,6 +4439,66 @@ function createResponsiveStyles(base, viewportWidth) {
       ...tablet.section,
       padding: "40px 14px",
     },
+    trustStrip: {
+      ...tablet.trustStrip,
+      gridTemplateColumns: "1fr 1fr",
+      gap: "10px",
+      padding: "0 14px",
+      margin: "-12px auto 24px",
+    },
+    trustMetric: {
+      ...base.trustMetric,
+      padding: "14px 10px",
+      borderRadius: "14px",
+    },
+    trustMetricIcon: {
+      ...base.trustMetricIcon,
+      width: "34px",
+      height: "34px",
+      borderRadius: "12px",
+    },
+    trustMetricValue: {
+      ...base.trustMetricValue,
+      fontSize: "14px",
+      lineHeight: "1.5",
+    },
+    trustMetricLabel: {
+      ...base.trustMetricLabel,
+      fontSize: "11px",
+    },
+    liveTicker: {
+      ...tablet.liveTicker,
+      padding: "0 14px",
+      marginBottom: "22px",
+      gap: "8px",
+    },
+    liveTickerHead: {
+      ...base.liveTickerHead,
+      padding: "12px 14px",
+      borderRadius: "14px",
+      fontSize: "13px",
+    },
+    liveTickerItem: {
+      ...base.liveTickerItem,
+      minWidth: "230px",
+      maxWidth: "250px",
+      fontSize: "12px",
+    },
+    assuranceSection: {
+      ...tablet.assuranceSection,
+      padding: "40px 14px",
+      marginBottom: "40px",
+    },
+    assuranceGrid: {
+      ...tablet.assuranceGrid,
+      gridTemplateColumns: "1fr",
+      gap: "14px",
+    },
+    assuranceItem: {
+      ...base.assuranceItem,
+      padding: "18px 16px",
+      borderRadius: "16px",
+    },
     externalSection: {
       ...tablet.externalSection,
       padding: "40px 14px",
@@ -4177,6 +4644,21 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.propertyGrid,
       gridTemplateColumns: "1fr",
       gap: "16px",
+    },
+    filterBar: {
+      ...base.filterBar,
+      justifyContent: "flex-start",
+      flexWrap: "nowrap",
+      overflowX: "auto",
+      paddingBottom: "4px",
+      marginBottom: "20px",
+      maxWidth: "100%",
+    },
+    filterButton: {
+      ...base.filterButton,
+      flex: "0 0 auto",
+      padding: "9px 12px",
+      fontSize: "12px",
     },
     externalGrid: {
       ...base.externalGrid,
