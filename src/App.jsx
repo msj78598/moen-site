@@ -1485,8 +1485,7 @@ ${siteUrl}`;
           <span style={viewStyles.sectionLabel}>خدماتنا</span>
           <h2 style={viewStyles.sectionTitle}>حلول عقارية متكاملة</h2>
           <p style={viewStyles.sectionText}>
-            نخدم ملاك العقارات والباحثين عن فرص مناسبة من خلال تسويق واضح
-            وتواصل مباشر.
+            نخدم الملاك والباحثين بعروض واضحة وتواصل مباشر.
           </p>
         </div>
 
@@ -3151,8 +3150,8 @@ const styles = {
   },
 
   servicesSection: {
-    paddingTop: "44px",
-    paddingBottom: "48px",
+    paddingTop: "20px",
+    paddingBottom: "42px",
   },
 
   grid4: {
@@ -4610,7 +4609,7 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     sectionHead: {
       ...base.sectionHead,
-      marginBottom: "28px",
+      marginBottom: "22px",
     },
     sectionHeadLight: {
       ...base.sectionHeadLight,
