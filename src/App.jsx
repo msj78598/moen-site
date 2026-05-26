@@ -1480,7 +1480,7 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <section id="services" style={viewStyles.section}>
+      <section id="services" style={{ ...viewStyles.section, ...viewStyles.servicesSection }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>خدماتنا</span>
           <h2 style={viewStyles.sectionTitle}>حلول عقارية متكاملة</h2>
@@ -1530,7 +1530,7 @@ ${siteUrl}`;
       
             
           ].map(([icon, title, text]) => (
-            <article style={viewStyles.card} key={title}>
+            <article className="service-card" style={viewStyles.card} key={title}>
               <div style={viewStyles.iconBox}>{icon}</div>
               <h3 style={viewStyles.cardTitle}>{title}</h3>
               <p style={viewStyles.cardText}>{text}</p>
@@ -3150,44 +3150,57 @@ const styles = {
     lineHeight: "1.6",
   },
 
+  servicesSection: {
+    paddingTop: "44px",
+    paddingBottom: "48px",
+  },
+
   grid4: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "24px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "14px",
   },
 
   card: {
     background: "white",
-    padding: "32px 24px",
-    borderRadius: "20px",
-    boxShadow: "0 2px 24px rgba(15,23,42,.06)",
-    textAlign: "center",
+    padding: "16px",
+    borderRadius: "16px",
+    boxShadow: "0 10px 26px rgba(15,23,42,.055)",
+    textAlign: "right",
     border: "1px solid #e2e8f0",
     overflow: "hidden",
+    display: "grid",
+    gridTemplateColumns: "46px minmax(0, 1fr)",
+    gap: "12px",
+    alignItems: "start",
+    minHeight: "116px",
+    transition: "transform .2s ease, box-shadow .2s ease, border-color .2s ease",
   },
 
   iconBox: {
-    width: "64px",
-    height: "64px",
-    background: "#f0f9ff",
-    borderRadius: "16px",
+    width: "46px",
+    height: "46px",
+    background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+    borderRadius: "14px",
     display: "grid",
     placeItems: "center",
-    fontSize: "32px",
-    margin: "0 auto 16px",
+    fontSize: "22px",
+    margin: 0,
+    border: "1px solid #bfdbfe",
   },
 
   cardTitle: {
-    fontSize: "20px",
+    fontSize: "16px",
     fontWeight: "900",
-    margin: "12px 0",
+    margin: "0 0 5px",
     color: "#061a44",
+    lineHeight: "1.45",
   },
 
   cardText: {
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#475569",
-    lineHeight: "1.6",
+    lineHeight: "1.75",
   },
 
   requestSection: {
@@ -4624,24 +4637,32 @@ function createResponsiveStyles(base, viewportWidth) {
     grid4: {
       ...base.grid4,
       gridTemplateColumns: "1fr",
-      gap: "14px",
+      gap: "10px",
     },
     card: {
       ...base.card,
-      padding: "22px 18px",
-      borderRadius: "16px",
+      padding: "13px",
+      borderRadius: "14px",
+      minHeight: "auto",
+      gridTemplateColumns: "40px minmax(0, 1fr)",
+      gap: "10px",
     },
     iconBox: {
       ...base.iconBox,
-      width: "44px",
-      height: "44px",
-      borderRadius: "14px",
-      fontSize: "20px",
+      width: "40px",
+      height: "40px",
+      borderRadius: "12px",
+      fontSize: "18px",
     },
     cardTitle: {
       ...base.cardTitle,
-      fontSize: "18px",
-      lineHeight: "1.5",
+      fontSize: "15px",
+      lineHeight: "1.45",
+    },
+    cardText: {
+      ...base.cardText,
+      fontSize: "12px",
+      lineHeight: "1.7",
     },
     requestSection: {
       ...base.requestSection,
