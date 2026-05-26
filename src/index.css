@@ -56,7 +56,7 @@ body {
 }
 
 .live-offer-track {
-  animation: live-offer-scroll 190s linear infinite;
+  animation: live-offer-scroll 250s linear infinite;
 }
 
 .live-offer-track a span {
