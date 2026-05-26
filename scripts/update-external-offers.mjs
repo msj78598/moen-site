@@ -78,6 +78,51 @@ function absolutizeUrl(base, href) {
   return new URL(href, base).href;
 }
 
+function sourceKey(value) {
+  const parsed = new URL(value);
+  return `${parsed.origin}${decodeSegment(parsed.pathname)}`;
+}
+
+function formatPrice(value, currency = "JOD") {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return "السعر حسب المصدر / عند التواصل";
+  }
+
+  const formatted = new Intl.NumberFormat("en-US").format(amount);
+  return currency === "JOD" ? `${formatted} دينار` : `${formatted} ${currency}`;
+}
+
+function extractStructuredPrices(html) {
+  const match = html.match(
+    /<script[^>]+id=["']search-jsonld["'][^>]*>([\s\S]*?)<\/script>/i
+  );
+  if (!match) return new Map();
+
+  try {
+    const data = JSON.parse(match[1]);
+    const items = data.mainEntity?.itemListElement || [];
+    return new Map(
+      items
+        .map((entry) => {
+          const item = entry.item || {};
+          const itemUrl = item.url || item["@id"];
+          const price = item.offers?.price;
+          if (!itemUrl || price === undefined || price === null) return null;
+
+          return [
+            sourceKey(itemUrl),
+            formatPrice(price, item.offers?.priceCurrency || "JOD"),
+          ];
+        })
+        .filter(Boolean)
+    );
+  } catch (error) {
+    console.warn("Could not parse structured offer prices.", error);
+    return new Map();
+  }
+}
+
 function extractLinks(html, source) {
   const matches = [...html.matchAll(/href=["']([^"']+)["']/gi)]
     .map((match) => match[1])
@@ -87,7 +132,7 @@ function extractLinks(html, source) {
   return unique(matches, (link) => link).slice(0, MAX_OFFERS * 3);
 }
 
-function parseDaleelOffer(sourceUrl, sourceName) {
+function parseDaleelOffer(sourceUrl, sourceName, sourcePrice) {
   const url = new URL(sourceUrl);
   const parts = url.pathname.split("/").filter(Boolean).map(decodeSegment);
   const saleIndex = parts.indexOf("للبيع");
@@ -111,7 +156,7 @@ function parseDaleelOffer(sourceUrl, sourceName) {
     type,
     location,
     size: `${sizeMatch[1]} م²`,
-    price: "السعر حسب المصدر / عند التواصل",
+    price: sourcePrice || "السعر حسب المصدر / عند التواصل",
     source_name: sourceName,
     source_url: sourceUrl,
     checked_at: today,
@@ -136,8 +181,9 @@ async function fetchOffersFromSource(source) {
   }
 
   const html = await response.text();
+  const pricesByUrl = extractStructuredPrices(html);
   return extractLinks(html, source)
-    .map((link) => parseDaleelOffer(link, source.name))
+    .map((link) => parseDaleelOffer(link, source.name, pricesByUrl.get(sourceKey(link))))
     .filter(Boolean)
     .slice(0, MAX_OFFERS);
 }
@@ -157,7 +203,9 @@ async function main() {
   const offers = await collectOffers();
   console.log(`Qualified external offers: ${offers.length}`);
   offers.forEach((offer, index) => {
-    console.log(`${index + 1}. ${offer.type} | ${offer.location} | ${offer.size}`);
+    console.log(
+      `${index + 1}. ${offer.type} | ${offer.location} | ${offer.size} | ${offer.price}`
+    );
   });
 
   if (DRY_RUN) return;
