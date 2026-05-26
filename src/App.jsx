@@ -2169,7 +2169,7 @@ ${siteUrl}`;
                 </a>
                 <a
                   style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
-                  href={contactData.whatsapp}
+                  href={propertyWhatsAppUrl(offer)}
                   target="_blank"
                   rel="noreferrer"
                 >
