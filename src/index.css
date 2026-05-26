@@ -56,11 +56,27 @@ body {
 }
 
 .live-offer-track {
-  animation: live-offer-scroll 38s linear infinite;
+  animation: live-offer-scroll 26s linear infinite;
 }
 
 .live-offer-track:hover {
   animation-play-state: paused;
+}
+
+.live-offer-track a span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-offer-track a small {
+  color: #0b4aa2;
+  font-weight: 900;
+}
+
+[id^="office-offer-"]:target,
+[id^="external-offer-"]:target {
+  outline: 3px solid rgba(250, 204, 21, 0.85);
+  box-shadow: 0 0 0 8px rgba(250, 204, 21, 0.18), 0 18px 45px rgba(15, 23, 42, 0.12);
 }
 
 @keyframes live-offer-scroll {

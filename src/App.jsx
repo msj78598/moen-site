@@ -227,8 +227,7 @@ export default function App() {
     typeof window === "undefined" ? 1200 : window.innerWidth
   );
   const [dhikrIndex, setDhikrIndex] = useState(0);
-  const [propertyFilter, setPropertyFilter] = useState("all");
-  const [externalFilter, setExternalFilter] = useState("all");
+  const [offerFilter, setOfferFilter] = useState("all");
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -1184,19 +1183,47 @@ ${siteUrl}`;
     return latest || "يوميا";
   }
 
-  const propertyFilters = [
+  function goToOffer(anchor) {
+    setOfferFilter("all");
+    window.setTimeout(() => {
+      const target = document.querySelector(anchor);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.location.hash = anchor;
+      }
+    }, 0);
+  }
+
+  const offerFilters = [
     { id: "all", label: "الكل", Icon: ListFilter },
     { id: "land", label: "أراضي", Icon: MapPin },
     { id: "apartment", label: "شقق", Icon: Home },
     { id: "building", label: "مبان ومنازل", Icon: Building2 },
   ];
-  const externalFilters = propertyFilters;
-  const filteredProperties = filteredByCategory(properties, propertyFilter);
-  const filteredExternalOffers = filteredByCategory(externalOffers, externalFilter);
-  const liveOffers = [...properties, ...externalOffers]
-    .filter((offer) => offer.type && offer.location)
-    .slice(0, 10);
-  const liveTickerOffers = liveOffers.length ? liveOffers : externalMarketingOffers.slice(0, 6);
+  const filteredProperties = filteredByCategory(properties, offerFilter);
+  const filteredExternalOffers = filteredByCategory(externalOffers, offerFilter);
+  const officeTickerOffers = properties.map((offer) => ({
+    ...offer,
+    anchor: `#office-offer-${offer.id}`,
+    sourceLabel: isMarketingSource(offer.sourceType)
+      ? sourceTypeLabel(offer.sourceType)
+      : "عرض مكتب",
+  }));
+  const externalTickerOffers = externalOffers.map((offer) => ({
+    ...offer,
+    anchor: `#external-offer-${offer.id}`,
+    sourceLabel: "عرض تسويقي",
+  }));
+  const liveOffers = [...officeTickerOffers, ...externalTickerOffers].filter(
+    (offer) => offer.type && offer.location
+  );
+  const fallbackTickerOffers = externalMarketingOffers.map((offer) => ({
+    ...offer,
+    anchor: "#external-offers",
+    sourceLabel: "عرض تسويقي",
+  }));
+  const liveTickerOffers = liveOffers.length ? liveOffers : fallbackTickerOffers;
   const trustMetrics = [
     {
       value: `${properties.length + externalOffers.length}+`,
@@ -1422,16 +1449,22 @@ ${siteUrl}`;
       <section style={viewStyles.liveTicker} aria-label="آخر العروض">
         <div style={viewStyles.liveTickerHead}>
           <RefreshCw size={18} strokeWidth={2.4} />
-          <span>عروض تتحرك باستمرار</span>
+          <span>آخر العروض</span>
         </div>
         <div style={viewStyles.liveTickerWindow}>
           <div className="live-offer-track" style={viewStyles.liveTickerTrack}>
             {[...liveTickerOffers, ...liveTickerOffers].map((offer, index) => (
               <a
                 key={`${offer.id || offer.type}-${index}`}
-                href="#external-offers"
+                href={offer.anchor}
                 style={viewStyles.liveTickerItem}
+                title={`${offer.type} - ${offer.location}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  goToOffer(offer.anchor);
+                }}
               >
+                <small>{offer.sourceLabel}</small>
                 <strong>{offer.type}</strong>
                 <span>{offer.location}</span>
                 <b>{offer.price}</b>
@@ -2181,16 +2214,16 @@ ${siteUrl}`;
           </p>
         </div>
 
-        <div style={viewStyles.filterBar} aria-label="تصفية عروض المكتب">
-          {propertyFilters.map(({ id, label, Icon }) => (
+        <div style={viewStyles.filterBar} aria-label="تصفية كل العروض">
+          {offerFilters.map(({ id, label, Icon }) => (
             <button
               key={id}
               type="button"
               style={{
                 ...viewStyles.filterButton,
-                ...(propertyFilter === id ? viewStyles.filterButtonActive : {}),
+                ...(offerFilter === id ? viewStyles.filterButtonActive : {}),
               }}
-              onClick={() => setPropertyFilter(id)}
+              onClick={() => setOfferFilter(id)}
             >
               <Icon size={16} strokeWidth={2.4} />
               <span>{label}</span>
@@ -2200,7 +2233,11 @@ ${siteUrl}`;
 
         <div style={viewStyles.propertyGrid}>
           {filteredProperties.map((item) => (
-            <article style={viewStyles.propertyCard} key={item.id}>
+            <article
+              id={`office-offer-${item.id}`}
+              style={viewStyles.propertyCard}
+              key={item.id}
+            >
               <div style={viewStyles.propertyImageWrapper}>
                 <div style={viewStyles.propertyImage}>
                   {(item.image?.startsWith("data:image") || item.image?.startsWith("http")) ? (
@@ -2305,16 +2342,16 @@ ${siteUrl}`;
           </p>
         </div>
 
-        <div style={viewStyles.filterBar} aria-label="تصفية العروض الخارجية">
-          {externalFilters.map(({ id, label, Icon }) => (
+        <div style={viewStyles.filterBar} aria-label="تصفية كل العروض">
+          {offerFilters.map(({ id, label, Icon }) => (
             <button
               key={id}
               type="button"
               style={{
                 ...viewStyles.filterButton,
-                ...(externalFilter === id ? viewStyles.filterButtonActive : {}),
+                ...(offerFilter === id ? viewStyles.filterButtonActive : {}),
               }}
-              onClick={() => setExternalFilter(id)}
+              onClick={() => setOfferFilter(id)}
             >
               <Icon size={16} strokeWidth={2.4} />
               <span>{label}</span>
@@ -2324,7 +2361,11 @@ ${siteUrl}`;
 
         <div style={viewStyles.externalGrid}>
           {filteredExternalOffers.map((offer) => (
-            <article style={viewStyles.externalCard} key={offer.id}>
+            <article
+              id={`external-offer-${offer.id}`}
+              style={viewStyles.externalCard}
+              key={offer.id}
+            >
               <div style={viewStyles.externalCardHead}>
                 <span style={viewStyles.externalTag}>وساطة تسويقية</span>
                 <span style={viewStyles.externalDate}>
@@ -2935,11 +2976,11 @@ const styles = {
 
   liveTicker: {
     maxWidth: "1180px",
-    margin: "0 auto 32px",
+    margin: "0 auto 28px",
     padding: "0 24px",
     display: "grid",
-    gridTemplateColumns: "220px minmax(0, 1fr)",
-    gap: "12px",
+    gridTemplateColumns: "150px minmax(0, 1fr)",
+    gap: "10px",
     alignItems: "stretch",
     boxSizing: "border-box",
   },
@@ -2947,8 +2988,8 @@ const styles = {
   liveTickerHead: {
     background: "#061a44",
     color: "#facc15",
-    borderRadius: "16px",
-    padding: "14px 16px",
+    borderRadius: "999px",
+    padding: "9px 14px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -2960,7 +3001,7 @@ const styles = {
   liveTickerWindow: {
     background: "white",
     border: "1px solid #e2e8f0",
-    borderRadius: "16px",
+    borderRadius: "999px",
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
   },
@@ -2968,22 +3009,26 @@ const styles = {
   liveTickerTrack: {
     display: "flex",
     width: "max-content",
-    gap: "10px",
-    padding: "10px",
+    gap: "8px",
+    padding: "6px 8px",
   },
 
   liveTickerItem: {
-    minWidth: "280px",
-    maxWidth: "320px",
+    minWidth: "360px",
+    maxWidth: "420px",
     color: "#061a44",
     background: "#f8fafc",
     border: "1px solid #e2e8f0",
-    borderRadius: "12px",
-    padding: "10px 12px",
+    borderRadius: "999px",
+    padding: "7px 12px",
     textDecoration: "none",
-    display: "grid",
-    gap: "3px",
-    lineHeight: "1.5",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    lineHeight: "1.4",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   assuranceSection: {
@@ -3678,6 +3723,7 @@ const styles = {
     boxShadow: "0 2px 24px rgba(15,23,42,.06)",
     border: "1px solid #e2e8f0",
     overflow: "hidden",
+    scrollMarginTop: "120px",
   },
 
   externalCardHead: {
@@ -3710,6 +3756,7 @@ const styles = {
     boxShadow: "0 2px 24px rgba(15,23,42,.06)",
     border: "1px solid #e2e8f0",
     transition: "transform 0.3s ease",
+    scrollMarginTop: "120px",
   },
 
   propertyImageWrapper: {
@@ -4474,14 +4521,13 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     liveTickerHead: {
       ...base.liveTickerHead,
-      padding: "12px 14px",
-      borderRadius: "14px",
+      padding: "9px 12px",
       fontSize: "13px",
     },
     liveTickerItem: {
       ...base.liveTickerItem,
-      minWidth: "230px",
-      maxWidth: "250px",
+      minWidth: "280px",
+      maxWidth: "320px",
       fontSize: "12px",
     },
     assuranceSection: {
