@@ -8,8 +8,22 @@ const SUPABASE_KEY =
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const MAX_OFFERS = Number(process.env.MAX_EXTERNAL_OFFERS || 36);
-const now = new Date().toISOString();
-const today = now.slice(0, 10);
+const RUN_TIME_ZONE = process.env.RUN_TIME_ZONE || "Asia/Riyadh";
+const runDate = new Date();
+const now = runDate.toISOString();
+const today = formatDateInTimeZone(runDate, RUN_TIME_ZONE);
+
+function formatDateInTimeZone(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
 
 function normalizeSupabaseUrl(value = "") {
   const trimmed = value.trim();
