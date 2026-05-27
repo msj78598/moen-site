@@ -233,6 +233,7 @@ export default function App() {
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
   const [activeTab, setActiveTab] = useState("properties");
+  const [selectedShareOfferIds, setSelectedShareOfferIds] = useState([]);
 
   const [editingProperty, setEditingProperty] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -1090,6 +1091,89 @@ ${property.note || ""}`;
     alert("تم نسخ تفاصيل العرض");
   }
 
+  function offerShareKey(source, id) {
+    return `${source}:${id}`;
+  }
+
+  function buildOfferShareLine(offer, index) {
+    const link =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/${offer.anchor || ""}`
+        : offer.anchor || "";
+    const sourceLine = offer.sourceLabel ? `نوع العرض: ${offer.sourceLabel}\n` : "";
+
+    return `${index + 1}. ${offer.type}
+${sourceLine}الموقع: ${offer.location}
+المساحة: ${offer.size || "غير محددة"}
+السعر: ${offer.price || "السعر عند التواصل"}
+${offer.note ? `ملاحظة: ${offer.note}` : ""}
+رابط التفاصيل: ${link}`;
+  }
+
+  function buildOffersShareMessage(selectedOffers) {
+    const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const officePhone = contactData.phone || "00962772050566";
+
+    if (!selectedOffers.length) {
+      return "اختر عرضًا واحدًا على الأقل لتجهيز ملخص المشاركة.";
+    }
+
+    return `عروض عقارية مختارة من مكتب نور الضفتين العقاري
+
+${selectedOffers.map(buildOfferShareLine).join("\n\n")}
+
+للاستفسار وترتيب المعاينة:
+مكتب نور الضفتين العقاري
+هاتف / واتساب: ${officePhone}
+الموقع الإلكتروني: ${siteUrl}
+
+ملاحظة: يتم التحقق من توفر العروض والسعر النهائي قبل أي اتفاق.`;
+  }
+
+  function toggleShareOffer(key) {
+    setSelectedShareOfferIds((current) =>
+      current.includes(key)
+        ? current.filter((item) => item !== key)
+        : [...current, key]
+    );
+  }
+
+  function selectShareOffers(offers) {
+    setSelectedShareOfferIds(offers.map((offer) => offer.shareKey));
+  }
+
+  function clearShareOffers() {
+    setSelectedShareOfferIds([]);
+  }
+
+  async function copySelectedOffersMessage(message) {
+    if (!selectedShareOfferIds.length) {
+      alert("اختر عرضًا واحدًا على الأقل");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(message);
+      alert("تم نسخ ملخص العروض");
+    } catch (error) {
+      console.error(error);
+      alert("تعذر النسخ تلقائيًا. يمكنك تحديد نص المعاينة ونسخه يدويًا.");
+    }
+  }
+
+  function openSelectedOffersWhatsApp(message) {
+    if (!selectedShareOfferIds.length) {
+      alert("اختر عرضًا واحدًا على الأقل");
+      return;
+    }
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
   async function shareOfficeCard() {
     const siteUrl =
       typeof window !== "undefined" ? `${window.location.origin}/#promo` : "";
@@ -1237,6 +1321,34 @@ ${siteUrl}`;
   const activeTickerOffer =
     liveTickerOffers[activeTickerIndex % Math.max(liveTickerOffers.length, 1)] ||
     fallbackTickerOffers[0];
+  const adminShareOffers = [
+    ...properties.map((offer) => ({
+      ...offer,
+      shareKey: offerShareKey("office", offer.id),
+      anchor: `#office-offer-${offer.id}`,
+      sourceLabel: isMarketingSource(offer.sourceType)
+        ? sourceTypeLabel(offer.sourceType)
+        : "عرض مكتب",
+      groupLabel: "عروض المكتب",
+    })),
+    ...externalOffers.map((offer) => ({
+      ...offer,
+      shareKey: offerShareKey("external", offer.id),
+      anchor: `#external-offer-${offer.id}`,
+      sourceLabel: "عرض تسويقي خارجي",
+      groupLabel: "عروض تسويقية",
+    })),
+  ].filter((offer) => offer.type && offer.location);
+  const officeAdminShareOffers = adminShareOffers.filter(
+    (offer) => offer.groupLabel === "عروض المكتب"
+  );
+  const externalAdminShareOffers = adminShareOffers.filter(
+    (offer) => offer.groupLabel === "عروض تسويقية"
+  );
+  const selectedAdminShareOffers = adminShareOffers.filter((offer) =>
+    selectedShareOfferIds.includes(offer.shareKey)
+  );
+  const selectedOffersMessage = buildOffersShareMessage(selectedAdminShareOffers);
   const trustMetrics = [
     {
       value: `${properties.length + externalOffers.length}+`,
@@ -1722,6 +1834,16 @@ ${siteUrl}`;
               📋 العروض
             </button>
 
+            <button
+              style={{
+                ...viewStyles.tabBtn,
+                ...(activeTab === "share" ? viewStyles.tabBtnActive : {}),
+              }}
+              onClick={() => setActiveTab("share")}
+            >
+              📤 مشاركة عروض
+            </button>
+
             {can("manage_team") && (
               <button
                 style={{
@@ -1976,6 +2098,119 @@ ${siteUrl}`;
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "share" && (
+            <div style={viewStyles.tabContent}>
+              <div style={viewStyles.shareBuilderHeader}>
+                <div>
+                  <h3 style={viewStyles.tabTitle}>مشاركة ملخص العروض</h3>
+                  <p style={viewStyles.shareBuilderIntro}>
+                    اختر العروض المناسبة للعميل، ثم انسخ الملخص أو افتحه مباشرة في واتساب.
+                  </p>
+                </div>
+                <div style={viewStyles.shareCounter}>
+                  {selectedAdminShareOffers.length}
+                  <span style={viewStyles.shareCounterLabel}>عرض محدد</span>
+                </div>
+              </div>
+
+              <div style={viewStyles.shareToolbar}>
+                <button
+                  type="button"
+                  style={viewStyles.shareToolButton}
+                  onClick={() => selectShareOffers(adminShareOffers)}
+                >
+                  تحديد الكل
+                </button>
+                <button
+                  type="button"
+                  style={viewStyles.shareToolButton}
+                  onClick={() => selectShareOffers(officeAdminShareOffers)}
+                >
+                  عروض المكتب
+                </button>
+                <button
+                  type="button"
+                  style={viewStyles.shareToolButton}
+                  onClick={() => selectShareOffers(externalAdminShareOffers)}
+                >
+                  العروض التسويقية
+                </button>
+                <button
+                  type="button"
+                  style={viewStyles.shareToolButtonMuted}
+                  onClick={clearShareOffers}
+                >
+                  مسح التحديد
+                </button>
+              </div>
+
+              <div style={viewStyles.shareBuilderGrid}>
+                <div style={viewStyles.shareOffersPanel}>
+                  <h4 style={viewStyles.sharePanelTitle}>
+                    العروض المتاحة للمشاركة ({adminShareOffers.length})
+                  </h4>
+
+                  <div style={viewStyles.shareOfferList}>
+                    {adminShareOffers.map((offer) => {
+                      const checked = selectedShareOfferIds.includes(offer.shareKey);
+                      return (
+                        <label
+                          key={offer.shareKey}
+                          style={{
+                            ...viewStyles.shareOfferItem,
+                            ...(checked ? viewStyles.shareOfferItemActive : {}),
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleShareOffer(offer.shareKey)}
+                          />
+                          <span style={viewStyles.shareOfferText}>
+                            <strong>{offer.type}</strong>
+                            <small>{offer.location}</small>
+                            <small>
+                              {offer.size || "مساحة غير محددة"} •{" "}
+                              {offer.price || "السعر عند التواصل"}
+                            </small>
+                          </span>
+                          <span style={viewStyles.shareOfferBadge}>
+                            {offer.sourceLabel}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={viewStyles.sharePreviewPanel}>
+                  <h4 style={viewStyles.sharePanelTitle}>معاينة رسالة واتساب</h4>
+                  <textarea
+                    style={viewStyles.sharePreview}
+                    value={selectedOffersMessage}
+                    readOnly
+                  />
+                  <div style={viewStyles.sharePreviewActions}>
+                    <button
+                      type="button"
+                      style={viewStyles.copyMessageButton}
+                      onClick={() => copySelectedOffersMessage(selectedOffersMessage)}
+                    >
+                      نسخ الرسالة
+                    </button>
+                    <button
+                      type="button"
+                      style={viewStyles.whatsappMessageButton}
+                      onClick={() => openSelectedOffersWhatsApp(selectedOffersMessage)}
+                    >
+                      فتح واتساب
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -3508,6 +3743,182 @@ const styles = {
     paddingBottom: "12px",
   },
 
+  shareBuilderHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "18px",
+    alignItems: "flex-start",
+    marginBottom: "18px",
+  },
+
+  shareBuilderIntro: {
+    color: "#475569",
+    fontSize: "14px",
+    lineHeight: "1.8",
+    marginTop: "-12px",
+  },
+
+  shareCounter: {
+    minWidth: "112px",
+    padding: "14px",
+    borderRadius: "16px",
+    background: "#061a44",
+    color: "#facc15",
+    fontSize: "26px",
+    fontWeight: "900",
+    textAlign: "center",
+    display: "grid",
+    gap: "4px",
+  },
+
+  shareCounterLabel: {
+    color: "#dbeafe",
+    fontSize: "11px",
+    fontWeight: "800",
+  },
+
+  shareToolbar: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    marginBottom: "18px",
+  },
+
+  shareToolButton: {
+    background: "#eff6ff",
+    color: "#0b4aa2",
+    border: "1px solid #bfdbfe",
+    borderRadius: "12px",
+    padding: "10px 14px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+
+  shareToolButtonMuted: {
+    background: "#f8fafc",
+    color: "#64748b",
+    border: "1px solid #cbd5e1",
+    borderRadius: "12px",
+    padding: "10px 14px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+
+  shareBuilderGrid: {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(320px, 0.9fr)",
+    gap: "18px",
+    alignItems: "start",
+  },
+
+  shareOffersPanel: {
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "18px",
+    padding: "16px",
+  },
+
+  sharePreviewPanel: {
+    background: "white",
+    border: "1px solid #dbeafe",
+    borderRadius: "18px",
+    padding: "16px",
+    boxShadow: "0 12px 30px rgba(15,23,42,.06)",
+    position: "sticky",
+    top: "18px",
+  },
+
+  sharePanelTitle: {
+    margin: "0 0 12px",
+    color: "#061a44",
+    fontSize: "16px",
+    fontWeight: "900",
+  },
+
+  shareOfferList: {
+    display: "grid",
+    gap: "10px",
+    maxHeight: "560px",
+    overflow: "auto",
+    paddingInlineEnd: "4px",
+  },
+
+  shareOfferItem: {
+    display: "grid",
+    gridTemplateColumns: "22px minmax(0, 1fr) auto",
+    gap: "10px",
+    alignItems: "center",
+    padding: "12px",
+    borderRadius: "14px",
+    border: "1px solid #e2e8f0",
+    background: "white",
+    cursor: "pointer",
+  },
+
+  shareOfferItemActive: {
+    borderColor: "#0284c7",
+    background: "#f0f9ff",
+    boxShadow: "0 8px 22px rgba(2,132,199,.10)",
+  },
+
+  shareOfferText: {
+    display: "grid",
+    gap: "3px",
+    minWidth: 0,
+    color: "#061a44",
+  },
+
+  shareOfferBadge: {
+    background: "#061a44",
+    color: "#facc15",
+    borderRadius: "999px",
+    padding: "5px 9px",
+    fontSize: "11px",
+    fontWeight: "900",
+    whiteSpace: "nowrap",
+  },
+
+  sharePreview: {
+    width: "100%",
+    minHeight: "420px",
+    padding: "14px",
+    borderRadius: "14px",
+    border: "1px solid #cbd5e1",
+    resize: "vertical",
+    fontFamily: "Tahoma, Arial",
+    fontSize: "13px",
+    lineHeight: "1.8",
+    direction: "rtl",
+    background: "#f8fafc",
+  },
+
+  sharePreviewActions: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "10px",
+    marginTop: "12px",
+  },
+
+  copyMessageButton: {
+    background: "#0b4aa2",
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+
+  whatsappMessageButton: {
+    background: "#059669",
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+
   form: {
     display: "flex",
     flexDirection: "column",
@@ -4429,6 +4840,14 @@ function createResponsiveStyles(base, viewportWidth) {
       gap: "14px",
       flexWrap: "wrap",
     },
+    shareBuilderGrid: {
+      ...base.shareBuilderGrid,
+      gridTemplateColumns: "1fr",
+    },
+    sharePreviewPanel: {
+      ...base.sharePreviewPanel,
+      position: "static",
+    },
   };
 
   if (!isMobile) return { ...base, ...tablet };
@@ -5077,6 +5496,40 @@ function createResponsiveStyles(base, viewportWidth) {
       flex: "0 0 auto",
       padding: "9px 12px",
       fontSize: "12px",
+    },
+    shareBuilderHeader: {
+      ...base.shareBuilderHeader,
+      flexDirection: "column",
+      alignItems: "stretch",
+    },
+    shareCounter: {
+      ...base.shareCounter,
+      width: "100%",
+      minWidth: 0,
+    },
+    shareToolbar: {
+      ...base.shareToolbar,
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+    },
+    shareOfferItem: {
+      ...base.shareOfferItem,
+      gridTemplateColumns: "22px minmax(0, 1fr)",
+      alignItems: "flex-start",
+    },
+    shareOfferBadge: {
+      ...base.shareOfferBadge,
+      gridColumn: "2",
+      justifySelf: "start",
+    },
+    sharePreview: {
+      ...base.sharePreview,
+      minHeight: "320px",
+      fontSize: "12px",
+    },
+    sharePreviewActions: {
+      ...base.sharePreviewActions,
+      gridTemplateColumns: "1fr",
     },
     form: {
       ...base.form,
