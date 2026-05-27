@@ -93,11 +93,6 @@ function absolutizeUrl(base, href) {
   return new URL(href, base).href;
 }
 
-function sourceKey(value) {
-  const parsed = new URL(value);
-  return `${parsed.origin}${decodeSegment(parsed.pathname)}`;
-}
-
 function formatPrice(value, currency = "JOD") {
   const amount = Number(value);
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -108,33 +103,34 @@ function formatPrice(value, currency = "JOD") {
   return currency === "JOD" ? `${formatted} دينار` : `${formatted} ${currency}`;
 }
 
-function extractStructuredPrices(html) {
+function extractStructuredListings(html, source) {
   const match = html.match(
     /<script[^>]+id=["']search-jsonld["'][^>]*>([\s\S]*?)<\/script>/i
   );
-  if (!match) return new Map();
+  if (!match) return [];
 
   try {
     const data = JSON.parse(match[1]);
     const items = data.mainEntity?.itemListElement || [];
-    return new Map(
-      items
-        .map((entry) => {
-          const item = entry.item || {};
-          const itemUrl = item.url || item["@id"];
-          const price = item.offers?.price;
-          if (!itemUrl || price === undefined || price === null) return null;
+    return items
+      .map((entry) => {
+        const item = entry.item || {};
+        const itemUrl = item.url || item["@id"];
+        if (!itemUrl) return null;
 
-          return [
-            sourceKey(itemUrl),
-            formatPrice(price, item.offers?.priceCurrency || "JOD"),
-          ];
-        })
-        .filter(Boolean)
-    );
+        const price = item.offers?.price;
+        return {
+          url: absolutizeUrl(source.url, itemUrl),
+          price:
+            price === undefined || price === null
+              ? ""
+              : formatPrice(price, item.offers?.priceCurrency || "JOD"),
+        };
+      })
+      .filter(Boolean);
   } catch (error) {
-    console.warn("Could not parse structured offer prices.", error);
-    return new Map();
+    console.warn("Could not parse structured offer listings.", error);
+    return [];
   }
 }
 
@@ -155,7 +151,8 @@ function parseDaleelOffer(sourceUrl, sourceName, sourcePrice) {
 
   const type = parts[saleIndex - 1] || "";
   const area = parts[saleIndex + 1] || "";
-  const listingCode = parts.at(-1) || "";
+  const lastPart = parts.at(-1) || "";
+  const listingCode = /^[+-]\d+$/.test(lastPart) ? parts.at(-2) || "" : lastPart;
   const locality = parts[3] || "إربد";
   const basin = parts[5] || "";
   const location = ["إربد", locality, basin].filter(Boolean).join(" - ");
@@ -197,9 +194,14 @@ async function fetchOffersFromSource(source) {
   }
 
   const html = await response.text();
-  const pricesByUrl = extractStructuredPrices(html);
-  return extractLinks(html, source)
-    .map((link) => parseDaleelOffer(link, source.name, pricesByUrl.get(sourceKey(link))))
+  const structuredListings = extractStructuredListings(html, source);
+  const rawOffers = structuredListings.length
+    ? structuredListings.map((listing) =>
+        parseDaleelOffer(listing.url, source.name, listing.price)
+      )
+    : extractLinks(html, source).map((link) => parseDaleelOffer(link, source.name));
+
+  return rawOffers
     .filter(Boolean)
     .slice(0, MAX_OFFERS);
 }
