@@ -922,6 +922,7 @@ export default function App() {
       sourceName: row.source_name || "مصدر معلن",
       sourceUrl: row.source_url || "#",
       checkedAt: row.checked_at || "",
+      createdAt: row.created_at?.slice(0, 10) || "",
       note: row.note || "",
     };
   }
@@ -936,7 +937,7 @@ export default function App() {
           .eq("status", "published")
           .order("checked_at", { ascending: false })
           .order("created_at", { ascending: false })
-          .limit(24)
+          .limit(36)
       );
 
       if (error) {
@@ -2356,8 +2357,11 @@ ${siteUrl}`;
             >
               <div style={viewStyles.externalCardHead}>
                 <span style={viewStyles.externalTag}>وساطة تسويقية</span>
-                <span style={viewStyles.externalDate}>
-                  تحقق: {offer.checkedAt}
+                <span style={viewStyles.externalDates}>
+                  {offer.createdAt && (
+                    <span style={viewStyles.externalDate}>أضيف: {offer.createdAt}</span>
+                  )}
+                  <span style={viewStyles.externalDate}>آخر تحقق: {offer.checkedAt}</span>
                 </span>
               </div>
 
@@ -3863,6 +3867,12 @@ const styles = {
     borderRadius: "999px",
     fontSize: "12px",
     fontWeight: "900",
+  },
+
+  externalDates: {
+    display: "grid",
+    gap: "3px",
+    justifyItems: "flex-start",
   },
 
   externalDate: {

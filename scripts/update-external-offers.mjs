@@ -7,8 +7,9 @@ const SUPABASE_KEY =
   process.env.VITE_SUPABASE_ANON_KEY;
 
 const DRY_RUN = process.argv.includes("--dry-run");
-const MAX_OFFERS = Number(process.env.MAX_EXTERNAL_OFFERS || 18);
-const today = new Date().toISOString().slice(0, 10);
+const MAX_OFFERS = Number(process.env.MAX_EXTERNAL_OFFERS || 36);
+const now = new Date().toISOString();
+const today = now.slice(0, 10);
 
 function normalizeSupabaseUrl(value = "") {
   const trimmed = value.trim();
@@ -162,6 +163,7 @@ function parseDaleelOffer(sourceUrl, sourceName, sourcePrice) {
     checked_at: today,
     status: "published",
     quality_score: 85,
+    updated_at: now,
     note:
       "عرض مرصود آليًا من مصدر عقاري معلن ضمن نطاق إربد ومناطقها. يتم التحقق من التوفر والسعر قبل أي تواصل أو اتفاق.",
   };
@@ -222,13 +224,40 @@ async function main() {
   }
 
   const supabase = createClient(normalizeSupabaseUrl(SUPABASE_URL), SUPABASE_KEY);
+  const sourceNames = trustedSources.map((source) => source.name);
+  const { data: existingOffers, error: existingError } = await supabase
+    .from("external_offers")
+    .select("id, source_url")
+    .in("source_name", sourceNames);
+
+  if (existingError) throw existingError;
+
+  const existingUrls = new Set((existingOffers || []).map((offer) => offer.source_url));
+  const currentUrls = new Set(offers.map((offer) => offer.source_url));
+  const newOffersCount = offers.filter((offer) => !existingUrls.has(offer.source_url)).length;
+
   const { error } = await supabase
     .from("external_offers")
     .upsert(offers, { onConflict: "source_url" });
 
   if (error) throw error;
 
-  console.log(`Upserted ${offers.length} external offers.`);
+  const staleIds = (existingOffers || [])
+    .filter((offer) => !currentUrls.has(offer.source_url))
+    .map((offer) => offer.id);
+
+  if (staleIds.length) {
+    const { error: archiveError } = await supabase
+      .from("external_offers")
+      .update({ status: "archived", updated_at: now })
+      .in("id", staleIds);
+
+    if (archiveError) throw archiveError;
+  }
+
+  console.log(
+    `Upserted ${offers.length} external offers. New: ${newOffersCount}. Archived stale: ${staleIds.length}.`
+  );
 }
 
 main().catch((error) => {
