@@ -1533,10 +1533,6 @@ ${siteUrl}`;
         </div>
 
         <section style={viewStyles.liveTicker} aria-label="آخر العروض">
-          <div style={viewStyles.liveTickerHead}>
-            <RefreshCw size={18} strokeWidth={2.4} />
-            <span>آخر العروض</span>
-          </div>
           <div style={viewStyles.liveTickerWindow}>
             {activeTickerOffer && (
               <button
@@ -3035,15 +3031,14 @@ const styles = {
     overflow: "hidden",
     boxShadow: "0 25px 70px rgba(0,0,0,.32)",
     border: "1px solid rgba(255,255,255,0.20)",
+    background: "#061a44",
   },
 
   banner: {
     width: "100%",
-    height: "clamp(260px, 52svh, 620px)",
-    maxHeight: "calc(100svh - 260px)",
-    minHeight: "260px",
-    aspectRatio: "16 / 9",
-    objectFit: "contain",
+    height: "auto",
+    maxHeight: "min(62svh, 720px)",
+    objectFit: "cover",
     objectPosition: "center",
     display: "block",
     background: "#061a44",
@@ -3217,9 +3212,7 @@ const styles = {
     width: "100%",
     margin: "10px auto 0",
     padding: 0,
-    display: "grid",
-    gridTemplateColumns: "130px minmax(0, 1fr)",
-    gap: "10px",
+    display: "block",
     alignItems: "stretch",
     boxSizing: "border-box",
   },
@@ -4787,8 +4780,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     banner: {
       ...base.banner,
-      height: "clamp(220px, 46svh, 500px)",
-      maxHeight: "calc(100svh - 250px)",
+      height: "auto",
+      maxHeight: "min(56svh, 560px)",
     },
     section: {
       ...base.section,
@@ -4813,7 +4806,6 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     liveTicker: {
       ...base.liveTicker,
-      gridTemplateColumns: "1fr",
       padding: 0,
       margin: "10px auto 0",
     },
@@ -4959,9 +4951,9 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     banner: {
       ...tablet.banner,
-      height: "clamp(170px, 34svh, 300px)",
-      minHeight: "170px",
-      maxHeight: "300px",
+      height: "auto",
+      minHeight: 0,
+      maxHeight: "none",
       objectFit: "contain",
     },
     liveTicker: {
