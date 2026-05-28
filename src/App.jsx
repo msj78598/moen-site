@@ -3336,23 +3336,23 @@ const styles = {
 
   assuranceSection: {
     order: 10,
-    maxWidth: "1180px",
-    margin: "18px auto 42px",
-    padding: "0 24px",
+    maxWidth: "1320px",
+    margin: "0 auto 42px",
+    padding: "28px 24px 0",
     boxSizing: "border-box",
   },
 
   assuranceHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "12px",
-    marginBottom: "14px",
+    display: "grid",
+    justifyItems: "center",
+    gap: "8px",
+    marginBottom: "18px",
+    textAlign: "center",
   },
 
   assuranceMainTitle: {
     color: "#061a44",
-    fontSize: "22px",
+    fontSize: "clamp(24px, 2.4vw, 34px)",
     fontWeight: "900",
     margin: 0,
   },
@@ -4228,7 +4228,7 @@ const styles = {
   externalSection: {
     order: 6,
     background: "#f8fafc",
-    padding: "64px 24px",
+    padding: "64px 24px 36px",
     scrollMarginTop: "120px",
   },
 
@@ -4832,7 +4832,7 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     assuranceSection: {
       ...base.assuranceSection,
-      padding: "0 18px",
+      padding: "24px 18px 0",
     },
     assuranceGrid: {
       ...base.assuranceGrid,
@@ -5147,13 +5147,11 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     assuranceSection: {
       ...tablet.assuranceSection,
-      padding: "0 14px",
+      padding: "20px 14px 0",
       marginBottom: "32px",
     },
     assuranceHeader: {
       ...base.assuranceHeader,
-      alignItems: "flex-start",
-      flexDirection: "column",
       marginBottom: "12px",
     },
     assuranceMainTitle: {
