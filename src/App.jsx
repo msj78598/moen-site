@@ -3412,7 +3412,7 @@ const styles = {
   },
 
   section: {
-    maxWidth: "1180px",
+    maxWidth: "1380px",
     margin: "0 auto",
     padding: "64px 24px",
     scrollMarginTop: "120px",
@@ -4174,9 +4174,13 @@ const styles = {
   },
 
   propertyGrid: {
+    maxWidth: "1320px",
+    width: "100%",
+    margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-    gap: "16px",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "20px",
+    boxSizing: "border-box",
   },
 
   filterBar: {
@@ -4229,11 +4233,13 @@ const styles = {
   },
 
   externalGrid: {
-    maxWidth: "1180px",
+    maxWidth: "1320px",
+    width: "100%",
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-    gap: "16px",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "20px",
+    boxSizing: "border-box",
   },
 
   externalCard: {
@@ -4849,6 +4855,16 @@ function createResponsiveStyles(base, viewportWidth) {
     sharePreviewPanel: {
       ...base.sharePreviewPanel,
       position: "static",
+    },
+    propertyGrid: {
+      ...base.propertyGrid,
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      gap: "18px",
+    },
+    externalGrid: {
+      ...base.externalGrid,
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      gap: "18px",
     },
   };
 
