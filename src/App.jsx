@@ -326,6 +326,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!user || !showAdminDash) return;
+
+    window.setTimeout(() => {
+      document
+        .getElementById("admin")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  }, [user, showAdminDash]);
+
+  useEffect(() => {
     const intervalId = window.setInterval(() => {
       setDhikrIndex((current) => (current + 1) % adhkarMessages.length);
     }, 4500);
@@ -1417,9 +1427,20 @@ ${siteUrl}`;
             ✅ مرحبًا {user.name} - دخول{" "}
             {user.role === "owner" ? "مالك" : "موظف"}
           </span>
-          <button style={viewStyles.logoutQuickBtn} onClick={logout}>
-            خروج
-          </button>
+          <div style={viewStyles.userBannerActions}>
+            <button
+              style={viewStyles.adminQuickBtn}
+              onClick={() => {
+                setShowAdminDash(true);
+                setActiveTab("properties");
+              }}
+            >
+              لوحة الإدارة
+            </button>
+            <button style={viewStyles.logoutQuickBtn} onClick={logout}>
+              خروج
+            </button>
+          </div>
         </div>
       )}
 
@@ -1453,10 +1474,7 @@ ${siteUrl}`;
               فريق العمل
             </a>
             <a style={viewStyles.navLink} href="#promo">
-              الباركود
-            </a>
-            <a style={viewStyles.navLink} href="#contact">
-              تواصل معنا
+              البطاقة والتواصل
             </a>
             <button
               style={viewStyles.adminSecretBtn}
@@ -2476,95 +2494,81 @@ ${siteUrl}`;
           {filteredProperties.map((item) => (
             <article
               id={`office-offer-${item.id}`}
-              style={viewStyles.propertyCard}
+              style={viewStyles.externalCard}
               key={item.id}
             >
-              <div style={viewStyles.propertyImageWrapper}>
-                <div style={viewStyles.propertyImage}>
-                  {(item.image?.startsWith("data:image") || item.image?.startsWith("http")) ? (
-                    <img
-                      src={item.image}
-                      alt={item.type}
-                      style={viewStyles.propertyUploadedImage}
-                    />
-                  ) : (
-                    item.image || "🏡"
-                  )}
-                </div>
-
+              <div style={viewStyles.externalCardHead}>
+                <span style={viewStyles.externalTag}>
+                  {isMarketingSource(item.sourceType)
+                    ? sourceTypeLabel(item.sourceType)
+                    : "عرض مكتب"}
+                </span>
                 {item.badge && item.badge !== "عادي" && (
-                  <div style={viewStyles.badgeLabel}>{item.badge}</div>
-                )}
-                {isMarketingSource(item.sourceType) && (
-                  <div style={viewStyles.sourceLabel}>
-                    {sourceTypeLabel(item.sourceType)}
-                  </div>
+                  <span style={viewStyles.officeBadge}>{item.badge}</span>
                 )}
               </div>
 
-              <div style={viewStyles.propertyBody}>
-                <h3 style={viewStyles.cardTitle}>{item.type}</h3>
-                <p style={viewStyles.propertyLine}>
-                  <span style={viewStyles.propertyLineIcon}>📍</span>
-                  <span>{item.location}</span>
+              <h3 style={viewStyles.cardTitle}>{item.type}</h3>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📍</span>
+                <span>{item.location}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>📐</span>
+                <span>{item.size}</span>
+              </p>
+              <p style={viewStyles.propertyLine}>
+                <span style={viewStyles.propertyLineIcon}>💰</span>
+                <span>{item.price}</span>
+              </p>
+              {item.note && (
+                <p style={viewStyles.propertyNote}>
+                  <span style={viewStyles.propertyNoteIcon}>✨</span>
+                  <span>{item.note}</span>
                 </p>
-                <p style={viewStyles.propertyLine}>
-                  <span style={viewStyles.propertyLineIcon}>📐</span>
-                  <span>{item.size}</span>
-                </p>
-                <p style={viewStyles.propertyLine}>
-                  <span style={viewStyles.propertyLineIcon}>💰</span>
-                  <span>{item.price}</span>
-                </p>
-                {item.note && (
-                  <p style={viewStyles.propertyNote}>
-                    <span style={viewStyles.propertyNoteIcon}>✨</span>
-                    <span>{item.note}</span>
-                  </p>
-                )}
-                {isMarketingSource(item.sourceType) && (
-                  <div style={viewStyles.sourceNotice}>
-                    <strong>{sourceTypeLabel(item.sourceType)}</strong>
-                    <span>
-                      عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب نور الضفتين إلا إذا ذكر ذلك صراحة.
-                    </span>
-                    {item.sourceUrl && (
-                      <a
-                        href={item.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={viewStyles.sourceLink}
-                      >
-                        رابط المصدر
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                <div style={viewStyles.propertyButtons}>
-                  <a
-                    style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
-                    href={propertyWhatsAppUrl(item)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    استفسار عن العرض
-                  </a>
-
-                  <button
-                    style={{ ...viewStyles.shareBtnLarge, ...viewStyles.cardActionButton }}
-                    onClick={() => shareProperty(item)}
-                  >
-                    مشاركة
-                  </button>
-
-                  <a
-                    style={{ ...viewStyles.call, ...viewStyles.cardActionButton }}
-                    href={`tel:${item.phone}`}
-                  >
-                    اتصال
-                  </a>
+              )}
+              {isMarketingSource(item.sourceType) && (
+                <div style={viewStyles.sourceNotice}>
+                  <strong>{sourceTypeLabel(item.sourceType)}</strong>
+                  <span>
+                    عرض من مصدر معلن، ويتم التحقق من التفاصيل قبل أي تواصل أو اتفاق. لا يعد العرض حصريًا لمكتب نور الضفتين إلا إذا ذكر ذلك صراحة.
+                  </span>
+                  {item.sourceUrl && (
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={viewStyles.sourceLink}
+                    >
+                      رابط المصدر
+                    </a>
+                  )}
                 </div>
+              )}
+
+              <div style={viewStyles.propertyButtons}>
+                <a
+                  style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
+                  href={propertyWhatsAppUrl(item)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  استفسار عن العرض
+                </a>
+
+                <button
+                  style={{ ...viewStyles.shareBtnLarge, ...viewStyles.cardActionButton }}
+                  onClick={() => shareProperty(item)}
+                >
+                  مشاركة
+                </button>
+
+                <a
+                  style={{ ...viewStyles.call, ...viewStyles.cardActionButton }}
+                  href={`tel:${item.phone}`}
+                >
+                  اتصال
+                </a>
               </div>
             </article>
           ))}
@@ -2813,57 +2817,11 @@ ${siteUrl}`;
         </div>
       </section>
 
-      <footer id="contact" style={viewStyles.footer}>
+      <footer style={viewStyles.footer}>
         <h2 style={viewStyles.footerTitle}>مكتب  نور الضفتين العقاري</h2>
         <p style={viewStyles.footerText}>
           بيع وشراء الأراضي والعقارات وتسويق العروض العقارية باحترافية.
         </p>
-
-        <div style={viewStyles.footerContacts}>
-          {team.map((person) => (
-            <a
-              key={person.id}
-              style={viewStyles.footerLink}
-              href={`tel:${person.phone}`}
-            >
-              {person.title} - {person.name}: {person.phone}
-            </a>
-          ))}
-        </div>
-
-        <div style={viewStyles.buttonsCenter}>
-          <a
-            style={viewStyles.call}
-            href={contactData.facebook}
-            target="_blank"
-            rel="noreferrer"
-          >
-            صفحة فيسبوك
-          </a>
-          <a
-            style={viewStyles.map}
-            href={contactData.maps}
-            target="_blank"
-            rel="noreferrer"
-          >
-            الموقع على الخريطة
-          </a>
-          <a
-            style={viewStyles.whatsapp}
-            href={contactData.whatsapp}
-            target="_blank"
-            rel="noreferrer"
-          >
-            واتساب
-          </a>
-          <button
-            style={viewStyles.cardShareButton}
-            type="button"
-            onClick={shareOfficeCard}
-          >
-            مشاركة البطاقة الإلكترونية
-          </button>
-        </div>
 
         <p style={viewStyles.copy}>© جميع الحقوق محفوظة لمكتب نور الضفتين العقاري</p>
       </footer>
@@ -2912,6 +2870,23 @@ const styles = {
     fontSize: "14px",
   },
 
+  userBannerActions: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+  },
+
+  adminQuickBtn: {
+    background: "#061a44",
+    border: "1px solid rgba(255,255,255,0.35)",
+    color: "white",
+    cursor: "pointer",
+    padding: "7px 12px",
+    borderRadius: "10px",
+    fontWeight: "900",
+  },
+
   logoutQuickBtn: {
     background: "rgba(255,255,255,0.3)",
     border: "none",
@@ -2927,14 +2902,14 @@ const styles = {
     background:
       "linear-gradient(135deg, #061a44 0%, #0b4aa2 55%, #0284c7 100%)",
     color: "white",
-    padding: "24px",
+    padding: "18px 24px 28px",
   },
 
   nav: {
-    maxWidth: "1180px",
-    margin: "0 auto 24px",
-    padding: "14px 18px",
-    borderRadius: "22px",
+    maxWidth: "1280px",
+    margin: "0 auto 14px",
+    padding: "11px 16px",
+    borderRadius: "18px",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(255,255,255,0.18)",
     display: "flex",
@@ -2956,19 +2931,19 @@ const styles = {
   },
 
   logoIcon: {
-    width: "48px",
-    height: "48px",
+    width: "42px",
+    height: "42px",
     display: "grid",
     placeItems: "center",
     background: "#facc15",
     color: "#061a44",
     borderRadius: "16px",
-    fontSize: "24px",
+    fontSize: "22px",
   },
 
   logo: {
     display: "block",
-    fontSize: "26px",
+    fontSize: "22px",
     color: "#facc15",
     fontWeight: "900",
     lineHeight: "1.2",
@@ -2976,7 +2951,7 @@ const styles = {
 
   subtitle: {
     display: "block",
-    marginTop: "4px",
+    marginTop: "2px",
     color: "#dbeafe",
     fontSize: "13px",
   },
@@ -2992,8 +2967,8 @@ const styles = {
     color: "white",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(255,255,255,0.14)",
-    padding: "10px 13px",
-    borderRadius: "14px",
+    padding: "8px 11px",
+    borderRadius: "12px",
     textDecoration: "none",
     fontWeight: "800",
     fontSize: "14px",
@@ -3012,10 +2987,10 @@ const styles = {
   },
 
   dhikrBar: {
-    maxWidth: "1180px",
-    margin: "0 auto 18px",
-    padding: "10px 16px",
-    borderRadius: "16px",
+    maxWidth: "1280px",
+    margin: "0 auto 12px",
+    padding: "8px 14px",
+    borderRadius: "14px",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(250,204,21,.30)",
     color: "#fef3c7",
@@ -3049,25 +3024,26 @@ const styles = {
   bannerBox: {
     maxWidth: "1180px",
     margin: "0 auto",
-    borderRadius: "26px",
+    borderRadius: "22px",
     overflow: "hidden",
     boxShadow: "0 25px 70px rgba(0,0,0,.32)",
     border: "1px solid rgba(255,255,255,0.20)",
   },
 
   banner: {
-  width: "100%",
-  height: "auto",
-  aspectRatio: "16 / 9",
-  objectFit: "cover",
-  objectPosition: "center",
-  display: "block",
-  background: "#061a44",
-},
+    width: "100%",
+    height: "auto",
+    maxHeight: "460px",
+    aspectRatio: "16 / 9",
+    objectFit: "contain",
+    objectPosition: "center",
+    display: "block",
+    background: "#061a44",
+  },
 
   heroContent: {
     maxWidth: "1180px",
-    margin: "50px auto 42px",
+    margin: "24px auto 8px",
     textAlign: "center",
   },
 
@@ -3075,17 +3051,17 @@ const styles = {
     background: "rgba(255,255,255,.14)",
     border: "1px solid rgba(250,204,21,.55)",
     color: "#fde68a",
-    padding: "10px 18px",
+    padding: "8px 14px",
     borderRadius: "999px",
     fontWeight: "900",
     display: "inline-block",
   },
 
   title: {
-    maxWidth: "560px",
-    margin: "10px auto",
-    fontSize: "clamp(34px, 6vw, 64px)",
-    lineHeight: "1.45",
+    maxWidth: "760px",
+    margin: "8px auto",
+    fontSize: "clamp(28px, 3.6vw, 44px)",
+    lineHeight: "1.35",
     fontWeight: "900",
     color: "#ffffff",
   },
@@ -3093,8 +3069,8 @@ const styles = {
   description: {
     maxWidth: "820px",
     margin: "0 auto",
-    fontSize: "20px",
-    lineHeight: "2",
+    fontSize: "16px",
+    lineHeight: "1.85",
     color: "#e0f2fe",
   },
 
@@ -3103,7 +3079,7 @@ const styles = {
     justifyContent: "center",
     gap: "12px",
     flexWrap: "wrap",
-    marginTop: "24px",
+    marginTop: "16px",
   },
 
   buttonsCenter: {
@@ -3669,9 +3645,9 @@ const styles = {
   },
 
   adminDashboard: {
-    order: 99,
+    order: 2,
     maxWidth: "1180px",
-    margin: "64px auto",
+    margin: "26px auto 34px",
     padding: "32px",
     background: "white",
     borderRadius: "24px",
@@ -4274,6 +4250,16 @@ const styles = {
   externalTag: {
     background: "#111827",
     color: "#facc15",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    fontSize: "12px",
+    fontWeight: "900",
+  },
+
+  officeBadge: {
+    background: "#eff6ff",
+    color: "#0b4aa2",
+    border: "1px solid #bfdbfe",
     padding: "6px 10px",
     borderRadius: "999px",
     fontSize: "12px",
