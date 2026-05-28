@@ -55,6 +55,12 @@ body {
   overflow-x: hidden;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .service-card:hover {
   transform: translateY(-3px);
   border-color: rgba(37, 99, 235, 0.35);

@@ -2894,6 +2894,7 @@ const styles = {
   },
 
   hero: {
+    boxSizing: "border-box",
     order: 1,
     background:
       "linear-gradient(135deg, #061a44 0%, #0b4aa2 55%, #0284c7 100%)",
@@ -2906,6 +2907,7 @@ const styles = {
   },
 
   nav: {
+    boxSizing: "border-box",
     maxWidth: "1280px",
     width: "100%",
     margin: "0 auto 10px",
@@ -2962,6 +2964,7 @@ const styles = {
     gap: "8px",
     flexWrap: "wrap",
     alignItems: "center",
+    boxSizing: "border-box",
   },
 
   navLink: {
@@ -2988,6 +2991,7 @@ const styles = {
   },
 
   dhikrBar: {
+    boxSizing: "border-box",
     maxWidth: "1280px",
     width: "100%",
     margin: "0 auto 10px",
@@ -3024,6 +3028,7 @@ const styles = {
   },
 
   bannerBox: {
+    boxSizing: "border-box",
     maxWidth: "1280px",
     width: "100%",
     margin: "0 auto",
@@ -4525,7 +4530,6 @@ const styles = {
   },
 
   facebookPromoCta: {
-    display: "none",
     maxWidth: "1180px",
     margin: "64px auto",
     padding: "48px",
@@ -4865,6 +4869,8 @@ function createResponsiveStyles(base, viewportWidth) {
       padding: "10px",
       borderRadius: "16px",
       justifyContent: "center",
+      maxWidth: "100%",
+      overflow: "hidden",
     },
     logoBox: {
       ...base.logoBox,
@@ -4896,6 +4902,7 @@ function createResponsiveStyles(base, viewportWidth) {
       display: "grid",
       gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
       gap: "7px",
+      maxWidth: "100%",
     },
     navLink: {
       ...tablet.navLink,
@@ -4956,19 +4963,9 @@ function createResponsiveStyles(base, viewportWidth) {
       maxHeight: "none",
       objectFit: "contain",
     },
-    liveTicker: {
-      ...tablet.liveTicker,
-      margin: "8px auto 0",
-      gap: "7px",
-    },
     liveTickerWindow: {
       ...base.liveTickerWindow,
       height: "40px",
-    },
-    liveTickerHead: {
-      ...base.liveTickerHead,
-      padding: "7px 12px",
-      fontSize: "13px",
     },
     heroContent: {
       ...base.heroContent,
