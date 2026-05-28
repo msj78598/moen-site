@@ -1532,6 +1532,32 @@ ${siteUrl}`;
           <img src={displayedBanner} alt="مكتب نور الضفتين العقاري" style={viewStyles.banner} />
         </div>
 
+        <section style={viewStyles.liveTicker} aria-label="آخر العروض">
+          <div style={viewStyles.liveTickerHead}>
+            <RefreshCw size={18} strokeWidth={2.4} />
+            <span>آخر العروض</span>
+          </div>
+          <div style={viewStyles.liveTickerWindow}>
+            {activeTickerOffer && (
+              <button
+                type="button"
+                style={viewStyles.liveTickerSpotlight}
+                title={`${activeTickerOffer.type} - ${activeTickerOffer.location}`}
+                onClick={() => goToOffer(activeTickerOffer.anchor)}
+              >
+                <small style={viewStyles.liveTickerSource}>
+                  {activeTickerOffer.sourceLabel}
+                </small>
+                <strong style={viewStyles.liveTickerType}>{activeTickerOffer.type}</strong>
+                <span style={viewStyles.liveTickerLocation}>
+                  {activeTickerOffer.location}
+                </span>
+                <b style={viewStyles.liveTickerPrice}>{activeTickerOffer.price}</b>
+              </button>
+            )}
+          </div>
+        </section>
+
         <div style={viewStyles.heroContent}>
           <span style={viewStyles.badge}>
             مؤسسة تسويق عقاري بخدمة مباشرة وفريق متخصص
@@ -1587,32 +1613,6 @@ ${siteUrl}`;
             <span style={viewStyles.trustMetricLabel}>{label}</span>
           </div>
         ))}
-      </section>
-
-      <section style={viewStyles.liveTicker} aria-label="آخر العروض">
-        <div style={viewStyles.liveTickerHead}>
-          <RefreshCw size={18} strokeWidth={2.4} />
-          <span>آخر العروض</span>
-        </div>
-        <div style={viewStyles.liveTickerWindow}>
-          {activeTickerOffer && (
-            <button
-              type="button"
-              style={viewStyles.liveTickerSpotlight}
-              title={`${activeTickerOffer.type} - ${activeTickerOffer.location}`}
-              onClick={() => goToOffer(activeTickerOffer.anchor)}
-            >
-              <small style={viewStyles.liveTickerSource}>
-                {activeTickerOffer.sourceLabel}
-              </small>
-              <strong style={viewStyles.liveTickerType}>{activeTickerOffer.type}</strong>
-              <span style={viewStyles.liveTickerLocation}>
-                {activeTickerOffer.location}
-              </span>
-              <b style={viewStyles.liveTickerPrice}>{activeTickerOffer.price}</b>
-            </button>
-          )}
-        </div>
       </section>
 
       <section style={viewStyles.quickServices} aria-label="خدمات المكتب السريعة">
@@ -2902,23 +2902,28 @@ const styles = {
     background:
       "linear-gradient(135deg, #061a44 0%, #0b4aa2 55%, #0284c7 100%)",
     color: "white",
-    padding: "18px 24px 28px",
+    minHeight: "100svh",
+    padding: "14px clamp(16px, 2vw, 28px) 20px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
   },
 
   nav: {
     maxWidth: "1280px",
-    margin: "0 auto 14px",
-    padding: "11px 16px",
-    borderRadius: "18px",
+    width: "100%",
+    margin: "0 auto 10px",
+    padding: "10px 14px",
+    borderRadius: "16px",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(255,255,255,0.18)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "20px",
+    gap: "14px",
     flexWrap: "wrap",
-    position: "sticky",
-    top: "10px",
+    position: "relative",
+    top: "auto",
     zIndex: 50,
     backdropFilter: "blur(14px)",
   },
@@ -2931,14 +2936,14 @@ const styles = {
   },
 
   logoIcon: {
-    width: "42px",
-    height: "42px",
+    width: "38px",
+    height: "38px",
     display: "grid",
     placeItems: "center",
     background: "#facc15",
     color: "#061a44",
     borderRadius: "16px",
-    fontSize: "22px",
+    fontSize: "20px",
   },
 
   logo: {
@@ -2958,7 +2963,7 @@ const styles = {
 
   navLinks: {
     display: "flex",
-    gap: "10px",
+    gap: "8px",
     flexWrap: "wrap",
     alignItems: "center",
   },
@@ -2967,8 +2972,8 @@ const styles = {
     color: "white",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(255,255,255,0.14)",
-    padding: "8px 11px",
-    borderRadius: "12px",
+    padding: "8px 10px",
+    borderRadius: "11px",
     textDecoration: "none",
     fontWeight: "800",
     fontSize: "14px",
@@ -2988,9 +2993,10 @@ const styles = {
 
   dhikrBar: {
     maxWidth: "1280px",
-    margin: "0 auto 12px",
-    padding: "8px 14px",
-    borderRadius: "14px",
+    width: "100%",
+    margin: "0 auto 10px",
+    padding: "7px 14px",
+    borderRadius: "13px",
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(250,204,21,.30)",
     color: "#fef3c7",
@@ -3014,7 +3020,7 @@ const styles = {
   },
 
   dhikrText: {
-    fontSize: "15px",
+    fontSize: "clamp(14px, 1.2vw, 19px)",
     fontWeight: "900",
     lineHeight: "1.7",
     textAlign: "center",
@@ -3022,9 +3028,10 @@ const styles = {
   },
 
   bannerBox: {
-    maxWidth: "1180px",
+    maxWidth: "1280px",
+    width: "100%",
     margin: "0 auto",
-    borderRadius: "22px",
+    borderRadius: "20px",
     overflow: "hidden",
     boxShadow: "0 25px 70px rgba(0,0,0,.32)",
     border: "1px solid rgba(255,255,255,0.20)",
@@ -3032,8 +3039,9 @@ const styles = {
 
   banner: {
     width: "100%",
-    height: "auto",
-    maxHeight: "460px",
+    height: "clamp(260px, 52svh, 620px)",
+    maxHeight: "calc(100svh - 260px)",
+    minHeight: "260px",
     aspectRatio: "16 / 9",
     objectFit: "contain",
     objectPosition: "center",
@@ -3042,8 +3050,8 @@ const styles = {
   },
 
   heroContent: {
-    maxWidth: "1180px",
-    margin: "24px auto 8px",
+    maxWidth: "980px",
+    margin: "14px auto 0",
     textAlign: "center",
   },
 
@@ -3058,10 +3066,10 @@ const styles = {
   },
 
   title: {
-    maxWidth: "760px",
-    margin: "8px auto",
-    fontSize: "clamp(28px, 3.6vw, 44px)",
-    lineHeight: "1.35",
+    maxWidth: "820px",
+    margin: "6px auto",
+    fontSize: "clamp(24px, 2.8vw, 38px)",
+    lineHeight: "1.3",
     fontWeight: "900",
     color: "#ffffff",
   },
@@ -3069,8 +3077,8 @@ const styles = {
   description: {
     maxWidth: "820px",
     margin: "0 auto",
-    fontSize: "16px",
-    lineHeight: "1.85",
+    fontSize: "clamp(14px, 1.1vw, 17px)",
+    lineHeight: "1.75",
     color: "#e0f2fe",
   },
 
@@ -3079,7 +3087,7 @@ const styles = {
     justifyContent: "center",
     gap: "12px",
     flexWrap: "wrap",
-    marginTop: "16px",
+    marginTop: "12px",
   },
 
   buttonsCenter: {
@@ -3205,39 +3213,40 @@ const styles = {
   },
 
   liveTicker: {
-    order: 3,
-    maxWidth: "1180px",
-    margin: "0 auto 18px",
-    padding: "0 24px",
+    maxWidth: "1280px",
+    width: "100%",
+    margin: "10px auto 0",
+    padding: 0,
     display: "grid",
-    gridTemplateColumns: "120px minmax(0, 1fr)",
-    gap: "8px",
+    gridTemplateColumns: "130px minmax(0, 1fr)",
+    gap: "10px",
     alignItems: "stretch",
     boxSizing: "border-box",
   },
 
   liveTickerHead: {
-    background: "#061a44",
+    background: "rgba(6,26,68,.96)",
     color: "#facc15",
     borderRadius: "999px",
-    padding: "7px 12px",
+    padding: "9px 14px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
     fontWeight: "900",
-    fontSize: "13px",
-    boxShadow: "0 12px 26px rgba(6,26,68,.14)",
+    fontSize: "14px",
+    border: "1px solid rgba(250,204,21,.35)",
+    boxShadow: "0 12px 26px rgba(6,26,68,.18)",
   },
 
   liveTickerWindow: {
-    background: "white",
-    border: "1px solid #e2e8f0",
+    background: "rgba(255,255,255,.98)",
+    border: "1px solid rgba(255,255,255,.55)",
     borderRadius: "999px",
     overflow: "hidden",
     boxShadow: "0 12px 30px rgba(15,23,42,.06)",
     position: "relative",
-    height: "42px",
+    height: "46px",
     display: "flex",
     alignItems: "center",
     direction: "rtl",
@@ -3249,7 +3258,7 @@ const styles = {
     color: "#061a44",
     background: "transparent",
     border: "none",
-    padding: "8px 16px",
+    padding: "8px 18px",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
@@ -3304,14 +3313,14 @@ const styles = {
     minWidth: 0,
     background: "rgba(255,255,255,.98)",
     border: "1px solid #dbeafe",
-    borderRadius: "16px",
+    borderRadius: "14px",
     padding: "12px 8px",
     textDecoration: "none",
     color: "#061a44",
     display: "grid",
     justifyItems: "center",
     gap: "7px",
-    fontSize: "12px",
+    fontSize: "clamp(12px, 1vw, 15px)",
     fontWeight: "900",
     textAlign: "center",
     boxShadow: "0 10px 24px rgba(15,23,42,.055)",
@@ -3711,7 +3720,7 @@ const styles = {
   },
 
   tabTitle: {
-    fontSize: "22px",
+    fontSize: "20px",
     fontWeight: "900",
     color: "#061a44",
     marginBottom: "24px",
@@ -3729,7 +3738,7 @@ const styles = {
 
   shareBuilderIntro: {
     color: "#475569",
-    fontSize: "14px",
+    fontSize: "13px",
     lineHeight: "1.8",
     marginTop: "-12px",
   },
@@ -3862,7 +3871,7 @@ const styles = {
     border: "1px solid #cbd5e1",
     resize: "vertical",
     fontFamily: "Tahoma, Arial",
-    fontSize: "13px",
+    fontSize: "12px",
     lineHeight: "1.8",
     direction: "rtl",
     background: "#f8fafc",
@@ -4734,7 +4743,7 @@ function createResponsiveStyles(base, viewportWidth) {
   const tablet = {
     hero: {
       ...base.hero,
-      padding: "18px",
+      padding: "12px 18px 18px",
     },
     nav: {
       ...base.nav,
@@ -4764,13 +4773,13 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     title: {
       ...base.title,
-      fontSize: "clamp(30px, 7vw, 48px)",
-      lineHeight: "1.35",
+      fontSize: "clamp(24px, 5vw, 36px)",
+      lineHeight: "1.3",
     },
     description: {
       ...base.description,
-      fontSize: "17px",
-      lineHeight: "1.85",
+      fontSize: "15px",
+      lineHeight: "1.75",
     },
     bannerBox: {
       ...base.bannerBox,
@@ -4778,8 +4787,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     banner: {
       ...base.banner,
-      height: "auto",
-      maxHeight: "520px",
+      height: "clamp(220px, 46svh, 500px)",
+      maxHeight: "calc(100svh - 250px)",
     },
     section: {
       ...base.section,
@@ -4805,7 +4814,8 @@ function createResponsiveStyles(base, viewportWidth) {
     liveTicker: {
       ...base.liveTicker,
       gridTemplateColumns: "1fr",
-      padding: "0 18px",
+      padding: 0,
+      margin: "10px auto 0",
     },
     assuranceSection: {
       ...base.assuranceSection,
@@ -4854,11 +4864,12 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     hero: {
       ...tablet.hero,
-      padding: "12px",
+      minHeight: "auto",
+      padding: "10px",
     },
     nav: {
       ...tablet.nav,
-      marginBottom: "14px",
+      marginBottom: "8px",
       padding: "10px",
       borderRadius: "16px",
       justifyContent: "center",
@@ -4872,8 +4883,8 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     logoIcon: {
       ...base.logoIcon,
-      width: "38px",
-      height: "38px",
+    width: "36px",
+    height: "36px",
       borderRadius: "12px",
       fontSize: "18px",
       flex: "0 0 auto",
@@ -4912,9 +4923,9 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     dhikrBar: {
       ...base.dhikrBar,
-      margin: "0 auto 12px",
-      padding: "9px 10px",
-      borderRadius: "14px",
+      margin: "0 auto 8px",
+      padding: "8px 10px",
+      borderRadius: "12px",
       gap: "8px",
       flexDirection: "column",
       maxWidth: "100%",
@@ -4948,12 +4959,28 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     banner: {
       ...tablet.banner,
+      height: "clamp(170px, 34svh, 300px)",
+      minHeight: "170px",
       maxHeight: "300px",
       objectFit: "contain",
     },
+    liveTicker: {
+      ...tablet.liveTicker,
+      margin: "8px auto 0",
+      gap: "7px",
+    },
+    liveTickerWindow: {
+      ...base.liveTickerWindow,
+      height: "40px",
+    },
+    liveTickerHead: {
+      ...base.liveTickerHead,
+      padding: "7px 12px",
+      fontSize: "13px",
+    },
     heroContent: {
       ...base.heroContent,
-      margin: "24px auto 28px",
+      margin: "12px auto 8px",
       padding: "0 4px",
     },
     badge: {
@@ -4966,9 +4993,9 @@ function createResponsiveStyles(base, viewportWidth) {
     title: {
       ...tablet.title,
       maxWidth: "100%",
-      fontSize: "28px",
-      lineHeight: "1.45",
-      margin: "14px auto 10px",
+      fontSize: "24px",
+      lineHeight: "1.35",
+      margin: "10px auto 8px",
     },
     description: {
       ...tablet.description,
