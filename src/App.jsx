@@ -277,6 +277,17 @@ export default function App() {
     attachment: null,
   });
   const [showMarketingForm, setShowMarketingForm] = useState(false);
+  const [serviceRequest, setServiceRequest] = useState({
+    customerName: "",
+    phone: "",
+    serviceType: "",
+    authority: "",
+    location: "",
+    urgency: "عادي",
+    details: "",
+    attachment: null,
+  });
+  const [showServiceForm, setShowServiceForm] = useState(false);
 
   function errorText(error, fallback) {
     return error?.message || error?.error_description || fallback;
@@ -971,6 +982,13 @@ export default function App() {
     }));
   }
 
+  function updateServiceRequest(field, value) {
+    setServiceRequest((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
   function propertyWhatsAppUrl(property) {
     const phone = normalPhone(property.phone || contactData.phone);
     const message = `استفسار بخصوص عرض عقاري من مكتب نور الضفتين العقاري
@@ -1057,6 +1075,79 @@ ${attachmentLine}
     } catch (error) {
       console.error(error);
       setErrorMessage(errorText(error, "تعذر تجهيز طلب التسويق العقاري."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function submitServiceRequest(e) {
+    e.preventDefault();
+
+    if (
+      !serviceRequest.customerName ||
+      !serviceRequest.phone ||
+      !serviceRequest.serviceType ||
+      !serviceRequest.details
+    ) {
+      alert("يرجى تعبئة الاسم ورقم التواصل ونوع الخدمة وتفاصيل الطلب");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    let attachmentLine = "المرفق: لم يتم إرفاق ملف";
+
+    try {
+      if (serviceRequest.attachment) {
+        try {
+          const attachmentUrl = await uploadFile(
+            "service-requests",
+            serviceRequest.attachment
+          );
+          attachmentLine = `رابط المرفق: ${attachmentUrl}`;
+        } catch (uploadError) {
+          console.warn("Could not upload service request attachment", uploadError);
+          attachmentLine = `المرفق المختار: ${serviceRequest.attachment.name} - يرجى إرساله يدويًا في نفس محادثة الواتساب`;
+        }
+      }
+
+      const officePhone = normalPhone(contactData.phone || contactData.whatsapp);
+      const message = `طلب خدمة عامة - مكتب نور الضفتين العقاري
+
+اسم صاحب الطلب: ${serviceRequest.customerName}
+رقم التواصل: ${serviceRequest.phone}
+نوع الخدمة المطلوبة: ${serviceRequest.serviceType}
+الجهة / الدائرة: ${serviceRequest.authority || "غير محددة"}
+المنطقة / الموقع: ${serviceRequest.location || "غير محدد"}
+درجة الاستعجال: ${serviceRequest.urgency}
+تفاصيل المعاملة:
+${serviceRequest.details}
+
+${attachmentLine}
+
+أرغب بالتواصل مع المكتب لمراجعة الطلب ومعرفة المتطلبات والرسوم والمدة المتوقعة.`;
+
+      window.open(
+        `https://wa.me/${officePhone}?text=${encodeURIComponent(message)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      setServiceRequest({
+        customerName: "",
+        phone: "",
+        serviceType: "",
+        authority: "",
+        location: "",
+        urgency: "عادي",
+        details: "",
+        attachment: null,
+      });
+      setShowServiceForm(false);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(errorText(error, "تعذر تجهيز طلب الخدمة العامة."));
     } finally {
       setLoading(false);
     }
@@ -1689,6 +1780,9 @@ ${siteUrl}`;
 
       <section
         id="marketing-request"
+        style={viewStyles.requestHub}
+      >
+        <div
         style={{
           ...viewStyles.requestSection,
           ...(!showMarketingForm ? viewStyles.requestSectionCompact : {}),
@@ -1804,6 +1898,118 @@ ${siteUrl}`;
           </button>
         </form>
         )}
+        </div>
+
+        <div
+          style={{
+            ...viewStyles.requestSection,
+            ...viewStyles.serviceRequestSection,
+            ...(!showServiceForm ? viewStyles.requestSectionCompact : {}),
+          }}
+        >
+          <div style={viewStyles.requestIntro}>
+            <span style={viewStyles.serviceRequestLabel}>خدمات عامة ومعاملات</span>
+            <h2 style={viewStyles.requestTitle}>اطلب إنجاز خدمتك</h2>
+            <p style={viewStyles.requestText}>
+              أرسل نوع المعاملة والجهة والتفاصيل المطلوبة، وسيقوم فريق المكتب
+              بمراجعة الطلب والتواصل معك لمعرفة المتطلبات والخطوات المناسبة.
+            </p>
+            <button
+              type="button"
+              style={viewStyles.serviceRequestButton}
+              onClick={() => setShowServiceForm((current) => !current)}
+            >
+              {showServiceForm ? "إخفاء نموذج الخدمة" : "فتح نموذج طلب خدمة"}
+            </button>
+          </div>
+
+          {showServiceForm && (
+            <form style={viewStyles.requestForm} onSubmit={submitServiceRequest}>
+              <div style={viewStyles.formRow}>
+                <input
+                  style={viewStyles.input}
+                  placeholder="اسم صاحب الطلب"
+                  value={serviceRequest.customerName}
+                  onChange={(e) => updateServiceRequest("customerName", e.target.value)}
+                />
+                <input
+                  style={viewStyles.input}
+                  placeholder="رقم التواصل / واتساب"
+                  value={serviceRequest.phone}
+                  onChange={(e) => updateServiceRequest("phone", e.target.value)}
+                />
+              </div>
+
+              <div style={viewStyles.formRow}>
+                <select
+                  style={viewStyles.input}
+                  value={serviceRequest.serviceType}
+                  onChange={(e) => updateServiceRequest("serviceType", e.target.value)}
+                >
+                  <option value="">نوع الخدمة المطلوبة</option>
+                  <option value="إنجاز معاملة">إنجاز معاملة</option>
+                  <option value="متابعة دائرة حكومية">متابعة دائرة حكومية</option>
+                  <option value="خدمة عقارية عامة">خدمة عقارية عامة</option>
+                  <option value="خدمة مساحية">خدمة مساحية</option>
+                  <option value="استشارة أو مراجعة أوراق">استشارة أو مراجعة أوراق</option>
+                  <option value="خدمة أخرى">خدمة أخرى</option>
+                </select>
+                <input
+                  style={viewStyles.input}
+                  placeholder="الجهة / الدائرة / المؤسسة"
+                  value={serviceRequest.authority}
+                  onChange={(e) => updateServiceRequest("authority", e.target.value)}
+                />
+              </div>
+
+              <div style={viewStyles.formRow}>
+                <input
+                  style={viewStyles.input}
+                  placeholder="المنطقة / موقع المعاملة"
+                  value={serviceRequest.location}
+                  onChange={(e) => updateServiceRequest("location", e.target.value)}
+                />
+                <select
+                  style={viewStyles.input}
+                  value={serviceRequest.urgency}
+                  onChange={(e) => updateServiceRequest("urgency", e.target.value)}
+                >
+                  <option value="عادي">درجة الاستعجال: عادي</option>
+                  <option value="مستعجل">مستعجل</option>
+                  <option value="حسب المتطلبات">حسب المتطلبات</option>
+                </select>
+              </div>
+
+              <div style={viewStyles.requestFileBox}>
+                <span style={viewStyles.fileLabel}>مرفقات أو صورة للمعاملة</span>
+                <input
+                  style={viewStyles.fileInput}
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) =>
+                    updateServiceRequest("attachment", e.target.files?.[0] || null)
+                  }
+                />
+              </div>
+
+              <textarea
+                style={viewStyles.textarea}
+                placeholder="اكتب تفاصيل المعاملة، الجهة المطلوبة، الأوراق المتوفرة، وما الذي تريد إنجازه..."
+                value={serviceRequest.details}
+                onChange={(e) => updateServiceRequest("details", e.target.value)}
+              />
+
+              <p style={viewStyles.requestHint}>
+                سيتم فتح رسالة واتساب جاهزة للمكتب. إذا تعذر رفع المرفق، أرسله
+                يدويًا في نفس المحادثة.
+              </p>
+
+              <button style={viewStyles.serviceSubmitButton} type="submit" disabled={loading}>
+                إرسال طلب الخدمة عبر واتساب
+              </button>
+            </form>
+          )}
+        </div>
       </section>
 
       <section style={{ display: "none" }}>
@@ -3503,22 +3709,35 @@ const styles = {
   },
 
   requestSection: {
-    order: 7,
-    maxWidth: "1180px",
-    margin: "0 auto 64px",
+    maxWidth: "none",
+    margin: 0,
     padding: "42px",
     borderRadius: "24px",
     background: "linear-gradient(135deg, #061a44 0%, #0b4aa2 100%)",
     color: "white",
     display: "grid",
-    gridTemplateColumns: "0.75fr 1.25fr",
-    gap: "28px",
+    gridTemplateColumns: "1fr",
+    gap: "22px",
     alignItems: "start",
+    alignContent: "start",
     boxShadow: "0 22px 60px rgba(15,23,42,.16)",
     border: "1px solid rgba(250,204,21,.30)",
     scrollMarginTop: "120px",
     boxSizing: "border-box",
     overflow: "hidden",
+    minHeight: "100%",
+  },
+
+  requestHub: {
+    order: 7,
+    maxWidth: "1380px",
+    width: "100%",
+    margin: "0 auto 64px",
+    padding: "0 24px",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "24px",
+    boxSizing: "border-box",
   },
 
   requestSectionCompact: {
@@ -3599,6 +3818,18 @@ const styles = {
     cursor: "pointer",
     fontSize: "15px",
     boxShadow: "0 12px 26px rgba(5,150,105,.22)",
+  },
+
+  serviceSubmitButton: {
+    background: "#0f766e",
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    fontWeight: "900",
+    cursor: "pointer",
+    fontSize: "15px",
+    boxShadow: "0 12px 26px rgba(15,118,110,.22)",
   },
 
   facebookCta: {
@@ -4181,6 +4412,29 @@ const styles = {
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: "20px",
     boxSizing: "border-box",
+  },
+
+  serviceRequestSection: {
+    background: "linear-gradient(135deg, #0f172a 0%, #0f766e 100%)",
+    borderColor: "rgba(94,234,212,.38)",
+  },
+
+  serviceRequestLabel: {
+    color: "#5eead4",
+    fontWeight: "900",
+    fontSize: "14px",
+  },
+
+  serviceRequestButton: {
+    marginTop: "18px",
+    background: "#5eead4",
+    color: "#042f2e",
+    border: "none",
+    borderRadius: "14px",
+    padding: "13px 22px",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 12px 26px rgba(45,212,191,.20)",
   },
 
   filterBar: {
@@ -4857,6 +5111,18 @@ function createResponsiveStyles(base, viewportWidth) {
       ...base.sharePreviewPanel,
       position: "static",
     },
+    requestHub: {
+      ...base.requestHub,
+      gridTemplateColumns: "1fr",
+      maxWidth: "780px",
+      padding: "0 18px",
+      margin: "0 auto 52px",
+    },
+    requestSection: {
+      ...base.requestSection,
+      padding: "34px",
+      borderRadius: "22px",
+    },
     grid4: {
       ...base.grid4,
       gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -5236,9 +5502,15 @@ function createResponsiveStyles(base, viewportWidth) {
       fontSize: "13px",
       lineHeight: "1.85",
     },
+    requestHub: {
+      ...tablet.requestHub,
+      padding: "0 14px",
+      margin: "0 auto 40px",
+      gap: "16px",
+    },
     requestSection: {
-      ...base.requestSection,
-      margin: "0 14px 40px",
+      ...tablet.requestSection,
+      margin: 0,
       padding: "24px 16px",
       borderRadius: "18px",
       gridTemplateColumns: "1fr",
@@ -5283,6 +5555,18 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     requestButton: {
       ...base.requestButton,
+      width: "100%",
+      padding: "13px 14px",
+      fontSize: "14px",
+    },
+    serviceRequestButton: {
+      ...base.serviceRequestButton,
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: "12px",
+    },
+    serviceSubmitButton: {
+      ...base.serviceSubmitButton,
       width: "100%",
       padding: "13px 14px",
       fontSize: "14px",
