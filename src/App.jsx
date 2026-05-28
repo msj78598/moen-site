@@ -1555,6 +1555,9 @@ ${siteUrl}`;
             <a style={viewStyles.navLink} href="#marketing-request">
               سوّق عقارك
             </a>
+            <a style={viewStyles.navLink} href="#service-request">
+              طلب خدمات عامة
+            </a>
             <a style={viewStyles.navLink} href="#properties">
               العروض
             </a>
@@ -1901,6 +1904,7 @@ ${siteUrl}`;
         </div>
 
         <div
+          id="service-request"
           style={{
             ...viewStyles.requestSection,
             ...viewStyles.serviceRequestSection,
@@ -2666,7 +2670,7 @@ ${siteUrl}`;
         </section>
       )}
 
-      <section id="properties" style={{ ...viewStyles.section, order: 5 }}>
+      <section id="properties" style={{ ...viewStyles.section, order: 6 }}>
         <div style={viewStyles.sectionHead}>
           <span style={viewStyles.sectionLabel}>العروض العقارية</span>
           <h2 style={viewStyles.sectionTitle}>العروض المتاحة</h2>
@@ -3725,11 +3729,12 @@ const styles = {
     scrollMarginTop: "120px",
     boxSizing: "border-box",
     overflow: "hidden",
-    minHeight: "100%",
+    minHeight: "auto",
+    alignSelf: "start",
   },
 
   requestHub: {
-    order: 7,
+    order: 5,
     maxWidth: "1380px",
     width: "100%",
     margin: "0 auto 64px",
@@ -3737,6 +3742,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
     gap: "24px",
+    alignItems: "start",
     boxSizing: "border-box",
   },
 
@@ -4480,7 +4486,7 @@ const styles = {
   },
 
   externalSection: {
-    order: 6,
+    order: 7,
     background: "#f8fafc",
     padding: "64px 24px 36px",
     scrollMarginTop: "120px",
