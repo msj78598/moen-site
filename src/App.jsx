@@ -5052,7 +5052,7 @@ function createResponsiveStyles(base, viewportWidth) {
       gridTemplateColumns: "1fr 1fr",
       gap: "10px",
       padding: "0 14px",
-      margin: "-12px auto 24px",
+      margin: "24px auto 36px",
     },
     trustMetric: {
       ...base.trustMetric,
