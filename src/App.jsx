@@ -2900,7 +2900,7 @@ const styles = {
       "linear-gradient(135deg, #061a44 0%, #0b4aa2 55%, #0284c7 100%)",
     color: "white",
     minHeight: "100svh",
-    padding: "14px clamp(16px, 2vw, 28px) 20px",
+    padding: "14px clamp(16px, 2vw, 28px) 84px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
@@ -4740,7 +4740,7 @@ function createResponsiveStyles(base, viewportWidth) {
   const tablet = {
     hero: {
       ...base.hero,
-      padding: "12px 18px 18px",
+      padding: "12px 18px 72px",
     },
     nav: {
       ...base.nav,
