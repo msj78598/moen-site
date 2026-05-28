@@ -1597,7 +1597,6 @@ ${siteUrl}`;
             </button>
           </div>
         </div>
-        </div>
       </header>
 
       <section style={viewStyles.trustStrip} aria-label="مؤشرات المكتب">
