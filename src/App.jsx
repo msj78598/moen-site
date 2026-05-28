@@ -3452,8 +3452,8 @@ const styles = {
 
   grid4: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-    gap: "16px",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "20px",
   },
 
   card: {
@@ -4740,6 +4740,7 @@ const styles = {
 function createResponsiveStyles(base, viewportWidth) {
   const isTablet = viewportWidth <= 960;
   const isMobile = viewportWidth <= 680;
+  const isCompactPhone = viewportWidth <= 520;
 
   if (!isTablet) return base;
 
@@ -4855,6 +4856,11 @@ function createResponsiveStyles(base, viewportWidth) {
     sharePreviewPanel: {
       ...base.sharePreviewPanel,
       position: "static",
+    },
+    grid4: {
+      ...base.grid4,
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      gap: "18px",
     },
     propertyGrid: {
       ...base.propertyGrid,
@@ -5204,7 +5210,7 @@ function createResponsiveStyles(base, viewportWidth) {
     },
     grid4: {
       ...base.grid4,
-      gridTemplateColumns: "1fr",
+      gridTemplateColumns: isCompactPhone ? "1fr" : "repeat(2, minmax(0, 1fr))",
       gap: "10px",
     },
     card: {
