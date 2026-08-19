@@ -1017,7 +1017,8 @@ export default function App() {
           .eq("status", "published")
           .order("checked_at", { ascending: false })
           .order("created_at", { ascending: false })
-          .limit(36)
+          // الوكلاء ينشرون عشرات العروض يوميًا؛ حدّ 36 كان يُخفي الباقي.
+          .limit(200)
       );
 
       if (error) {
@@ -1560,7 +1561,7 @@ ${siteUrl}`;
   const brokerageOffers = externalOffers.filter((o) => o.sourceType !== "office");
 
   /** أول دفعة تظهر من العروض التسويقية قبل الضغط على "عرض الكل". */
-  const BROKERAGE_PREVIEW = 6;
+  const BROKERAGE_PREVIEW = 12;
   const showOffice = sourceFilter === "all" || sourceFilter === "office";
   const showBrokerage = sourceFilter === "all" || sourceFilter === "marketing_brokerage";
   const visibleBrokerage = showAllBrokerage
