@@ -189,16 +189,24 @@ describe("الرفض", () => {
   });
 
   it("الحارس الافتراضي هو canWrite الحقيقية عند غياب الحقن", async () => {
+    // ⚠️ لا يُفترض شيء عن البيئة: CI يحمل service_role والجهاز المحلي لا.
+    //    الاختبار يثبت أن الحارس يستشير الدالة الحقيقية، لا نتيجة بعينها.
+    const { canWrite } = await import("../core/db.js");
     const db = fakeDb();
     const c = await realCandidate();
-    // بلا canWrite في السياق -> يعود إلى القراءة من الإعدادات،
-    // ولا يوجد service_role في بيئة الاختبار -> يُرفض.
     const ctx = makeCtx(db);
     delete ctx.canWrite;
+
     const res = await publishCandidates([c], ctx, { allowedHost: "daleelaqar.com" });
 
-    expect(res.counts.written).toBe(0);
-    expect(res.skipped[0].reason).toBe(WRITE_REJECT.NO_WRITE_CREDENTIALS);
+    if (canWrite()) {
+      expect(res.counts.written).toBe(1);
+      expect(db._inserted).toHaveLength(1);
+    } else {
+      expect(res.counts.written).toBe(0);
+      expect(res.skipped[0].reason).toBe(WRITE_REJECT.NO_WRITE_CREDENTIALS);
+      expect(db._inserted).toHaveLength(0);
+    }
   });
 });
 
