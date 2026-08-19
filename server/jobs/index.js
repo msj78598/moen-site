@@ -11,6 +11,7 @@ import { registerJob } from "../scheduler/scheduler.js";
 import { runAgent } from "../core/agent.js";
 import { monitorAgent } from "../agents/monitor.js";
 import { isMissingTable } from "../core/audit.js";
+import { registerIngestionJobs } from "./ingestion-job.js";
 
 /** الجداول التي يعتمد عليها Sprint 1 و 2. */
 export const REQUIRED_TABLES = Object.freeze([
@@ -25,6 +26,8 @@ export function classifyTableCheck(error) {
 }
 
 export function registerAllJobs() {
+  registerIngestionJobs();
+
   registerJob({
     name: "monitor",
     description: "فحص صحة البيانات والروابط والحداثة. قراءة فقط، بلا ذكاء اصطناعي.",

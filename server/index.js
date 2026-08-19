@@ -21,7 +21,13 @@ import { registerJob, runJob, listJobs, startScheduler } from "./scheduler/sched
 
 // الاستيراد يسجّل الأدوات ثم الوكلاء — الترتيب مهم: الوكيل يتحقق من وجود أدواته.
 import "./tools/read-tools.js";
+import "./writers/external-offers-writer.js";
+import "./writers/archive-writer.js";
 import "./agents/monitor.js";
+import "./agents/searcher.js";
+import "./agents/publisher.js";
+import "./agents/verifier.js";
+import "./agents/orchestrator.js";
 import { registerAllJobs } from "./jobs/index.js";
 
 const logger = createLogger("worker", { level: config.worker.logLevel });

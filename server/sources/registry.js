@@ -1,80 +1,76 @@
 /**
  * سجل المصادر.
  *
- * يقرأ من جدول public.sources إن وُجد، وإلا يعود إلى البذرة في seed.js.
- * هذا يجعل خط الاستيعاب قابلًا للتطوير والاختبار قبل تنفيذ الترحيل.
+ * مسؤوليته واحدة: تحميل المصادر وقراءة إعداداتها.
+ * قرار "هل يُسمح بالتشغيل" ليس هنا — هو في ingestion/permission-gate.js.
+ * (كان مختلطًا بهذا الملف في Sprint 2، وفُصل في Sprint 3.)
  *
- * ===== البوابة =====
- * لا يعمل مصدر إلا باجتماع شرطين:
- *   permission_status === 'granted'   (إذن موثّق)
- *   enabled === true                  (مفعّل تشغيليًا)
- *
- * القرار يُتخذ هنا بالكود، لا في تعليمات نموذج ولا في تعليق.
+ * يقرأ من جدول public.sources، ويعود إلى البذرة إن لم يكن الجدول متاحًا،
+ * فيظل التطوير والاختبار ممكنين بلا قاعدة بيانات.
  */
 
 import { SOURCE_SEED } from "./seed.js";
+import {
+  evaluateSource,
+  selectRunnable,
+  assertRunnable,
+  PERMISSION,
+  BLOCK_REASON,
+  BLOCK_MESSAGE,
+  PermissionDeniedError,
+} from "../ingestion/permission-gate.js";
 
-export const PERMISSION = Object.freeze({
-  PENDING: "pending",
-  GRANTED: "granted",
-  DENIED: "denied",
-});
-
-/** سبب منع التشغيل — قيمة واحدة صريحة بدل منطق متناثر. */
-export const BLOCK_REASON = Object.freeze({
-  NOT_GRANTED: "permission_not_granted",
-  DISABLED: "source_disabled",
-  NO_ADAPTER: "adapter_missing",
-  UNKNOWN_SOURCE: "unknown_source",
+/** قيم افتراضية لأي حقل ناقص — مطابقة لـ DEFAULT في 0007_sources.sql. */
+export const SOURCE_DEFAULTS = Object.freeze({
+  source_type: "listing_site",
+  permission_status: PERMISSION.PENDING,
+  enabled: false,
+  scrape_interval_minutes: 1440,
+  max_offers_per_run: 36,
+  max_allowed_drop_percent: 30,
 });
 
 /**
- * هل يُسمح بتشغيل هذا المصدر؟
- * دالة نقية — قلب البوابة، وأكثر ما يجب أن يُختبر.
- *
- * @returns {{allowed: boolean, reason: string|null}}
+ * يقرأ إعدادات التشغيل لمصدر مع تطبيق الافتراضيات.
+ * وجودها في مكان واحد يمنع تناثر أرقام سحرية في الخط.
  */
-export function evaluateSource(source) {
-  if (!source) return { allowed: false, reason: BLOCK_REASON.UNKNOWN_SOURCE };
+export function sourceConfig(source) {
+  const num = (value, fallback) => {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
 
-  if (source.permission_status !== PERMISSION.GRANTED) {
-    return { allowed: false, reason: BLOCK_REASON.NOT_GRANTED };
-  }
-  if (source.enabled !== true) {
-    return { allowed: false, reason: BLOCK_REASON.DISABLED };
-  }
-  if (!source.adapter) {
-    return { allowed: false, reason: BLOCK_REASON.NO_ADAPTER };
-  }
-  return { allowed: true, reason: null };
-}
-
-/** يرشّح المصادر المسموح تشغيلها فقط، مع تسجيل سبب استبعاد كل مصدر. */
-export function selectRunnable(sources, { logger } = {}) {
-  const runnable = [];
-  const blocked = [];
-
-  for (const source of sources ?? []) {
-    const verdict = evaluateSource(source);
-    if (verdict.allowed) {
-      runnable.push(source);
-    } else {
-      blocked.push({ source_name: source?.source_name ?? "(بلا اسم)", reason: verdict.reason });
-      logger?.warn?.("source_blocked", {
-        source: source?.source_name,
-        reason: verdict.reason,
-        permission_status: source?.permission_status,
-        enabled: source?.enabled,
-      });
-    }
-  }
-
-  return { runnable, blocked };
+  return {
+    source_name: source?.source_name ?? "(بلا اسم)",
+    source_url: source?.source_url ?? "",
+    source_type: source?.source_type ?? SOURCE_DEFAULTS.source_type,
+    adapter: source?.adapter ?? null,
+    permission_status: source?.permission_status ?? SOURCE_DEFAULTS.permission_status,
+    enabled: source?.enabled === true,
+    scrape_interval_minutes: num(
+      source?.scrape_interval_minutes, SOURCE_DEFAULTS.scrape_interval_minutes
+    ),
+    max_offers_per_run: num(source?.max_offers_per_run, SOURCE_DEFAULTS.max_offers_per_run),
+    max_allowed_drop_percent: num(
+      source?.max_allowed_drop_percent, SOURCE_DEFAULTS.max_allowed_drop_percent
+    ),
+  };
 }
 
 /**
- * يحمّل المصادر من قاعدة البيانات، ويعود إلى البذرة إن لم يكن الجدول موجودًا.
- * لا يكتب شيئًا إطلاقًا.
+ * هل حان موعد فحص هذا المصدر؟
+ * يُستخدم لاحقًا عند الجدولة؛ لا جدولة في Sprint 3.
+ */
+export function isDueForRun(source, now = new Date()) {
+  const { scrape_interval_minutes } = sourceConfig(source);
+  const last = source?.last_checked_at ? new Date(source.last_checked_at) : null;
+  if (!last || Number.isNaN(last.getTime())) return true;
+  return now - last >= scrape_interval_minutes * 60_000;
+}
+
+/**
+ * يحمّل المصادر. لا يكتب شيئًا إطلاقًا.
+ * @returns {{sources: object[], origin: "database"|"seed"}}
  */
 export async function loadSources({ db, logger } = {}) {
   if (!db) return { sources: SOURCE_SEED, origin: "seed" };
@@ -89,23 +85,42 @@ export async function loadSources({ db, logger } = {}) {
 
     if (missing) {
       logger?.warn?.("sources_table_missing", {
-        hint: "شغّل supabase/migrations/0007_sources.sql — يُستخدم seed.js مؤقتًا",
+        hint: "شغّل supabase/migrations/0007_sources.sql — تُستخدم البذرة مؤقتًا",
       });
       return { sources: SOURCE_SEED, origin: "seed" };
     }
     throw new Error(`تعذر قراءة سجل المصادر: ${error.message}`);
   }
 
-  return { sources: data ?? [], origin: "database" };
+  // قراءة بالمفتاح العام تُرجع صفرًا لأن RLS تحصر السجل بالموظفين.
+  if (!data?.length) {
+    logger?.warn?.("sources_empty_or_hidden", {
+      hint: "RLS تحصر sources بالموظفين — تُستخدم البذرة مؤقتًا",
+    });
+    return { sources: SOURCE_SEED, origin: "seed" };
+  }
+
+  return { sources: data, origin: "database" };
 }
 
-/** ملخّص للعرض في التقارير. */
-export function summarize(sources) {
-  return (sources ?? []).map((s) => ({
-    source_name: s.source_name,
-    permission_status: s.permission_status,
-    enabled: s.enabled,
-    adapter: s.adapter,
-    runnable: evaluateSource(s).allowed,
-  }));
+/** ملخّص للتقارير. */
+export function summarize(sources, { hasAdapter } = {}) {
+  return (sources ?? []).map((source) => {
+    const config = sourceConfig(source);
+    const verdict = evaluateSource(source, { hasAdapter });
+    return {
+      source_name: config.source_name,
+      permission_status: config.permission_status,
+      enabled: config.enabled,
+      adapter: config.adapter,
+      runnable: verdict.allowed,
+      blocked_reason: verdict.reason,
+    };
+  });
 }
+
+// إعادة تصدير للتوافق: البوابة هي المصدر الوحيد لهذه الرموز.
+export {
+  evaluateSource, selectRunnable, assertRunnable,
+  PERMISSION, BLOCK_REASON, BLOCK_MESSAGE, PermissionDeniedError,
+};

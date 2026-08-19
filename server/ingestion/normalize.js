@@ -224,6 +224,25 @@ export function normalizePrice(value) {
 }
 
 // ===============================================================
+// العنوان
+// ===============================================================
+
+/** أقصى طول معقول لعنوان إعلان. ما زاد يُقتطع لا يُرفض. */
+const TITLE_MAX = 160;
+
+/**
+ * ينظّف عنوان الإعلان كما أعلنه المصدر.
+ *
+ * لا يُولَّد عنوان ولا يُركَّب من الحقول الأخرى: العنوان إما أعلنه المصدر
+ * أو لا وجود له. توليده هنا اختراع لمعلومة لم تُنشر.
+ */
+export function normalizeTitle(value) {
+  const raw = cleanText(value);
+  if (isGarbage(raw)) return null;
+  return raw.length > TITLE_MAX ? `${raw.slice(0, TITLE_MAX).trim()}…` : raw;
+}
+
+// ===============================================================
 // التطبيع الكامل لعرض واحد
 // ===============================================================
 
@@ -237,8 +256,11 @@ export function normalizeOffer(rawOffer, { sourceName } = {}) {
   const size = normalizeSize(rawOffer?.size);
   const price = normalizePrice(rawOffer?.price);
 
+  const title = normalizeTitle(rawOffer?.title);
+
   return {
     // العرض
+    title,
     type: type.label ?? type.raw,
     type_category: type.category,
     location: location.display,
@@ -259,6 +281,7 @@ export function normalizeOffer(rawOffer, { sourceName } = {}) {
 
     // الخام محفوظ للتدقيق وإعادة المعالجة
     raw: {
+      title: rawOffer?.title ?? null,
       type: rawOffer?.type ?? null,
       location: rawOffer?.location ?? null,
       size: rawOffer?.size ?? null,

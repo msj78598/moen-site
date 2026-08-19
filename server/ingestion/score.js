@@ -11,24 +11,26 @@
 
 /** أوزان مجموعها 100. */
 const WEIGHTS = Object.freeze({
-  hasSourceUrl: 20,   // إثبات المصدر — أهم عنصر
-  hasType: 15,
+  hasSourceUrl: 18,   // إثبات المصدر — أهم عنصر
+  hasTitle: 8,        // عنوان أعلنه المصدر (غائب في الوضع المتدهور)
+  hasType: 14,
   hasCategory: 10,    // صُنّف بنجاح ضمن الأنواع المعروفة
-  hasLocation: 15,
-  locationDetail: 10, // أكثر من مقطع (مدينة + حي)
+  hasLocation: 14,
+  locationDetail: 9,  // أكثر من مقطع (مدينة + حي)
   hasSize: 15,
   hasPrice: 10,
-  hasListingCode: 5,
+  hasListingCode: 2,
 });
 
 /**
  * الحد الأدنى للنشر التلقائي. ما دونه يذهب للمراجعة لا للنشر.
  *
- * 65 مُعايَرة على حالات حقيقية:
- *   مصدر+نوع+تصنيف+موقع بلا مساحة وبلا سعر = 60  -> مراجعة (شبه فارغ)
- *   نفسه + مساحة                            = 75  -> نشر
- *   نفسه + سعر بلا مساحة                    = 70  -> نشر
- * أي أن غياب السعر وحده لا يمنع النشر، لكن غياب المساحة والسعر معًا يمنعه.
+ * 65 مُعايَرة على حالات حقيقية (بعد إضافة وزن العنوان):
+ *   مصدر+نوع+تصنيف+موقع بلا عنوان ولا مساحة ولا سعر = 56  -> مراجعة
+ *   عرض كامل                                        = 100 -> نشر
+ *   كامل بلا سعر                                    = 90  -> نشر
+ *   كامل بلا مساحة                                  = 85  -> نشر
+ * أي أن غياب السعر وحده لا يمنع النشر، لكن الفراغ المتعدد يمنعه.
  */
 export const PUBLISH_THRESHOLD = 65;
 
@@ -45,6 +47,7 @@ export function scoreOffer(offer) {
   };
 
   award("hasSourceUrl", Boolean(offer?.source_url));
+  award("hasTitle", Boolean(offer?.title));
   award("hasType", Boolean(offer?.type));
   award("hasCategory", Boolean(offer?.type_category));
   award("hasLocation", Boolean(offer?.location));

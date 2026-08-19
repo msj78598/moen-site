@@ -179,6 +179,9 @@ export function extract(page) {
     }
     offers.push({
       ...base,
+      // العنوان كما أعلنه المصدر في JSON-LD.
+      // غير متاح في الخطة البديلة — وهذا أحد أوجه نقص الوضع المتدهور.
+      title: candidate.name ?? null,
       price:
         candidate.price === null || candidate.price === undefined
           ? ""

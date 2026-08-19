@@ -1,0 +1,85 @@
+name: Real estate agents
+
+# ===============================================================
+# تشغيل وكلاء النظام دوريًا.
+#
+# ⚠️ لا يوجد حاليًا أي مصدر بحالة permission_status=granted، فبوابة
+#    الإذن ترفض كل المصادر قبل أي نداء شبكة. هذه الجولات تعمل وتُنهي
+#    بلا كشط وبلا كتابة — وهذا مقصود حتى يُحسم الإذن.
+#
+# المهام:
+#   sources-status  حالة سجل المصادر (قراءة فقط)
+#   ingestion       بحث ← نشر (محكوم ببوابة الإذن وجدولة كل مصدر)
+#   verification    فحص حياة العروض وأرشفة محروسة بثلاث بوابات
+#
+# ملاحظة: workflow القديم update-external-offers.yml يبقى معطّلًا
+# (disabled_inactivity) عمدًا — استخراجه منهار واستُبدل بهذا الخط.
+# ===============================================================
+
+on:
+  schedule:
+    # 04:00 UTC = 07:00 بتوقيت الأردن/السعودية
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "المهمة المراد تشغيلها"
+        required: true
+        default: sources-status
+        type: choice
+        options: [sources-status, ingestion, verification, monitor, db-health]
+      dry_run:
+        description: "وضع التجربة — لا كتابة إطلاقًا"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  # يمنع تشغيل جولتين متزامنتين — طبقة ثانية فوق القفل داخل العملية.
+  group: agents-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run-agents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RUN_TIME_ZONE: Asia/Riyadh
+      LOG_LEVEL: info
+      # لا ذكاء اصطناعي في هذا المسار إطلاقًا.
+      LLM_PROVIDER: none
+      LLM_REQUIRED: "false"
+      WORKER_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # الاختبارات حاجز أخير قبل لمس الإنتاج.
+      - name: Tests
+        run: npm test
+
+      - name: Sources status
+        run: node server/index.js run sources-status
+
+      - name: Scheduled run
+        if: github.event_name == 'schedule'
+        run: |
+          node server/index.js run ingestion
+          node server/index.js run verification
+
+      - name: Manual run
+        if: github.event_name == 'workflow_dispatch'
+        run: node server/index.js run ${{ inputs.job }}
