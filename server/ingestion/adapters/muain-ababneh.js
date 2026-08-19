@@ -105,7 +105,22 @@ export function extractSize(text) {
   const folded = foldArabic(t);
 
   const dunum = folded.match(/(\d+(?:\.\d+)?)\s*(?:دونم|دنم)/);
-  const meters = folded.match(/(?:و\s*)?(\d{2,6})\s*(?:متر|م2|م²|\bم\b)/);
+
+  // ⚠️ أول رقم متبوع بـ"متر" ليس بالضرورة المساحة: "شارع قبلي ١٢ متر"
+  //    يصف عرض الشارع، والتقاطه أعطى أرضًا بمساحة 12 م².
+  //    الترتيب: ما يسبقه "مساحه" صراحةً، ثم أول رقم معقول بعيد عن
+  //    سياق الشوارع والمسافات.
+  const MIN_PLOT_M2 = 40;
+  const explicit = folded.match(/مساح[هة][^\d]{0,12}(\d{2,7})/);
+
+  const meters = explicit ?? [...folded.matchAll(/(\d{2,7})\s*(?:متر|م2|م²)/g)]
+    .filter((m) => {
+      // النافذة قصيرة عمدًا: "شارع قبلي ١٢ متر" يصف الشارع، بينما
+      // "امتداد لشارع الهاشمي باتجاه بشرى ٦٦٢متر" يصف القطعة.
+      // الفارق أن وصف الشارع يلتصق بالرقم مباشرة.
+      const before = folded.slice(Math.max(0, m.index - 14), m.index);
+      return Number(m[1]) >= MIN_PLOT_M2 && !/شارع|عرض|بعيده|بعيد|طول|ارتفاع/.test(before);
+    })[0];
 
   if (!dunum && !meters) return { m2: null, source: null };
 
@@ -118,11 +133,28 @@ export function extractSize(text) {
   return { m2: Math.round(m2), source: parts.join(" + ") };
 }
 
-/** "١٨الف وا٥٨٠دينار" -> 18580 */
+/**
+ * يوسّع "الف" إلى آلاف — بحذر.
+ *
+ * ⚠️ صيغتان مختلفتان في كتابة المكتب:
+ *   "١٨الف وا٥٨٠"  -> 18 ألفًا و580 = 18,580   (الرقم مُضاعِف)
+ *   "٢٩٦٦٠الف"     -> 29,660                   (الرقم كامل و"الف" لفظية)
+ *
+ * القاعدة: الرقم الذي يبلغ ١٠٠٠ فأكثر مكتوب كاملًا، فلا يُضاعَف.
+ * بدون هذا التمييز قُرئت ٢٩٦٦٠الف كـ 29,660,000 — أي ألف ضعف السعر.
+ */
+const THOUSAND_MULTIPLIER_MAX = 999;
+
 function expandThousands(text) {
   return normalizeNumberText(text)
-    .replace(/(\d+)\s*(?:الف|ألف|آلاف)\s*(?:و\s*(\d+))?/g, (_, k, rest) =>
-      String(Number(k) * 1000 + Number(rest ?? 0)));
+    .replace(/(\d+)\s*(?:الف|ألف|آلاف)\s*(?:و\s*(\d+))?/g, (match, k, rest) => {
+      const base = Number(k);
+      if (base > THOUSAND_MULTIPLIER_MAX) {
+        // رقم كامل و"الف" لفظية — يُترك كما هو مع بقية العبارة.
+        return rest ? `${base} و ${rest}` : String(base);
+      }
+      return String(base * 1000 + Number(rest ?? 0));
+    });
 }
 
 /**

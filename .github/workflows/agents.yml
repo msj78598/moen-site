@@ -27,7 +27,7 @@ on:
         required: true
         default: sources-status
         type: choice
-        options: [sources-status, ingestion, verification, monitor, db-health, activate-daleelaqar, revoke-daleelaqar, purge-external]
+        options: [sources-status, ingestion, verification, monitor, db-health, activate-daleelaqar, revoke-daleelaqar, purge-external, import-muain]
       dry_run:
         description: "وضع التجربة — لا كتابة إطلاقًا"
         required: false
@@ -97,10 +97,17 @@ jobs:
           node scripts/activate-source.mjs --source "دليل عقار" --revoke
           node scripts/archive-external-offers.mjs --all
 
+      # إدراج عروض معين — عروض المكتب نفسه، نسخها صاحب المشروع يدويًا.
+      # بلا سعر بقرار صريح: استخراج السعر من نص بلهجة محلية مخاطرة.
+      - name: Import Muain offers
+        if: github.event_name == 'workflow_dispatch' && inputs.job == 'import-muain'
+        run: node scripts/import-muain-offers.mjs --commit
+
       - name: Manual run
         if: >-
           github.event_name == 'workflow_dispatch' &&
           inputs.job != 'activate-daleelaqar' &&
           inputs.job != 'revoke-daleelaqar' &&
-          inputs.job != 'purge-external'
+          inputs.job != 'purge-external' &&
+          inputs.job != 'import-muain'
         run: node server/index.js run ${{ inputs.job }}
