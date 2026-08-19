@@ -22,6 +22,8 @@ import { verifierAgent } from "../agents/verifier.js";
 import { loadSources, summarize, isDueForRun } from "../sources/registry.js";
 import { getAdapter } from "../ingestion/adapters/index.js";
 import { createHttpFetcher } from "../ingestion/fetcher.js";
+import { createGraphApiFetcher } from "../ingestion/fetchers/graph-api.js";
+import { config } from "../core/config.js";
 import { createMemoryStore, createSupabaseStore } from "../review/review-queue.js";
 import { detectExtendedColumns } from "../writers/external-offers-writer.js";
 
@@ -35,6 +37,15 @@ export async function buildAgentContext(ctx) {
     ...ctx,
     // الجالب الحقيقي — لا يُستدعى إلا لمصدر granted+enabled.
     fetcher: ctx.fetcher ?? createHttpFetcher(),
+    // جالب مخصص لكل نوع مصدر. فيسبوك يحتاج Graph API لا HTTP عادي.
+    fetcherFor: (source) =>
+      source?.adapter === "muain_ababneh_facebook" && config.facebook.pageToken
+        ? createGraphApiFetcher({
+            token: config.facebook.pageToken,
+            pageId: config.facebook.pageId,
+            limit: source.max_offers_per_run ?? 20,
+          })
+        : null,
     reviewStore,
     extendedColumns: await detectExtendedColumns(ctx.db),
   };

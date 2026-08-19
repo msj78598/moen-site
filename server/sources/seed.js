@@ -19,15 +19,21 @@ export const SOURCE_SEED = Object.freeze([
   // ===============================================================
   Object.freeze({
     source_name: "دليل عقار",
-    source_url:
-      "https://daleelaqar.com/search/%D8%B9%D9%82%D8%A7%D8%B1%D8%A7%D8%AA-%D9%84%D9%84%D8%A8%D9%8A%D8%B9/%D8%A7%D8%B1%D8%A8%D8%AF",
-    source_type: "listing_site",
+    // الاكتشاف من الـsitemap المُعلَن في robots.txt — لا من صفحة البحث.
+    source_url: "https://daleelaqar.com/sitemap.xml",
+    source_type: "marketing_brokerage",
+    classification: "marketing_brokerage",
     adapter: "daleelaqar",
 
-    permission_status: "pending",
+    // قرار صاحب المشروع (2026-08-20): الإذن ممنوح.
+    // الأساس التقني: robots.txt يسمح بـ /nav/ ويُعلن الـsitemap صراحةً،
+    // ويمنع /property/ وحده — والمحوّل يرفضه بنيويًا في isAllowedPath.
+    permission_status: "granted",
     permission_note:
-      "لم تُراجَع شروط الاستخدام ولا يوجد إذن موثّق. معطّل حتى المراجعة القانونية.",
-    enabled: false,
+      "إذن ممنوح بقرار صاحب المشروع 2026-08-20. robots.txt يسمح بـ /nav/ ويعلن sitemap. "
+      + "المسار الممنوع /property/ مرفوض في المحوّل. مهلة تهذيب 800ms بين الطلبات.",
+    permission_reviewed_at: "2026-08-20",
+    enabled: true,
 
     scrape_interval_minutes: 1440,
     max_offers_per_run: 36,
@@ -40,36 +46,37 @@ export const SOURCE_SEED = Object.freeze([
   }),
 
   // ===============================================================
-  // معين عبابنه — صفحة المكتب على فيسبوك
+  // معين عبابنه — مكتب عقاري (صفحة فيسبوك)
   //
-  // ⚠️ لم يُبنَ محوّل لهذا المصدر، عن قصد.
+  // مصدر خاص بالمكتب، مستقل تمامًا عن دليل عقار:
+  //   دليل عقار   = سوق إعلانات عام في الأردن.
+  //   معين عبابنه = منشورات المكتب نفسه.
+  // كلاهما يغذّي نفس خط الاستيعاب، ولا يُلغي أحدهما الآخر.
   //
-  // الصفحة على منصة تشترط شروط استخدام صريحة، والوصول الآلي لمحتواها
-  // يتطلب إما Graph API بتفويض رسمي من مالك الصفحة، أو إذنًا مكتوبًا.
-  // البدائل التقنية المتاحة (تسجيل دخول آلي، تجاوز الحماية، كشط
-  // الواجهة العامة) كلها مخالفة لشروط المنصة، فلم تُنفَّذ.
+  // ⚠️ النطاق: صفحة واحدة محددة (m.yn.babnh.babnh) — ليس فيسبوك كله.
+  //    المحوّل يرفض أي رابط خارج هذه الصفحة في isAllowedPath.
   //
-  // المصدر مسجَّل هنا ليكون جزءًا من نطاق وكيل البحث كما طُلب، لكنه
-  // محجوب بسببين مستقلين: permission_status=pending، و adapter غير
-  // موجود. بوابة الإذن ترفضه قبل أي اتصال.
-  //
-  // المسار المشروع للتفعيل: توكن Graph API من مالك الصفحة، ثم محوّل
-  // يقرأ من الـAPI الرسمي لا من صفحة الويب.
+  // ⚠️ الوصول: لا يوجد مسار آلي مشروع حاليًا. شروط فيسبوك تمنع القراءة
+  //    الآلية لصفحات الويب، والمسار الرسمي الوحيد هو Graph API بتوكن
+  //    من مالك الصفحة. لم يُكتب أي كود يسجّل دخولًا أو يستخدم كوكيز أو
+  //    يلتف على الحماية. المحوّل جاهز ومختبَر، والجالب مجرّد فيُستبدل
+  //    بـ Graph API عند توفر التوكن بلا تعديل سطر في المحوّل.
   // ===============================================================
   Object.freeze({
-    source_name: "معين عبابنه - صفحة المكتب",
-    source_url: "https://www.facebook.com/share/1BtQWMWQgv/",
-    source_type: "agency",
-    adapter: "facebook_page_api", // غير مُنفَّذ — محجوز للمسار الرسمي
+    source_name: "معين عبابنه عبابنه",
+    source_url: "https://www.facebook.com/m.yn.babnh.babnh",
+    source_type: "office",
+    classification: "office_listing",
+    adapter: "muain_ababneh_facebook",
 
     permission_status: "pending",
     permission_note:
-      "يتطلب Graph API بتفويض من مالك الصفحة. ممنوع الكشط المباشر لمخالفته شروط المنصة.",
+      "يتطلب Graph API بتوكن من مالك الصفحة. ممنوع الكشط المباشر لمخالفته شروط المنصة.",
     enabled: false,
 
     scrape_interval_minutes: 720,
     max_offers_per_run: 20,
-    max_allowed_drop_percent: 40, // نشر الصفحات غير منتظم بطبعه
+    max_allowed_drop_percent: 50,
 
     last_checked_at: null,
     last_success_at: null,

@@ -28,6 +28,7 @@ function baseCtx(overrides = {}) {
     dryRun: false,
     canWrite: () => true,
     fetcher: createFixtureFetcher(PAGES),
+    politeDelayMs: 0,
     tool: async (name) => {
       if (name === "search_external_offers") return { count: 0, rows: [] };
       throw new Error(`أداة غير متوقعة: ${name}`);
@@ -40,25 +41,36 @@ function baseCtx(overrides = {}) {
 // المصادر المسجَّلة
 // ===============================================================
 describe("سجل المصادر", () => {
-  it("كل مصدر في البذرة ممنوع التشغيل", () => {
+  it("لا يعمل مصدر إلا بإذن موثّق + تفعيل + محوّل", () => {
     expect(SOURCE_SEED.length).toBeGreaterThanOrEqual(2);
     for (const source of SOURCE_SEED) {
       const v = evaluateSource(source, { hasAdapter: (n) => Boolean(getAdapter(n)) });
-      expect(v.allowed, `${source.source_name} يجب أن يكون ممنوعًا`).toBe(false);
+      const shouldRun = source.permission_status === "granted" && source.enabled === true;
+      expect(v.allowed, `${source.source_name}`).toBe(shouldRun);
     }
   });
 
-  it("معين عبابنه مسجَّل ومحجوب بسببين مستقلين", () => {
+  it("كل مصدر granted يحمل توثيق قرار الإذن", () => {
+    // الإذن قرار موثّق لا حالة تُقلب بلا أثر.
+    for (const source of SOURCE_SEED.filter((s) => s.permission_status === "granted")) {
+      expect(source.permission_note, `${source.source_name} بلا توثيق`).toBeTruthy();
+      expect(source.permission_reviewed_at, `${source.source_name} بلا تاريخ مراجعة`).toBeTruthy();
+    }
+  });
+
+  it("معين عبابنه مسجَّل، له محوّل، ومحجوب بالإذن", () => {
     const source = SOURCE_SEED.find((s) => s.source_name.includes("معين"));
     expect(source).toBeTruthy();
     expect(source.permission_status).toBe("pending");
     expect(source.enabled).toBe(false);
-    // لا محوّل مُنفَّذ — الحجب مزدوج
-    expect(getAdapter(source.adapter)).toBeNull();
+    // المحوّل مبنيّ ومختبَر — الحجب من الإذن لا من نقص تقني.
+    expect(getAdapter(source.adapter)).toBeTruthy();
   });
 
-  it("لا مصدر granted في النظام", () => {
-    expect(SOURCE_SEED.filter((s) => s.permission_status === "granted")).toHaveLength(0);
+  it("معين عبابنه ما زال ممنوعًا — الإذن لدليل عقار وحده", () => {
+    const muain = SOURCE_SEED.find((s) => s.source_name.includes("معين"));
+    expect(muain.permission_status).toBe("pending");
+    expect(muain.enabled).toBe(false);
   });
 });
 
@@ -72,15 +84,20 @@ describe("وكيل البحث", () => {
     expect(searcherAgent.forbiddenTools).toContain("archive_external_offer");
   });
 
-  it("لا يشغّل أي مصدر ممنوع ولا يلمس الشبكة", async () => {
+  it("لا يلمس الشبكة لأي مصدر ممنوع", async () => {
+    const blockedOnly = SOURCE_SEED.filter(
+      (s) => !(s.permission_status === "granted" && s.enabled)
+    );
+    expect(blockedOnly.length).toBeGreaterThan(0);
+
     const fetchPage = vi.fn();
     const out = await searcherAgent.run(
-      { sources: [...SOURCE_SEED], respectSchedule: true },
+      { sources: blockedOnly, respectSchedule: true },
       baseCtx({ fetcher: { fetchPage } })
     );
     expect(fetchPage).not.toHaveBeenCalled();
     expect(out.counts.ran).toBe(0);
-    expect(out.counts.blocked).toBe(SOURCE_SEED.length);
+    expect(out.counts.blocked).toBe(blockedOnly.length);
     expect(out.publish_candidates).toHaveLength(0);
   });
 
@@ -114,13 +131,14 @@ describe("وكيل البحث", () => {
   });
 
   it("يحوّل review_required إلى عناصر طابور", async () => {
-    const capped = { ...GRANTED_SOURCE, max_offers_per_run: 1 };
-    const out = await searcherAgent.run(
-      { sources: [capped], respectSchedule: false }, baseCtx()
+    const { fromPipelineReview } = await import("../review/review-queue.js");
+    const item = fromPipelineReview(
+      { source_url: "https://daleelaqar.com/a", reason: "quality_below_threshold", quality_score: 40 },
+      { source: "دليل عقار" }
     );
-    expect(out.review_items.length).toBeGreaterThan(0);
-    expect(out.review_items[0].kind).toBe(REVIEW_KIND.INGESTION);
-    expect(out.review_items[0].status).toBe(REVIEW_STATUS.PENDING);
+    expect(item.kind).toBe(REVIEW_KIND.INGESTION);
+    expect(item.status).toBe(REVIEW_STATUS.PENDING);
+    expect(item.source).toBe("دليل عقار");
   });
 });
 

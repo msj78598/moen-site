@@ -61,7 +61,7 @@ function makeCtx(db, overrides = {}) {
 
 /** يجلب مرشحًا حقيقيًا من الخط ببيانات محلية — بلا شبكة. */
 async function realCandidate() {
-  const r = await runIngestion(GRANTED_SOURCE, { fetcher: createFixtureFetcher(PAGES) });
+  const r = await runIngestion(GRANTED_SOURCE, { fetcher: createFixtureFetcher(PAGES), politeDelayMs: 0 });
   return r.publish_candidates[0];
 }
 
@@ -365,7 +365,7 @@ describe("وكيل النشر", () => {
 
   it("يعمل من طرف إلى طرف على بيانات محلية", async () => {
     const db = fakeDb();
-    const r = await runIngestion(GRANTED_SOURCE, { fetcher: createFixtureFetcher(PAGES) });
+    const r = await runIngestion(GRANTED_SOURCE, { fetcher: createFixtureFetcher(PAGES), politeDelayMs: 0 });
     const out = await runAgent(
       publisherAgent,
       { candidates: r.publish_candidates, allowedHost: "daleelaqar.com" },

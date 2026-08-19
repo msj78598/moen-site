@@ -15,11 +15,16 @@ const SECRET_KEYS = [
   "password", "token", "access_token", "refresh_token", "apikey", "api_key",
   "servicerolekey", "service_role_key", "secret", "authorization", "cookie",
   "publishablekey", "publishable_key", "anon_key",
+  // توكنات المنصات الخارجية
+  "facebookpagetoken", "facebook_page_token", "pagetoken", "page_token",
+  "accesstoken", "bearer",
 ];
 
 /** أنماط تُحجب حتى لو ظهرت داخل نص حر. */
 const SECRET_PATTERNS = [
   /sb_(publishable|secret)_[A-Za-z0-9_-]+/g,
+  /EAA[A-Za-z0-9]{8,}/g,                    // توكنات فيسبوك تبدأ بـ EAA
+  /Bearer\s+[A-Za-z0-9._-]{12,}/gi,
   /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g,
 ];
 

@@ -237,6 +237,10 @@ export default function App() {
   const [dhikrIndex, setDhikrIndex] = useState(0);
   const [activeTickerIndex, setActiveTickerIndex] = useState(0);
   const [offerFilter, setOfferFilter] = useState("all");
+  // فلتر نوع المصدر: all | office | marketing_brokerage
+  const [sourceFilter, setSourceFilter] = useState("all");
+  // العروض التسويقية قد تبلغ المئات — تبقى مطوية حتى يطلبها الزائر.
+  const [showAllBrokerage, setShowAllBrokerage] = useState(false);
 
   const [showAdminDash, setShowAdminDash] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
@@ -993,6 +997,9 @@ export default function App() {
       size: row.size || "",
       price: row.price || "السعر عند التواصل",
       sourceName: row.source_name || "مصدر معلن",
+      // تصنيف المصدر يأتي من البيانات لا من نص ثابت في الواجهة.
+      // القيم: office = عرض مكتب | marketing_brokerage = وساطة تسويقية
+      sourceType: row.source_type || "marketing_brokerage",
       sourceUrl: row.source_url || "#",
       checkedAt: row.checked_at || "",
       createdAt: row.created_at?.slice(0, 10) || "",
@@ -1475,13 +1482,96 @@ ${siteUrl}`;
   // الأقسام العامة من الموقع يجب أن تعرض المنشور غير المحذوف فقط.
   // RLS تفرض هذا على الزائر المجهول؛ وهذا الفلتر يفرضه أيضًا على الموظف
   // أثناء تصفحه للموقع، حتى لا تظهر له المسودات مختلطة بالعروض المنشورة.
+  /** بطاقة عرض خارجي — تحمل شارة نوع المصدر واسمه. */
+  function renderExternalOffer(offer) {
+    const isOffice = offer.sourceType === "office";
+    return (
+      <article
+        id={`external-offer-${offer.id}`}
+        style={viewStyles.externalCard}
+        key={offer.id}
+      >
+        <div style={viewStyles.externalCardHead}>
+          <span
+            style={{
+              ...viewStyles.externalTag,
+              ...(isOffice ? viewStyles.officeTag : {}),
+            }}
+          >
+            {isOffice ? "عرض مكتب" : "وساطة تسويقية"}
+          </span>
+          <span style={viewStyles.externalDates}>
+            <span style={viewStyles.externalDate}>آخر تحقق: {offer.checkedAt}</span>
+          </span>
+        </div>
+
+        <p style={viewStyles.offerSourceName}>{offer.sourceName}</p>
+        <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
+        <p style={viewStyles.propertyLine}>
+          <span style={viewStyles.propertyLineIcon}>📍</span>
+          <span>{offer.location}</span>
+        </p>
+        <p style={viewStyles.propertyLine}>
+          <span style={viewStyles.propertyLineIcon}>📐</span>
+          <span>{offer.size}</span>
+        </p>
+        <p style={viewStyles.propertyLine}>
+          <span style={viewStyles.propertyLineIcon}>💰</span>
+          <span>{offer.price}</span>
+        </p>
+        {offer.note && <p style={viewStyles.propertyNote}>{offer.note}</p>}
+
+        <div style={viewStyles.sourceNotice}>
+          <strong>{offer.sourceName}</strong>
+          <span>
+            {isOffice
+              ? "عرض منشور من مكتب عقاري نتابعه. يتم التحقق من التوفر والتفاصيل قبل الاتفاق."
+              : "العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق قبل التسويق المباشر."}
+          </span>
+        </div>
+
+        <div style={viewStyles.propertyButtons}>
+          <a
+            style={{ ...viewStyles.map, ...viewStyles.cardActionButton }}
+            href={offer.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            فتح المصدر
+          </a>
+          <a
+            style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
+            href={propertyWhatsAppUrl(offer)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            استفسار عبر المكتب
+          </a>
+        </div>
+      </article>
+    );
+  }
+
   const publicProperties = publicOnly(properties);
+
+  // ===== تصنيف العروض الخارجية حسب نوع المصدر =====
+  // مبني على البيانات لا على قائمة ثابتة، فأي مصدر جديد يظهر تلقائيًا.
+  const officeOffers = externalOffers.filter((o) => o.sourceType === "office");
+  const brokerageOffers = externalOffers.filter((o) => o.sourceType !== "office");
+
+  /** أول دفعة تظهر من العروض التسويقية قبل الضغط على "عرض الكل". */
+  const BROKERAGE_PREVIEW = 6;
+  const showOffice = sourceFilter === "all" || sourceFilter === "office";
+  const showBrokerage = sourceFilter === "all" || sourceFilter === "marketing_brokerage";
+  const visibleBrokerage = showAllBrokerage
+    ? brokerageOffers
+    : brokerageOffers.slice(0, BROKERAGE_PREVIEW);
+  const hiddenBrokerageCount = brokerageOffers.length - visibleBrokerage.length;
   // team لا يملك deleted_at؛ الإخفاء عبر is_visible وحده.
   // RLS تفرض هذا على الزائر، وهذا الفلتر يفرضه أيضًا على الموظف
   // أثناء تصفحه الموقع حتى لا يرى المخفيين مختلطين بالظاهرين.
   const visibleTeam = team.filter((member) => member.is_visible !== false);
   const filteredProperties = filteredByCategory(publicProperties, offerFilter);
-  const filteredExternalOffers = filteredByCategory(externalOffers, offerFilter);
   const officeTickerOffers = publicProperties.map((offer) => ({
     ...offer,
     anchor: `#office-offer-${offer.id}`,
@@ -2870,77 +2960,87 @@ ${siteUrl}`;
 
       <section id="external-offers" style={viewStyles.externalSection}>
         <div style={viewStyles.sectionHead}>
-          <span style={viewStyles.sectionLabel}>وساطة تسويقية</span>
-          <h2 style={viewStyles.sectionTitle}>عروض تسويقية خارجية في إربد ومناطقها</h2>
+          <span style={viewStyles.sectionLabel}>العروض المتابَعة</span>
+          <h2 style={viewStyles.sectionTitle}>عروض عقارية في إربد ومناطقها</h2>
           <p style={viewStyles.sectionText}>
-            فرص معلنة من مصادر عامة نجمعها للمتابعة الأولية. يتحقق المكتب من توفر العرض وتفاصيله قبل أي تواصل أو اتفاق.
+            عروض المكاتب نتابعها مباشرة، وعروض الوساطة نرصدها من مصادر معلنة. يتحقق المكتب من التوفر والتفاصيل قبل أي اتفاق.
           </p>
         </div>
 
-        <div style={viewStyles.externalGrid}>
-          {filteredExternalOffers.map((offer) => (
-            <article
-              id={`external-offer-${offer.id}`}
-              style={viewStyles.externalCard}
-              key={offer.id}
-            >
-              <div style={viewStyles.externalCardHead}>
-                <span style={viewStyles.externalTag}>وساطة تسويقية</span>
-                <span style={viewStyles.externalDates}>
-                  {offer.createdAt && (
-                    <span style={viewStyles.externalDate}>أضيف: {offer.createdAt}</span>
-                  )}
-                  <span style={viewStyles.externalDate}>آخر تحقق: {offer.checkedAt}</span>
-                </span>
-              </div>
-
-              <h3 style={viewStyles.cardTitle}>{offer.type}</h3>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>📍</span>
-                <span>{offer.location}</span>
-              </p>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>📐</span>
-                <span>{offer.size}</span>
-              </p>
-              <p style={viewStyles.propertyLine}>
-                <span style={viewStyles.propertyLineIcon}>💰</span>
-                <span>{offer.price}</span>
-              </p>
-              <p style={viewStyles.propertyNote}>{offer.note}</p>
-
-              <div style={viewStyles.sourceNotice}>
-                <strong>{offer.sourceName}</strong>
-                <span>
-                  العرض من مصدر معلن، ولا يعد حصريًا لمكتب نور الضفتين. يتم التحقق من التفاصيل والموافقة قبل التسويق المباشر.
-                </span>
-              </div>
-
-              <div style={viewStyles.propertyButtons}>
-                <a
-                  style={{ ...viewStyles.map, ...viewStyles.cardActionButton }}
-                  href={offer.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  فتح المصدر
-                </a>
-                <a
-                  style={{ ...viewStyles.whatsapp, ...viewStyles.cardActionButton }}
-                  href={propertyWhatsAppUrl(offer)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  استفسار عبر المكتب
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-        {!filteredExternalOffers.length && (
-          <p style={viewStyles.emptyState}>لا توجد عروض خارجية ضمن هذا التصنيف حاليا.</p>
+        {/* فلتر نوع المصدر — مبني على البيانات لا على قائمة ثابتة */}
+        {externalOffers.length > 0 && (
+          <div style={viewStyles.offerFilters}>
+            {[
+              { id: "all", label: `الكل (${externalOffers.length})` },
+              { id: "office", label: `عروض المكاتب (${officeOffers.length})` },
+              { id: "marketing_brokerage", label: `وساطة تسويقية (${brokerageOffers.length})` },
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setSourceFilter(id)}
+                style={{
+                  ...viewStyles.offerFilterBtn,
+                  ...(sourceFilter === id ? viewStyles.offerFilterBtnActive : {}),
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         )}
 
+        {/* ===== عروض المكاتب ===== */}
+        {showOffice && officeOffers.length > 0 && (
+          <div style={viewStyles.offerGroup}>
+            <div style={viewStyles.offerGroupHead}>
+              <h3 style={viewStyles.offerGroupTitle}>عروض المكاتب</h3>
+              <span style={viewStyles.offerGroupCount}>{officeOffers.length} عرض</span>
+            </div>
+            <div style={viewStyles.externalGrid}>
+              {filteredByCategory(officeOffers, offerFilter).map((offer) =>
+                renderExternalOffer(offer)
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===== الوساطة التسويقية — مطوية حتى يطلبها الزائر ===== */}
+        {showBrokerage && brokerageOffers.length > 0 && (
+          <div style={viewStyles.offerGroup}>
+            <div style={viewStyles.offerGroupHead}>
+              <h3 style={viewStyles.offerGroupTitle}>عروض السوق والوساطة</h3>
+              <span style={viewStyles.offerGroupCount}>{brokerageOffers.length} عرض</span>
+            </div>
+            <div style={viewStyles.externalGrid}>
+              {filteredByCategory(visibleBrokerage, offerFilter).map((offer) =>
+                renderExternalOffer(offer)
+              )}
+            </div>
+            {hiddenBrokerageCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowAllBrokerage(true)}
+                style={viewStyles.showMoreBtn}
+              >
+                عرض جميع العروض التسويقية ({hiddenBrokerageCount} إضافية)
+              </button>
+            )}
+            {showAllBrokerage && brokerageOffers.length > BROKERAGE_PREVIEW && (
+              <button
+                type="button"
+                onClick={() => setShowAllBrokerage(false)}
+                style={viewStyles.showMoreBtn}
+              >
+                عرض أقل
+              </button>
+            )}
+          </div>
+        )}
+
+        {!externalOffers.length && (
+          <p style={viewStyles.emptyState}>لا توجد عروض خارجية ضمن هذا التصنيف حاليا.</p>
+        )}
       </section>
 
       <section style={viewStyles.assuranceSection}>
@@ -3139,6 +3239,29 @@ ${siteUrl}`;
 }
 
 const styles = {
+  // ===== تصنيف العروض حسب المصدر (Sprint 4) =====
+  offerGroup: { marginBottom: "38px" },
+  offerGroupHead: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    gap: "12px", margin: "0 0 16px", paddingBottom: "10px",
+    borderBottom: "2px solid rgba(15,23,42,0.08)",
+  },
+  offerGroupTitle: { margin: 0, fontSize: "20px", fontWeight: 800, color: "#0f172a" },
+  offerGroupCount: {
+    fontSize: "13px", fontWeight: 700, color: "#475569",
+    background: "rgba(15,23,42,0.06)", padding: "5px 12px", borderRadius: "999px",
+  },
+  /** شارة عرض المكتب — تُميّزه بصريًا عن الوساطة. */
+  officeTag: { background: "#0f766e", color: "#ffffff" },
+  offerSourceName: {
+    margin: "0 0 6px", fontSize: "13px", fontWeight: 700, color: "#475569",
+  },
+  showMoreBtn: {
+    display: "block", width: "100%", marginTop: "18px", padding: "13px 18px",
+    borderRadius: "14px", border: "1px dashed rgba(15,23,42,0.25)",
+    background: "rgba(15,23,42,0.03)", color: "#0f172a",
+    fontSize: "15px", fontWeight: 700, cursor: "pointer",
+  },
   page: {
     margin: 0,
     fontFamily: "Tahoma, Arial, sans-serif",

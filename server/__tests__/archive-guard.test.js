@@ -175,7 +175,7 @@ describe("الخط يحمل حكم السلامة", () => {
   const fetcher = createFixtureFetcher(PAGES);
 
   it("كل جولة مكتملة تحمل run_integrity", async () => {
-    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 5 }, { fetcher });
+    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 5 }, { fetcher, politeDelayMs: 0 });
     expect(r.run_integrity).toBeTruthy();
     expect(r.run_integrity).toHaveProperty("archive_allowed");
     expect(r.run_integrity).toHaveProperty("drop_percent");
@@ -183,26 +183,26 @@ describe("الخط يحمل حكم السلامة", () => {
 
   it("الهبوط الكبير يجعل الجولة suspicious ويمنع الأرشفة", async () => {
     // البيانات المحلية تُنتج 5 عروض؛ خط أساس 40 يعني هبوطًا 88%
-    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher });
+    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher, politeDelayMs: 0 });
     expect(r.status).toBe(RUN_STATUS.SUSPICIOUS);
     expect(r.run_integrity.archive_allowed).toBe(false);
   });
 
   it("⚠️ الأهم: الجولة المشبوهة لا تمنع نشر ما وصل فعلًا", async () => {
-    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher });
+    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher, politeDelayMs: 0 });
     expect(r.status).toBe(RUN_STATUS.SUSPICIOUS);
     expect(r.publish_candidates.length).toBeGreaterThan(0);
     expect(r.errors).toEqual([]);
   });
 
   it("الهبوط المقبول يُبقي الجولة completed", async () => {
-    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 5 }, { fetcher });
+    const r = await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 4 }, { fetcher, politeDelayMs: 0 });
     expect(r.status).toBe(RUN_STATUS.COMPLETED);
     expect(r.run_integrity.archive_allowed).toBe(true);
   });
 
   it("بلا خط أساس: الجولة completed لكن الأرشفة ممنوعة", async () => {
-    const r = await runIngestion(GRANTED_SOURCE, { fetcher });
+    const r = await runIngestion(GRANTED_SOURCE, { fetcher, politeDelayMs: 0 });
     expect(r.status).toBe(RUN_STATUS.COMPLETED);
     expect(r.run_integrity.status).toBe(RUN_INTEGRITY.NO_BASELINE);
     expect(r.run_integrity.archive_allowed).toBe(false);
@@ -211,7 +211,7 @@ describe("الخط يحمل حكم السلامة", () => {
   it("الصفحة الفارغة: أرشفة ممنوعة", async () => {
     const r = await runIngestion(
       { ...GRANTED_SOURCE, last_offer_count: 40 },
-      { fetcher: createFixtureFetcher(EMPTY_PAGES) }
+      { fetcher: createFixtureFetcher(EMPTY_PAGES), politeDelayMs: 0 }
     );
     expect(r.run_integrity.status).toBe(RUN_INTEGRITY.EMPTY_RUN);
     expect(r.run_integrity.archive_allowed).toBe(false);
@@ -221,7 +221,7 @@ describe("الخط يحمل حكم السلامة", () => {
     // هذا هو السيناريو الحقيقي: سقوط JSON-LD -> حصيلة منهارة
     const r = await runIngestion(
       { ...GRANTED_SOURCE, last_offer_count: 86 },
-      { fetcher: createFixtureFetcher(DEGRADED_PAGES) }
+      { fetcher: createFixtureFetcher(DEGRADED_PAGES), politeDelayMs: 0 }
     );
     expect(r.degraded).toBe(true);
     expect(r.status).toBe(RUN_STATUS.SUSPICIOUS);
@@ -230,7 +230,7 @@ describe("الخط يحمل حكم السلامة", () => {
 
   it("الجولة المشبوهة تُسجَّل بمستوى error", async () => {
     const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: () => logger };
-    await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher, logger });
+    await runIngestion({ ...GRANTED_SOURCE, last_offer_count: 40 }, { fetcher, logger, politeDelayMs: 0 });
     expect(logger.error).toHaveBeenCalledWith("run_suspicious", expect.objectContaining({
       drop_percent: expect.any(Number),
     }));
@@ -238,7 +238,7 @@ describe("الخط يحمل حكم السلامة", () => {
 
   it("الجولة المتخطّاة أو الفاشلة لا تحمل حكمًا — فلا أرشفة", async () => {
     const skipped = await runIngestion(
-      { ...GRANTED_SOURCE, enabled: false }, { fetcher }
+      { ...GRANTED_SOURCE, enabled: false }, { fetcher, politeDelayMs: 0 }
     );
     expect(skipped.run_integrity).toBeNull();
 
@@ -265,7 +265,7 @@ describe("مصدر الحد", () => {
   it("الخط يستخدم حد المصدر لا الافتراضي", async () => {
     const fetcher = createFixtureFetcher(PAGES);
     const lenient = await runIngestion(
-      { ...GRANTED_SOURCE, last_offer_count: 40, max_allowed_drop_percent: 95 }, { fetcher }
+      { ...GRANTED_SOURCE, last_offer_count: 40, max_allowed_drop_percent: 95 }, { fetcher, politeDelayMs: 0 }
     );
     expect(lenient.run_integrity.threshold).toBe(95);
     expect(lenient.run_integrity.archive_allowed).toBe(true);

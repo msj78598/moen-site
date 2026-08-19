@@ -84,8 +84,10 @@ export const searcherAgent = defineAgent({
     for (const source of due) {
       const config = sourceConfig(source);
       try {
+        // جالب مخصص للمصدر إن وُجد (Graph API لفيسبوك)، وإلا الافتراضي.
+        const fetcher = ctx.fetcherFor?.(source) ?? ctx.fetcher;
         const report = await runIngestion(source, {
-          fetcher: ctx.fetcher,
+          fetcher,
           knownUrls,
           logger: ctx.logger,
         });

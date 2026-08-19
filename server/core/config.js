@@ -41,6 +41,16 @@ export const config = Object.freeze({
     required: bool("LLM_REQUIRED", false),
   },
 
+  /**
+   * فيسبوك — المسار الرسمي الوحيد لقراءة منشورات صفحة.
+   * التوكن يُقرأ هنا فقط، ولا يصل إلى المتصفح ولا إلى أي نموذج لغة.
+   * غيابه لا يُعطّل النظام: المصدر يبقى محجوبًا ببوابة الإذن.
+   */
+  facebook: {
+    pageToken: read("FACEBOOK_PAGE_TOKEN"),
+    pageId: read("FACEBOOK_PAGE_ID", "m.yn.babnh.babnh"),
+  },
+
   worker: {
     timeZone: read("RUN_TIME_ZONE", "Asia/Riyadh"),
     // dry-run: الوكلاء يحسبون ويسجّلون لكن لا يكتبون شيئًا.

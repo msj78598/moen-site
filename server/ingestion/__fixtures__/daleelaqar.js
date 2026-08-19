@@ -1,86 +1,82 @@
 /**
- * بيانات محلية مصنوعة يدويًا للاختبار.
+ * بيانات محلية مصنوعة يدويًا — محوّل "دليل عقار".
  *
- * ⚠️ لا شيء هنا منسوخ من أي موقع حقيقي. الأرقام والأحياء والأكواد
- *    مؤلَّفة بالكامل. الغرض محاكاة *شكل* الاستجابة لا محتواها،
- *    فلا مسألة حقوق ولا بيانات طرف ثالث.
+ * ⚠️ لا شيء هنا منسوخ من الموقع. الأحياء والأكواد والأسعار مؤلَّفة.
+ *    ما يُحاكى هو *شكل* الاستجابة فقط: بنية الرابط ووسم JSON-LD.
  *
- * الحالات المغطّاة مأخوذة من أعطال حقيقية رُصدت في الإنتاج:
- *   - عرض كامل
- *   - عرض بلا سعر
- *   - سعر مشوّه ("..")
- *   - سعر بالمتر بأرقام عربية
- *   - رابط مكرر
- *   - رابط من نطاق أجنبي (يجب رفضه)
- *   - انهيار JSON-LD (يجبر الخط على الخطة البديلة)
+ * تعكس البنية الحقيقية بعد إعادة بناء الموقع (أغسطس 2026):
+ *   الاكتشاف من sitemap · التفاصيل من RealEstateListing في صفحة الإعلان.
  */
 
-export const BASE_URL = "https://daleelaqar.com/search/عقارات-للبيع/اربد";
+const nav = (district, locality, hood, type, size, code) =>
+  `https://daleelaqar.com/nav/محافظة-اربد/${district}/${locality}/جدول-الأحياء/${hood}/${type}/للبيع/${size}متر/${code}`;
 
-/** روابط بالشكل الذي يتوقعه المحوّل: .../<type>/للبيع/<area>/... */
-const listingUrl = (locality, type, areaSeg, basin, code) =>
-  `https://daleelaqar.com/nav/عقارات/${locality}/حوض/${type}/للبيع/${areaSeg}/${basin}/${code}`;
+export const SITEMAP_INDEX_URL = "https://daleelaqar.com/sitemap.xml";
+export const LANDS_XML = "https://daleelaqar.com/lands.xml";
+export const BASE_URL = SITEMAP_INDEX_URL;
 
 export const URLS = {
-  complete:   listingUrl("اربد", "أرض", "854-متر", "ايدون", "LST100234"),
-  noPrice:    listingUrl("اربد", "شقة", "134-متر", "البارحه", "LST100235"),
-  badPrice:   listingUrl("اربد", "منزل", "377-متر", "بشرى", "LST100236"),
-  perMeter:   listingUrl("اربد", "أرض", "1000-متر", "الصريح", "LST100237"),
-  duplicate:  listingUrl("اربد", "أرض", "854-متر", "ايدون", "LST100234"), // نفس رابط complete
+  complete:   nav("اراضي-اربد", "اربد",   "المردمه", "أرض",  "514",  "01285"),
+  noPrice:    nav("شقق-اربد",   "ايدون",  "الطوال",  "شقة",  "134",  "00412"),
+  badPrice:   nav("اراضي-اربد", "بشرى",   "ابان",    "منزل", "377",  "00513"),
+  perMeter:   nav("اراضي-اربد", "الصريح", "الوقف",   "أرض",  "1000", "00614"),
+  duplicate:  nav("اراضي-اربد", "اربد",   "المردمه", "أرض",  "514",  "01285"),
+  outOfScope: "https://daleelaqar.com/nav/محافظة-عمان/اراضي-عمان/عمان/جدول-الأحياء/تلاع/أرض/للبيع/500متر/09999",
+  disallowed: "https://daleelaqar.com/property/12345",
   foreign:    "https://not-our-source.example.com/listing/999",
-  unparsable: "https://daleelaqar.com/about-us",
+  unparsable: "https://daleelaqar.com/nav/hands/support",
 };
 
-/** صفحة سليمة: JSON-LD موجود وفيه أسعار. */
-export const HEALTHY_PAGE = `<!doctype html><html><head>
-<script type="application/ld+json" id="search-jsonld">
-${JSON.stringify({
-  "@context": "https://schema.org",
-  mainEntity: {
-    "@type": "ItemList",
-    itemListElement: [
-      { item: { url: URLS.complete,  name: "أرض للبيع", offers: { price: 80000, priceCurrency: "JOD" } } },
-      { item: { url: URLS.noPrice,   name: "شقة للبيع", offers: {} } },
-      { item: { url: URLS.badPrice,  name: "منزل للبيع", offers: { price: "..", priceCurrency: "JOD" } } },
-      { item: { url: URLS.perMeter,  name: "أرض للبيع", offers: { price: "٤ دنانير للمتر" } } },
-      { item: { url: URLS.duplicate, name: "أرض للبيع", offers: { price: 80000, priceCurrency: "JOD" } } },
-      { item: { url: URLS.foreign,   name: "عرض من نطاق آخر", offers: { price: 50000 } } },
-      { item: { url: URLS.unparsable, name: "صفحة ليست إعلانًا" } },
-    ],
-  },
-})}
-</script></head><body></body></html>`;
+const sitemapXml = (locs) =>
+  `<?xml version="1.0" encoding="UTF-8"?><urlset>${
+    locs.map((l) => `<url><loc>${l}</loc></url>`).join("")
+  }</urlset>`;
 
-/**
- * صفحة متدهورة: JSON-LD مفقود تمامًا.
- * تحاكي العطل الحقيقي الذي أسقط الحصيلة من ~86 عرضًا إلى 8
- * وجعل كل الأسعار "السعر حسب المصدر".
- */
-export const DEGRADED_PAGE = `<!doctype html><html><body>
-<a href="${URLS.complete}">عرض</a>
-<a href="${URLS.noPrice}">عرض</a>
-<a href="${URLS.unparsable}">من نحن</a>
-</body></html>`;
+const listingHtml = ({ name, price, currency = "JOD" }) =>
+  `<!doctype html><html><head>
+<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList" })}</script>
+<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org", "@type": "RealEstateListing", name,
+    ...(price === null || price === undefined
+      ? {}
+      : { offers: { "@type": "Offer", price, priceCurrency: currency, availability: "https://schema.org/InStock" } }),
+  })}</script>
+</head><body></body></html>`;
 
-/** صفحة فارغة تمامًا — لا JSON-LD ولا روابط إعلانات. */
-export const EMPTY_PAGE = `<!doctype html><html><body><p>لا نتائج</p></body></html>`;
-
-export const PAGES = {
-  [BASE_URL]: HEALTHY_PAGE,
+const SITEMAPS = {
+  [SITEMAP_INDEX_URL]: sitemapXml([LANDS_XML]),
+  [LANDS_XML]: sitemapXml([
+    URLS.complete, URLS.noPrice, URLS.badPrice, URLS.perMeter,
+    URLS.duplicate, URLS.outOfScope, URLS.disallowed, URLS.foreign, URLS.unparsable,
+  ]),
 };
 
+const DETAILS = {
+  [URLS.complete]: listingHtml({ name: "أرض للبيع في اربد - محافظة اربد", price: 80000 }),
+  [URLS.noPrice]:  listingHtml({ name: "شقة للبيع في ايدون", price: null }),
+  [URLS.badPrice]: listingHtml({ name: "منزل للبيع في بشرى", price: ".." }),
+  [URLS.perMeter]: listingHtml({ name: "أرض للبيع في الصريح", price: "٤ دنانير للمتر" }),
+};
+
+export const PAGES = { ...SITEMAPS, ...DETAILS };
+
+/** JSON-LD مفقود — يعود المحوّل لبيانات الرابط بلا سعر ولا عنوان. */
 export const DEGRADED_PAGES = {
-  [BASE_URL]: DEGRADED_PAGE,
+  ...SITEMAPS,
+  ...Object.fromEntries(
+    Object.keys(DETAILS).map((u) => [u, "<!doctype html><html><body>لا بيانات منظمة</body></html>"])
+  ),
 };
 
+/** sitemap فارغ — لا إعلانات إطلاقًا. */
 export const EMPTY_PAGES = {
-  [BASE_URL]: EMPTY_PAGE,
+  [SITEMAP_INDEX_URL]: sitemapXml([LANDS_XML]),
+  [LANDS_XML]: sitemapXml([]),
 };
 
-/** مصدر تجريبي مسموح — للاختبار فقط، لا يعكس حالة الإنتاج. */
 export const GRANTED_SOURCE = Object.freeze({
   source_name: "مصدر اختباري",
-  source_url: BASE_URL,
+  source_url: SITEMAP_INDEX_URL,
   source_type: "listing_site",
   adapter: "daleelaqar",
   permission_status: "granted",
@@ -89,26 +85,17 @@ export const GRANTED_SOURCE = Object.freeze({
   max_allowed_drop_percent: 30,
 });
 
-/** مصدر بحالة الإنتاج الفعلية: إذن غير محسوم ومعطّل. */
 export const PENDING_SOURCE = Object.freeze({
-  ...GRANTED_SOURCE,
-  source_name: "دليل عقار",
-  permission_status: "pending",
-  enabled: false,
+  ...GRANTED_SOURCE, source_name: "دليل عقار",
+  permission_status: "pending", enabled: false,
 });
 
-/** مسموح لكنه معطّل تشغيليًا. */
 export const DISABLED_SOURCE = Object.freeze({
-  ...GRANTED_SOURCE,
-  source_name: "مصدر معطّل",
-  permission_status: "granted",
-  enabled: false,
+  ...GRANTED_SOURCE, source_name: "مصدر معطّل",
+  permission_status: "granted", enabled: false,
 });
 
-/** مرفوض نهائيًا. */
 export const DENIED_SOURCE = Object.freeze({
-  ...GRANTED_SOURCE,
-  source_name: "مصدر مرفوض",
-  permission_status: "denied",
-  enabled: true,
+  ...GRANTED_SOURCE, source_name: "مصدر مرفوض",
+  permission_status: "denied", enabled: true,
 });

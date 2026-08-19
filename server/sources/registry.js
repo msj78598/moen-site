@@ -21,8 +21,15 @@ import {
 } from "../ingestion/permission-gate.js";
 
 /** قيم افتراضية لأي حقل ناقص — مطابقة لـ DEFAULT في 0007_sources.sql. */
+/** تصنيف المصادر — يُحفظ مع كل عرض ولا يُخلط بين النوعين. */
+export const SOURCE_CLASS = Object.freeze({
+  OFFICE: "office",                          // عروض مكتب — منشورات المكتب نفسه
+  MARKETING: "marketing_brokerage",          // وساطة تسويقية — سوق خارجي
+  EXTERNAL: "external",                      // غير مصنّف
+});
+
 export const SOURCE_DEFAULTS = Object.freeze({
-  source_type: "listing_site",
+  source_type: SOURCE_CLASS.EXTERNAL,
   permission_status: PERMISSION.PENDING,
   enabled: false,
   scrape_interval_minutes: 1440,
@@ -44,6 +51,7 @@ export function sourceConfig(source) {
     source_name: source?.source_name ?? "(بلا اسم)",
     source_url: source?.source_url ?? "",
     source_type: source?.source_type ?? SOURCE_DEFAULTS.source_type,
+    classification: source?.classification ?? source?.source_type ?? SOURCE_DEFAULTS.source_type,
     adapter: source?.adapter ?? null,
     permission_status: source?.permission_status ?? SOURCE_DEFAULTS.permission_status,
     enabled: source?.enabled === true,

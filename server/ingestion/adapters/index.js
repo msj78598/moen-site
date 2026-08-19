@@ -6,8 +6,12 @@
  */
 
 import { adapter as daleelaqar } from "./daleelaqar.js";
+import { adapter as muainAbabneh } from "./muain-ababneh.js";
 
-const ADAPTERS = new Map([[daleelaqar.name, daleelaqar]]);
+const ADAPTERS = new Map([
+  [daleelaqar.name, daleelaqar],
+  [muainAbabneh.name, muainAbabneh],
+]);
 
 export function getAdapter(name) {
   return ADAPTERS.get(name) ?? null;

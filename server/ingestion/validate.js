@@ -55,6 +55,11 @@ export const normalizedOfferSchema = z.object({
   source_name: z.string().min(2).max(120),
   source_url: z.string().url(),
   listing_code: z.string().optional().default(""),
+  source_type: z.string().optional(),
+  source_classification: z.string().optional(),
+  contact_phone: z.string().nullable().optional(),
+  published_at: z.string().nullable().optional(),
+  evidence: z.record(z.string(), z.unknown()).optional(),
   note: z.string().nullable().optional(),
   raw: z.record(z.string(), z.unknown()).optional(),
 });

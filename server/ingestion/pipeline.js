@@ -90,6 +90,52 @@ function emptyReport(source, startedAt) {
   };
 }
 
+/** مهلة تهذيب بين طلبات التفاصيل — احترامًا للمصدر. */
+const POLITE_DELAY_MS = 800;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * المسار ذو المرحلتين: اكتشاف الروابط ثم جلب تفاصيل عدد محدود منها.
+ * العدد محكوم بـ max_offers_per_run فلا نُرهق المصدر.
+ */
+async function runTwoPhase(adapter, { fetcher, config, logger, politeDelayMs = POLITE_DELAY_MS }) {
+  const limit = config.max_offers_per_run;
+  // السقف يُطبَّق على الاكتشاف: لا نُنزّل صفحة تفاصيل لن ننشرها.
+  const { urls, stats } = await adapter.discover({ fetcher, limit });
+
+  logger?.info?.("discovery_complete", {
+    discovered: urls.length, scanned: stats?.scanned, in_scope: stats?.inScope,
+  });
+
+  const offers = [];
+  let failed = 0;
+  let degraded = 0;
+
+  for (const url of urls.slice(0, limit)) {
+    try {
+      const detailPage = await fetcher.fetchPage(url);
+      const detail = adapter.extractDetail({ html: detailPage.html, url });
+      if (!detail) { failed += 1; continue; }
+      if (detail.degraded) degraded += 1;
+      offers.push(detail);
+    } catch {
+      failed += 1; // إعلان واحد لا يُسقط الجولة
+    }
+    if (politeDelayMs > 0) await sleep(politeDelayMs);
+  }
+
+  return {
+    offers,
+    strategy: "sitemap_detail",
+    // التدهور هنا يعني أن جزءًا كبيرًا من التفاصيل لم يُقرأ.
+    degraded: offers.length > 0 && degraded / offers.length > 0.5,
+    stats: {
+      candidates: urls.length, parsed: offers.length,
+      unparsable: failed, degradedDetails: degraded, discovered: stats,
+    },
+  };
+}
+
 function finish(report, clock) {
   report.completed_at = clock();
   report.duration_ms = Date.parse(report.completed_at) - Date.parse(report.started_at);
@@ -113,6 +159,7 @@ export async function runIngestion(source, {
   threshold = PUBLISH_THRESHOLD,
   logger,
   clock = () => new Date().toISOString(),
+  politeDelayMs,
 } = {}) {
   const report = emptyReport(source, clock());
   const config = sourceConfig(source);
@@ -152,9 +199,17 @@ export async function runIngestion(source, {
     }
 
     // ===== 3) Extract =====
+    //
+    // عقد المحوّل يدعم شكلين:
+    //   أ) مرحلة واحدة: extract(page) -> offers      (صفحة قائمة)
+    //   ب) مرحلتان: discover() ثم extractDetail()    (sitemap + صفحة إعلان)
+    // الشكل الثاني ضروري للمصادر التي تُحمّل قوائمها ديناميكيًا؛ قراءة
+    // HTML صفحة البحث فيها تعطي جزءًا ضئيلًا من الإعلانات.
     let extracted;
     try {
-      extracted = adapter.extract({ html: page.html, url: page.url });
+      extracted = typeof adapter.discover === "function"
+        ? await runTwoPhase(adapter, { fetcher, config, logger, politeDelayMs })
+        : adapter.extract({ html: page.html, url: page.url });
     } catch (error) {
       report.status = RUN_STATUS.FAILED;
       report.errors.push({
@@ -186,6 +241,9 @@ export async function runIngestion(source, {
     const validated = [];
     for (const raw of extracted.offers) {
       const normalized = normalizeOffer(raw, { sourceName: config.source_name });
+      // هوية المصدر تُحفظ مع كل عرض — الوكيل لا يخلط المصادر في البيانات.
+      normalized.source_type = config.source_type;
+      normalized.source_classification = config.classification;
       const result = validateOffer(normalized, { allowedHost: adapter.host });
 
       if (result.ok) {
