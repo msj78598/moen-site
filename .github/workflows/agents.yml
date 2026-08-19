@@ -27,7 +27,7 @@ on:
         required: true
         default: sources-status
         type: choice
-        options: [sources-status, ingestion, verification, monitor, db-health]
+        options: [sources-status, ingestion, verification, monitor, db-health, activate-daleelaqar, revoke-daleelaqar]
       dry_run:
         description: "وضع التجربة — لا كتابة إطلاقًا"
         required: false
@@ -80,6 +80,18 @@ jobs:
           node server/index.js run ingestion
           node server/index.js run verification
 
+      # تفعيل/إيقاف مصدر — قرار إداري منفصل، لا يفعله أي وكيل تلقائيًا.
+      - name: Activate source
+        if: github.event_name == 'workflow_dispatch' && inputs.job == 'activate-daleelaqar'
+        run: node scripts/activate-source.mjs --source "دليل عقار" --grant
+
+      - name: Revoke source
+        if: github.event_name == 'workflow_dispatch' && inputs.job == 'revoke-daleelaqar'
+        run: node scripts/activate-source.mjs --source "دليل عقار" --revoke
+
       - name: Manual run
-        if: github.event_name == 'workflow_dispatch'
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.job != 'activate-daleelaqar' &&
+          inputs.job != 'revoke-daleelaqar'
         run: node server/index.js run ${{ inputs.job }}
