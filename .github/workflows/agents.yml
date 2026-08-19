@@ -27,7 +27,7 @@ on:
         required: true
         default: sources-status
         type: choice
-        options: [sources-status, ingestion, verification, monitor, db-health, activate-daleelaqar, revoke-daleelaqar]
+        options: [sources-status, ingestion, verification, monitor, db-health, activate-daleelaqar, revoke-daleelaqar, purge-external]
       dry_run:
         description: "وضع التجربة — لا كتابة إطلاقًا"
         required: false
@@ -89,9 +89,18 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.job == 'revoke-daleelaqar'
         run: node scripts/activate-source.mjs --source "دليل عقار" --revoke
 
+      # سحب كل العروض الخارجية من النشر + إيقاف المصدر.
+      # قرار صاحب المشروع: بعض المواقع تمنع إعادة نشر عروضها.
+      - name: Purge external offers
+        if: github.event_name == 'workflow_dispatch' && inputs.job == 'purge-external'
+        run: |
+          node scripts/activate-source.mjs --source "دليل عقار" --revoke
+          node scripts/archive-external-offers.mjs --all
+
       - name: Manual run
         if: >-
           github.event_name == 'workflow_dispatch' &&
           inputs.job != 'activate-daleelaqar' &&
-          inputs.job != 'revoke-daleelaqar'
+          inputs.job != 'revoke-daleelaqar' &&
+          inputs.job != 'purge-external'
         run: node server/index.js run ${{ inputs.job }}

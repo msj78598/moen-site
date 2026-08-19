@@ -148,80 +148,16 @@ export default function App() {
     "سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر",
   ];
 
-  const externalMarketingOffers = [
-    {
-      id: "eidoun-waqf-854",
-      type: "أرض للبيع",
-      location: "إربد - إيدون / حوض الوقف",
-      size: "854 م²",
-      price: "80,000 دينار",
-      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
-      sourceUrl:
-        "https://eurekajo.com/Realestates/Details/c10395e2-d6ab-4ba1-bc61-809cd5eae782",
-      checkedAt: "2026-05-25",
-      note: "أرض مستوية في منطقة فلل، الخدمات واصلة حسب المصدر.",
-    },
-    {
-      id: "eidoun-commercial-1144",
-      type: "أرض تجارية",
-      location: "إربد - طريق إربد الحصن / إيدون",
-      size: "1144 م²",
-      price: "400,000 دينار",
-      sourceName: "يوريكا جو - مجموعة غلوبال العقارية",
-      sourceUrl:
-        "https://eurekajo.com/Realestates/Details/7a78e875-3eaf-4a26-8fa1-30891f4f3b22",
-      checkedAt: "2026-05-25",
-      note: "قطعة تجارية على شارع رئيسي بعرض 40م حسب المصدر.",
-    },
-    {
-      id: "eidoun-masiya-850",
-      type: "أرض للبيع",
-      location: "إربد - إيدون / الماصية الشرقية",
-      size: "850 م²",
-      price: "170,000 دينار",
-      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
-      sourceUrl:
-        "https://eurekajo.com/Realestates/Details/b99de2c8-b659-4414-8f71-112ce2294c0c",
-      checkedAt: "2026-05-25",
-      note: "على شارع المورد الرئيسي وقريبة من دوار السفير حسب المصدر.",
-    },
-    {
-      id: "eidoun-qarn-506",
-      type: "أرض للبيع",
-      location: "إربد - إيدون / قرن الجاموس",
-      size: "506 م²",
-      price: "60,000 دينار",
-      sourceName: "يوريكا جو - إعمار للتطوير والاستثمار",
-      sourceUrl:
-        "https://eurekajo.com/Realestates/Details/602c0f2b-d09a-4126-bb9d-792e3b7db65c",
-      checkedAt: "2026-05-25",
-      note: "مناسبة لبناء فيلا ضمن منطقة فلل حسب المصدر.",
-    },
-    {
-      id: "sareej-630",
-      type: "أرض سكنية",
-      location: "إربد - السريج",
-      size: "630 م²",
-      price: "75,600 دينار",
-      sourceName: "يوريكا جو - وسيط درويش للعقار",
-      sourceUrl:
-        "https://eurekajo.com/Realestates/Details/5f9b3400-3fe1-450e-aba5-363c7d1c25d8",
-      checkedAt: "2026-05-25",
-      note: "أرض سكنية/صخرية مطلة والخدمات واصلة حسب المصدر.",
-    },
-    {
-      id: "bushra-854",
-      type: "أرض للبيع",
-      location: "إربد - بشرى / قرب دوار الطيارة",
-      size: "854 م²",
-      price: "100,000 دينار",
-      sourceName: "دليل عقار",
-      sourceUrl:
-        "https://daleelaqar.com/search/%D8%B9%D9%82%D8%A7%D8%B1%D8%A7%D8%AA-%D9%84%D9%84%D8%A8%D9%8A%D8%B9/%D8%A7%D8%B1%D8%A8%D8%AF",
-      checkedAt: "2026-05-25",
-      note: "قوشان مستقل في منطقة بشرى حسب قائمة المصدر.",
-    },
-  ];
+  /**
+   * ⚠️ فارغة عمدًا — قرار صاحب المشروع 2026-08-20.
+   *
+   * كانت تحوي ستة عروض مكتوبة يدويًا بروابط eurekajo.com. بعض المواقع
+   * تمنع صراحةً إعادة نشر عروضها، وعرضها هنا إعادة نشر بلا إذن.
+   *
+   * وكانت تُعرض أيضًا كلما فشل الاتصال بقاعدة البيانات، فتظهر عروض
+   * قديمة كأنها حالية. الإبقاء على المصفوفة فارغة يمنع الأمرين.
+   */
+  const externalMarketingOffers = [];
 
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
