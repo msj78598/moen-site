@@ -19,14 +19,33 @@ function bool(name, fallback = false) {
   return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
 }
 
+/**
+ * يطبّع رابط Supabase إلى الأصل فقط.
+ *
+ * سبب وجودها: سرّ SUPABASE_URL في GitHub قد يحمل شرطة نهائية أو مسارًا
+ * زائدًا، فيُنتج PostgREST خطأ "Invalid path specified in request URL".
+ * السكربت القديم كان يطبّعه؛ وأغفلته هنا فأسقط أول تشغيل سحابي.
+ */
+function normalizeSupabaseUrl(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return undefined;
+  try {
+    return new URL(trimmed).origin;
+  } catch {
+    return trimmed.replace(/\/+$/, "");
+  }
+}
+
 function int(name, fallback) {
   const value = Number(read(name));
   return Number.isFinite(value) ? value : fallback;
 }
 
+export { normalizeSupabaseUrl };
+
 export const config = Object.freeze({
   supabase: {
-    url: read("SUPABASE_URL") ?? read("VITE_SUPABASE_URL"),
+    url: normalizeSupabaseUrl(read("SUPABASE_URL") ?? read("VITE_SUPABASE_URL")),
     serviceRoleKey: read("SUPABASE_SERVICE_ROLE_KEY"),
     publishableKey: read("SUPABASE_PUBLISHABLE_KEY") ?? read("VITE_SUPABASE_ANON_KEY"),
   },

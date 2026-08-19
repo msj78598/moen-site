@@ -163,3 +163,28 @@ describe("أمان التوكن", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// ===============================================================
+// تطبيع رابط Supabase — حارس انحدار من أول تشغيل سحابي
+// ===============================================================
+describe("normalizeSupabaseUrl", () => {
+  it("يزيل المسار والشرطة الزائدة", async () => {
+    const { normalizeSupabaseUrl } = await import("../core/config.js");
+    // سرّ SUPABASE_URL في GitHub حمل مسارًا زائدًا، فأنتج PostgREST
+    // "Invalid path specified in request URL" وأسقط الجولة كاملة.
+    for (const input of [
+      "https://x.supabase.co/",
+      "https://x.supabase.co/rest/v1",
+      "  https://x.supabase.co/  ",
+    ]) {
+      expect(normalizeSupabaseUrl(input)).toBe("https://x.supabase.co");
+    }
+  });
+
+  it("يترك الرابط السليم كما هو ويتحمل الفارغ", async () => {
+    const { normalizeSupabaseUrl } = await import("../core/config.js");
+    expect(normalizeSupabaseUrl("https://x.supabase.co")).toBe("https://x.supabase.co");
+    expect(normalizeSupabaseUrl("")).toBeUndefined();
+    expect(normalizeSupabaseUrl(null)).toBeUndefined();
+  });
+});
