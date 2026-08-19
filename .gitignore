@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ملف بيئة العامل — يحتوي SUPABASE_SERVICE_ROLE_KEY. ممنوع رفعه.
+.env.worker
+.env.worker.*
+!.env.worker.example

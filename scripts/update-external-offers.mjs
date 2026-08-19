@@ -39,13 +39,54 @@ function normalizeSupabaseUrl(value = "") {
   return parsed.origin;
 }
 
+// سجل المصادر المؤقت. السجل الكامل في قاعدة البيانات يأتي في Sprint 3.
+//
+// permission_status:
+//   granted -> إذن مكتوب موثّق. مسموح بالتشغيل.
+//   pending -> وضع الإذن لم يُحسم. ممنوع التشغيل.
+//   denied  -> مرفوض. ممنوع نهائيًا.
 const trustedSources = [
   {
     name: "دليل عقار",
     url: "https://daleelaqar.com/search/%D8%B9%D9%82%D8%A7%D8%B1%D8%A7%D8%AA-%D9%84%D9%84%D8%A8%D9%8A%D8%B9/%D8%A7%D8%B1%D8%A8%D8%AF",
     host: "daleelaqar.com",
+    permission_status: "pending",
+    permission_note: "لم يُحسم وضع الإذن. معطّل حتى مراجعته في Sprint 3.",
   },
 ];
+
+const RUNNABLE_PERMISSION_STATES = ["granted"];
+
+/**
+ * بوابة الإذن.
+ *
+ * سببها المباشر: سجلات GitHub Actions (21–28 يوليو 2026) تُظهر أن هذا
+ * السكربت كان يؤرشف 78 عرضًا يوميًا مقابل 8 مؤهلة فقط — أي أن استخراجه
+ * منهار — وهو يعمل على مصدر لم يُحسم وضع الإذن فيه.
+ *
+ * لا يعمل أي مصدر إلا بحالة granted صريحة.
+ */
+function permittedSources() {
+  const override = process.env.ALLOW_PENDING_SOURCES === "1";
+
+  return trustedSources.filter((source) => {
+    if (RUNNABLE_PERMISSION_STATES.includes(source.permission_status)) return true;
+
+    if (override && source.permission_status !== "denied") {
+      console.warn(
+        `تحذير: ${source.name} permission_status=${source.permission_status} — ` +
+          "تم التجاوز عبر ALLOW_PENDING_SOURCES. للتطوير فقط."
+      );
+      return true;
+    }
+
+    console.warn(
+      `معطّل: ${source.name} (permission_status=${source.permission_status}). ` +
+        `${source.permission_note ?? ""}`
+    );
+    return false;
+  });
+}
 
 const allowedTypes = ["أرض", "شقة", "مبنى", "فيلا", "منزل", "مزرعة", "محل"];
 const targetAreaTerms = [
@@ -206,8 +247,8 @@ async function fetchOffersFromSource(source) {
     .slice(0, MAX_OFFERS);
 }
 
-async function collectOffers() {
-  const batches = await Promise.allSettled(trustedSources.map(fetchOffersFromSource));
+async function collectOffers(sources) {
+  const batches = await Promise.allSettled(sources.map(fetchOffersFromSource));
   const offers = batches.flatMap((batch) => {
     if (batch.status === "fulfilled") return batch.value;
     console.warn(batch.reason);
@@ -218,7 +259,18 @@ async function collectOffers() {
 }
 
 async function main() {
-  const offers = await collectOffers();
+  const sources = permittedSources();
+
+  // خروج مبكر قبل أي اتصال بقاعدة البيانات.
+  // هذا يضمن أنه لا يمكن أرشفة أي عرض موجود عندما لا يوجد مصدر مسموح.
+  if (!sources.length) {
+    console.log(
+      "لا يوجد أي مصدر مسموح بتشغيله. لم يُجلب شيء ولم يُعدَّل شيء في قاعدة البيانات."
+    );
+    return;
+  }
+
+  const offers = await collectOffers(sources);
   console.log(`Qualified external offers: ${offers.length}`);
   offers.forEach((offer, index) => {
     console.log(
@@ -240,7 +292,9 @@ async function main() {
   }
 
   const supabase = createClient(normalizeSupabaseUrl(SUPABASE_URL), SUPABASE_KEY);
-  const sourceNames = trustedSources.map((source) => source.name);
+  // مقصور على المصادر التي عملت فعلًا في هذه الجولة، حتى لا تُؤرشف
+  // عروض مصدر معطّل لمجرد أنه مذكور في السجل.
+  const sourceNames = sources.map((source) => source.name);
   const { data: existingOffers, error: existingError } = await supabase
     .from("external_offers")
     .select("id, source_url")

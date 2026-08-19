@@ -18,4 +18,19 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // العامل (worker) والسكربتات تعمل في Node لا في المتصفح:
+  // process و console متاحة، وقواعد React لا تنطبق عليها.
+  {
+    files: ['server/**/*.js', 'scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['**/__tests__/**/*.js'],
+    languageOptions: { globals: globals.node },
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

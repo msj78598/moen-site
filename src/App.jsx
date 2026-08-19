@@ -12,6 +12,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
+import { normalizeStatus, publicOnly, STATUS } from "./lib/status.js";
+import { normalizeJordanPhone } from "./lib/phone.js";
+import {
+  buildMarketingLead,
+  buildServiceLead,
+  createLead,
+  LeadValidationError,
+} from "./services/leads.js";
 
 export default function App() {
   const banner = "/panr.png";
@@ -395,7 +403,8 @@ export default function App() {
       badge: row.badge || "عادي",
       phone: row.phone || contactData.phone,
       image: row.image_url || "🏡",
-      status: row.status || "متاح",
+      status: normalizeStatus(row.status),
+      deletedAt: row.deleted_at || null,
       sourceType: row.source_type || "office",
       sourceName: row.source_name || "",
       sourceUrl: row.source_url || "",
@@ -453,6 +462,7 @@ export default function App() {
 
     if (error) throw error;
 
+    // team لا يملك deleted_at — الإخفاء عبر is_visible وحده.
     if (data && data.length) {
       setTeam(data.map(mapTeam));
     }
@@ -466,11 +476,10 @@ export default function App() {
 
     if (error) throw error;
 
-    if (data && data.length) {
-      setProperties(data.map(mapProperty));
-    } else {
-      setProperties([]);
-    }
+    // استبعاد المحذوف ناعمًا. الفلترة هنا في الواجهة لا في الاستعلام،
+    // حتى يظل الكود يعمل قبل تطبيق 0002 (حين لا يكون العمود موجودًا بعد).
+    const rows = (data || []).filter((row) => !row.deleted_at);
+    setProperties(rows.map(mapProperty));
   }
 
   async function loadUserProfile(authUser) {
@@ -696,20 +705,43 @@ export default function App() {
       return;
     }
 
-    if (!window.confirm("هل تريد حذف هذا العرض؟")) return;
+    if (!window.confirm("هل تريد حذف هذا العرض؟ سيُنقل إلى الأرشيف ويمكن استرجاعه.")) return;
 
     setLoading(true);
     setErrorMessage("");
 
     try {
-      const { error } = await withTimeout(
-        "حذف العرض",
-        supabase.from("properties").delete().eq("id", id)
+      // حذف ناعم بدل الحذف النهائي: البيانات تبقى في قاعدة البيانات ويمكن استرجاعها،
+      // وسجل التدقيق يحفظ من نفّذ العملية ومتى.
+      // صلاحية DELETE منزوعة أصلًا على مستوى قاعدة البيانات (0006_rls_policies.sql).
+      const { data, error } = await withTimeout(
+        "أرشفة العرض",
+        supabase
+          .from("properties")
+          .update({
+            status: STATUS.ARCHIVED,
+            deleted_at: new Date().toISOString(),
+            deleted_by: user?.id || null,
+            deleted_by_name: user?.name || user?.email || "الإدارة",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select("id")
+          .maybeSingle()
       );
       if (error) throw error;
 
+      // ⚠️ ضروري: حين ترفض RLS تحديثًا لا يُرجع PostgREST خطأ — بل ينجح
+      // بصفر صفوف متأثرة. بدون هذا الفحص كانت الواجهة تعلن "تم النقل
+      // إلى الأرشيف" بينما لم يتغيّر شيء في قاعدة البيانات.
+      if (!data) {
+        throw new Error(
+          "لم تُنفَّذ الأرشفة. تحقق من صلاحيتك على هذا العرض أو أعد تسجيل الدخول."
+        );
+      }
+
       await loadProperties();
-      alert("تم حذف العرض");
+      alert("تم نقل العرض إلى الأرشيف");
     } catch (error) {
       console.error(error);
       setErrorMessage(errorText(error, "تعذر حذف العرض."));
@@ -843,13 +875,34 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      const { error } = await withTimeout(
-        "حذف الموظف",
-        supabase.from("team").delete().eq("id", id)
+      // إخفاء بدل حذف نهائي.
+      //
+      // جدول team يملك is_visible أصلًا وهو كافٍ تمامًا للإخفاء والاسترجاع،
+      // فلا مبرر لإضافة أعمدة deleted_* لتكرار وظيفة قائمة.
+      // "مَن أخفى ومتى" يسجّلهما audit_log تلقائيًا عبر trigger.
+      //
+      // ⚠️ الأعمدة التالية غير موجودة في هذا الجدول (تدقيق 2026-08-19):
+      //    updated_at · deleted_at · deleted_by · deleted_by_name
+      const { data, error } = await withTimeout(
+        "إخفاء الموظف",
+        supabase
+          .from("team")
+          .update({ is_visible: false })
+          .eq("id", id)
+          .select("id")
+          .maybeSingle()
       );
       if (error) throw error;
+
+      // نفس السبب كما في deleteProperty: رفض RLS يظهر كنجاح بصفر صفوف.
+      if (!data) {
+        throw new Error(
+          "لم يُنفَّذ الإخفاء. تحقق من صلاحية إدارة الموظفين أو أعد تسجيل الدخول."
+        );
+      }
+
       await loadTeam();
-      alert("تم حذف الموظف");
+      alert("تم إخفاء الموظف ونقله إلى الأرشيف");
     } catch (error) {
       console.error(error);
       setErrorMessage(errorText(error, "تعذر حذف الموظف."));
@@ -927,11 +980,9 @@ export default function App() {
     }
   }
 
+  // نُقل المنطق إلى src/lib/phone.js ليصبح قابلًا للاختبار ومشتركًا مع خدمة الطلبات.
   function normalPhone(phone) {
-    return (phone || "")
-      .replace(/^00962/, "962")
-      .replace(/^0/, "962")
-      .replace(/\D/g, "");
+    return normalizeJordanPhone(phone);
   }
 
   function mapExternalOffer(row) {
@@ -1037,6 +1088,14 @@ ${property.note ? `ملاحظات: ${property.note}` : ""}
         }
       }
 
+      // ⬅️ يُحفظ الطلب أولًا. إن فشل الحفظ لا نفتح واتساب ولا نعتبر العملية ناجحة.
+      // قبل هذا التغيير كان كل عميل محتمل يضيع داخل واتساب بلا أي أثر رقمي.
+      const attachmentUrl = attachmentLine.startsWith("رابط المرفق: ")
+        ? attachmentLine.replace("رابط المرفق: ", "")
+        : null;
+
+      await createLead(supabase, buildMarketingLead(marketingRequest, { attachmentUrl }));
+
       const officePhone = normalPhone(contactData.phone || contactData.whatsapp);
       const message = `طلب تسويق عقار جديد - مكتب نور الضفتين العقاري
 
@@ -1074,7 +1133,12 @@ ${attachmentLine}
       setShowMarketingForm(false);
     } catch (error) {
       console.error(error);
-      setErrorMessage(errorText(error, "تعذر تجهيز طلب التسويق العقاري."));
+      // رسالة التحقق موجّهة للمستخدم مباشرة؛ أي خطأ آخر يُعرض برسالة عامة.
+      setErrorMessage(
+        error instanceof LeadValidationError
+          ? error.message
+          : errorText(error, "تعذر حفظ طلب التسويق العقاري. لم يتم إرسال الطلب.")
+      );
     } finally {
       setLoading(false);
     }
@@ -1112,6 +1176,13 @@ ${attachmentLine}
         }
       }
 
+      // ⬅️ نفس القاعدة: الحفظ أولًا، ثم واتساب.
+      const attachmentUrl = attachmentLine.startsWith("رابط المرفق: ")
+        ? attachmentLine.replace("رابط المرفق: ", "")
+        : null;
+
+      await createLead(supabase, buildServiceLead(serviceRequest, { attachmentUrl }));
+
       const officePhone = normalPhone(contactData.phone || contactData.whatsapp);
       const message = `طلب خدمة عامة - مكتب نور الضفتين العقاري
 
@@ -1147,7 +1218,11 @@ ${attachmentLine}
       setShowServiceForm(false);
     } catch (error) {
       console.error(error);
-      setErrorMessage(errorText(error, "تعذر تجهيز طلب الخدمة العامة."));
+      setErrorMessage(
+        error instanceof LeadValidationError
+          ? error.message
+          : errorText(error, "تعذر حفظ طلب الخدمة العامة. لم يتم إرسال الطلب.")
+      );
     } finally {
       setLoading(false);
     }
@@ -1282,7 +1357,7 @@ ${selectedOffers.map(buildOfferShareLine).join("\n\n")}
       typeof window !== "undefined"
         ? new URL(displayedBanner, window.location.origin).href
         : displayedBanner;
-    const teamLines = team
+    const teamLines = visibleTeam
       .map((person) => `${person.title} - ${person.name}: ${person.phone}`)
       .join("\n");
     const text = `بطاقة مكتب نور الضفتين العقاري الإلكترونية
@@ -1396,9 +1471,18 @@ ${siteUrl}`;
     { id: "apartment", label: "شقق", Icon: Home },
     { id: "building", label: "مبان ومنازل", Icon: Building2 },
   ];
-  const filteredProperties = filteredByCategory(properties, offerFilter);
+  // `properties` تحتوي كل ما ترجعه قاعدة البيانات (الموظف يرى المسودات والمؤرشف).
+  // الأقسام العامة من الموقع يجب أن تعرض المنشور غير المحذوف فقط.
+  // RLS تفرض هذا على الزائر المجهول؛ وهذا الفلتر يفرضه أيضًا على الموظف
+  // أثناء تصفحه للموقع، حتى لا تظهر له المسودات مختلطة بالعروض المنشورة.
+  const publicProperties = publicOnly(properties);
+  // team لا يملك deleted_at؛ الإخفاء عبر is_visible وحده.
+  // RLS تفرض هذا على الزائر، وهذا الفلتر يفرضه أيضًا على الموظف
+  // أثناء تصفحه الموقع حتى لا يرى المخفيين مختلطين بالظاهرين.
+  const visibleTeam = team.filter((member) => member.is_visible !== false);
+  const filteredProperties = filteredByCategory(publicProperties, offerFilter);
   const filteredExternalOffers = filteredByCategory(externalOffers, offerFilter);
-  const officeTickerOffers = properties.map((offer) => ({
+  const officeTickerOffers = publicProperties.map((offer) => ({
     ...offer,
     anchor: `#office-offer-${offer.id}`,
     sourceLabel: isMarketingSource(offer.sourceType)
@@ -1452,7 +1536,7 @@ ${siteUrl}`;
   const selectedOffersMessage = buildOffersShareMessage(selectedAdminShareOffers);
   const trustMetrics = [
     {
-      value: `${properties.length + externalOffers.length}+`,
+      value: `${publicProperties.length + externalOffers.length}+`,
       label: "عرض متابع",
       Icon: BadgeCheck,
     },
@@ -2892,7 +2976,7 @@ ${siteUrl}`;
           </div>
 
           <div style={viewStyles.teamGrid}>
-            {team.map((person) => (
+            {visibleTeam.map((person) => (
               <article style={viewStyles.teamCard} key={person.id}>
                 <div style={viewStyles.teamPhotoBox}>
                   {person.photo ? (
@@ -2972,7 +3056,7 @@ ${siteUrl}`;
             </p>
 
             <div style={viewStyles.infoBox}>
-              {team.map((person) => (
+              {visibleTeam.map((person) => (
                 <p key={person.id} style={viewStyles.infoLine}>
                   <strong>{person.title}</strong> - {person.name}:{" "}
                   {person.phone}
